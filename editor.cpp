@@ -110,12 +110,12 @@ void Editor::handleInput(sf::Event event)
 				else if (command == "GEOM")
 				{
 					geom = !geom;
-					message_text.setString(std::string("$ -- Geom ") + (geom ? "TRUE" : "FALSE") + " --"); 
+					message_text.setString(std::string("-- Geom ") + (geom ? "TRUE" : "FALSE") + " --"); 
 				}
 				else if (command == "SNAP")
 				{
 					snap = !snap;
-					message_text.setString(std::string("$ -- Snap ") + (snap ? "TRUE" : "FALSE") + " --"); 
+					message_text.setString(std::string("-- Snap ") + (snap ? "TRUE" : "FALSE") + " --"); 
 				}
 				else if (command == "DECO")
 				{
@@ -126,12 +126,29 @@ void Editor::handleInput(sf::Event event)
 				{
 					std::string map_name = command.substr(5,16);
 
-					maps->push_back(new Map);
+					maps->push_back(new Map(map_name));
 					map_index = maps->size()-1;
 					(*maps)[map_index]->name = map_name;
 
 					message_text.setString(std::string("-- New Map ") + map_name + " at map_index " + std::to_string(map_index) +  " --");
 				}
+//				else if (command.substr(0,5) == "DMAP ")
+//				{
+//					std::string map_name = command.substr(5,16);
+//					int map_index_dup = findMap(map_name);
+//					if (map_index_dup < 0)
+//					{
+//						message_text.setString("-- Duplicate Failed: " + map_name + " doesnt exist --");
+//					}
+//					else
+//					{
+//						maps->push_back(new Map(map_name));
+//						map_index = maps->size()-1;
+//						(*maps)[map_index]->name = map_name;
+//
+//						message_text.setString(std::string("-- New Map ") + map_name + " at map_index " + std::to_string(map_index) +  " --");
+//					}
+//				}
 				else if (command.substr(0,5) == "SMAP ")
 				{
 					std::string map_name = command.substr(5,16);
@@ -143,33 +160,6 @@ void Editor::handleInput(sf::Event event)
 					else
 					{
 						message_text.setString(std::string("-- Saved Map ") + map_name + " --");
-					}
-				}
-				else if (command.substr(0,5) == "LMAP ")
-				{
-					std::string map_name = command.substr(5,16);
-					int existing_map_index = findMap(map_name);
-
-					if (existing_map_index != -1)
-					{
-						map_index = existing_map_index;
-					}
-					else
-					{
-						
-					}
-
-					maps->push_back(new Map);
-
-					map_index = maps->size()-1;
-
-					if (!((*maps)[map_index]->loadMap(map_name)))
-					{
-						message_text.setString(std::string("-- Load Map Failed --"));
-					}
-					else 
-					{
-						message_text.setString(std::string("-- Loaded Map " + map_name + " --"));
 					}
 				}
 				else if (command == "LSMP")

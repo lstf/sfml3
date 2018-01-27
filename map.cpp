@@ -1,12 +1,9 @@
 #include "map.h"
 
-Map::Map()
+Map::Map(std::string _name)
 {
-}
-
-Map::Map(std::string fileName)
-{
-	
+	modified = false;
+	name = _name;
 }
 
 void Map::writeVecImg(std::vector<img> v, std::ofstream &o)
@@ -21,6 +18,14 @@ void Map::writeVecImg(std::vector<img> v, std::ofstream &o)
 	}
 }
 
+void Map::writeRect(sf::IntRect r, std::ofstream &o)
+{
+	o.write((char*)&r.left, sizeof(r.left));
+	o.write((char*)&r.top, sizeof(r.top));
+	o.write((char*)&r.width, sizeof(r.width));
+	o.write((char*)&r.height, sizeof(r.height));
+}
+
 void Map::writeVecGeo(std::vector<sf::IntRect> v, std::ofstream &o)
 {
 	int length = v.size();
@@ -28,7 +33,7 @@ void Map::writeVecGeo(std::vector<sf::IntRect> v, std::ofstream &o)
 	o.write((char*)&length, sizeof(length));
 	for (int i = 0; i < length; i++)
 	{
-		o.write((char*)&v[i], sizeof(sf::IntRect));
+		writeRect(v[i], o);
 	}
 
 }
@@ -72,6 +77,14 @@ void Map::readVecImg(std::vector<img> &v, std::ifstream &inp)
 	}
 }
 
+void Map::readRect(sf::IntRect &r, std::ifstream &inp)
+{
+	inp.read((char*)&r.left, sizeof(r.left));
+	inp.read((char*)&r.top, sizeof(r.top));
+	inp.read((char*)&r.width, sizeof(r.width));
+	inp.read((char*)&r.height, sizeof(r.height));
+}
+
 void Map::readVecGeo(std::vector<sf::IntRect> &v, std::ifstream &inp)
 {
 	int length;
@@ -82,7 +95,7 @@ void Map::readVecGeo(std::vector<sf::IntRect> &v, std::ifstream &inp)
 	inp.read((char*)&length, sizeof(length));
 	for (int i = 0; i < length; i++)
 	{
-		inp.read((char*)&t, sizeof(t));
+		readRect(t, inp);
 		v.push_back(t);
 	}
 }
@@ -118,9 +131,9 @@ bool Map::saveMap()
 	return true;
 }
 
-bool Map::loadMap(std::string mapName)
+bool Map::loadMap()
 {
-	std::ifstream map_file(mapName.c_str(), std::ios::binary);
+	std::ifstream map_file((MAP_DIR + name).c_str(), std::ios::binary);
 
 	if (!map_file.is_open()) return false;
 
@@ -136,18 +149,15 @@ bool Map::loadMap(std::string mapName)
 
 bool Map::addWall(const sf::Vector2i &_pos, const sf::Vector2i &_size)
 {
+	modified = true;
 	geometry.push_back(sf::IntRect(_pos, _size));
 	return true;
 }
 
 bool Map::addDeco(const sf::Texture &_tx, const sf::Vector2i _pos, BgFg _bg)
 {
+	modified = true;
 	return true;
-}
-
-void Map::setName(std::string newName)
-{
-	name = newName;
 }
 
 Map::~Map()

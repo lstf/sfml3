@@ -24,13 +24,12 @@ int main()
 	std::string map_name;
 	int 		map_count;
 
-	maps.push_back(new Map);
-	maps[0]->setName("null map");
+	maps.push_back(new Map("null map"));
 
 	std::ifstream 	maps_file(std::string(MAP_DIR) + "maps.list", std::ifstream::in);
 	if (!maps_file.is_open())
 	{
-		std::cout << std::string("(load) Failed to open ") + MAP_DIR + "maps.list";
+		std::cout << std::string("(map load) Failed to open ") + MAP_DIR + "maps.list";
 		return -1;
 	}
 	
@@ -39,10 +38,10 @@ int main()
 	{
 		maps_file >> map_name;
 		
-		maps.push_back(new Map);
-		if (!maps[maps.size()-1]->loadMap(map_name))
+		maps.push_back(new Map(map_name));
+		if (!(maps[maps.size()-1]->loadMap()))
 		{
-			didnt load bitch
+			std::cout << std::string("(map load) Failed to open ") + MAP_DIR + map_name;
 		}
 	}
 
