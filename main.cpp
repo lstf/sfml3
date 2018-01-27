@@ -26,6 +26,7 @@ int main()
 
 	maps.push_back(new Map("null map"));
 
+
 	std::ifstream 	maps_file(std::string(MAP_DIR) + "maps.list", std::ifstream::in);
 	if (!maps_file.is_open())
 	{

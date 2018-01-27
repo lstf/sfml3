@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include <unordered_set>
+#include <iostream>
 
 #include <SFML/Graphics.hpp>
 

@@ -25,6 +25,7 @@ public:
 	void setMaps(std::vector<Map*>* _maps);
 	void setWindow(sf::RenderWindow* w);
 
+	bool checkUnsaved(std::string &unsaved);
 	int findMap(std::string mapName);
 	bool getConsoleInput(const sf::Event &event, std::string &str);
 	void handleInput(sf::Event event);

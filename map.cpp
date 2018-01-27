@@ -9,12 +9,14 @@ Map::Map(std::string _name)
 void Map::writeVecImg(std::vector<img> v, std::ofstream &o)
 {
 	int length = v.size();
+	sf::Vector2f pos;
 
 	o.write((char*)&length, sizeof(length));
 	for (int i = 0; i < v.size(); i++)
 	{
 		writeString(v[i].file, o);
-		o.write((char*)&v[i].sp.getPosition(), sizeof(v[i].sp.getPosition()));
+		pos = v[i].sp.getPosition();
+		o.write((char*)&pos, sizeof(pos));
 	}
 }
 
@@ -41,6 +43,8 @@ void Map::writeVecGeo(std::vector<sf::IntRect> v, std::ofstream &o)
 void Map::writeString(std::string s, std::ofstream &o)
 {
 	int length = s.length();
+
+	o.write((char*)&length, sizeof(length));
 	for (int i = 0; i < length; i++)
 	{
 		o.write((char*)&s[i], sizeof(s[i]));
@@ -117,9 +121,11 @@ void Map::readString(std::string &s, std::ifstream &inp)
 
 bool Map::saveMap()
 {
-	std::ofstream map_file((MAP_DIR + name).c_str(), std::ios::binary);
+	std::ofstream map_file((MAP_DIR + name).c_str(), std::ios::out|std::ios::binary);
 
 	if (!map_file.is_open()) return false;
+
+	modified = false;
 
 	writeString	(name, map_file);
 	//writeVecImg	(bg, map_file);
@@ -133,14 +139,18 @@ bool Map::saveMap()
 
 bool Map::loadMap()
 {
-	std::ifstream map_file((MAP_DIR + name).c_str(), std::ios::binary);
+	std::ifstream map_file((MAP_DIR + name).c_str(), std::ios::in|std::ios::binary);
 
 	if (!map_file.is_open()) return false;
 
+	modified = false;
+
 	readString	(name, map_file);
+	std::cout << "MAP READ" << std::endl;
 	//readVecImg	(bg, map_file);
 	//readVecImg	(fg, map_file);
 	readVecGeo	(geometry, map_file);
+	std::cout << "GEOM READ" << std::endl;
 
 	map_file.close();
 

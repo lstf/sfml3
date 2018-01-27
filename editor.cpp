@@ -78,6 +78,21 @@ int Editor::findMap(std::string mapName)
 	return -1;
 }
 
+bool Editor::checkUnsaved(std::string &unsaved)
+{
+	unsaved = "-- Unsaved Maps --\n";
+	for (int i = 1; i < maps->size(); i++)
+	{
+		if ((*maps)[i]->modified)
+		{
+			unsaved += ((*maps)[i]->name) + "\n";
+			return true;
+		}
+	}
+	unsaved = "";
+	return false;
+}
+
 void Editor::handleInput(sf::Event event)
 {
 	//
@@ -105,6 +120,19 @@ void Editor::handleInput(sf::Event event)
 			{
 				if (command == "QUIT")
 				{
+					std::string unsaved_maps;
+
+					if (checkUnsaved(unsaved_maps))
+					{
+						message_text.setString(unsaved_maps);
+					}
+					else
+					{
+						w->close();
+					}
+				}
+				else if(command == "QUIT OVERIDE")
+				{
 					w->close();
 				}
 				else if (command == "GEOM")
@@ -125,12 +153,21 @@ void Editor::handleInput(sf::Event event)
 				else if (command.substr(0,5) == "NMAP ")
 				{
 					std::string map_name = command.substr(5,16);
+					int map_index_new = findMap(map_name);
 
-					maps->push_back(new Map(map_name));
-					map_index = maps->size()-1;
-					(*maps)[map_index]->name = map_name;
 
-					message_text.setString(std::string("-- New Map ") + map_name + " at map_index " + std::to_string(map_index) +  " --");
+					if (map_index_new < 0)
+					{
+						maps->push_back(new Map(map_name));
+						map_index = maps->size()-1;
+						(*maps)[map_index]->name = map_name;
+
+						message_text.setString(std::string("-- New Map ") + map_name + " at map_index " + std::to_string(map_index) +  " --");
+					}
+					else
+					{
+						message_text.setString("-- Map Already Exists --");
+					}
 				}
 //				else if (command.substr(0,5) == "DMAP ")
 //				{
@@ -149,18 +186,31 @@ void Editor::handleInput(sf::Event event)
 //						message_text.setString(std::string("-- New Map ") + map_name + " at map_index " + std::to_string(map_index) +  " --");
 //					}
 //				}
-				else if (command.substr(0,5) == "SMAP ")
+				else if (command == "SMAP")
 				{
-					std::string map_name = command.substr(5,16);
-
-					if (!(*maps)[map_index]->saveMap())
+					if (!((*maps)[map_index]->saveMap()))
 					{
 						message_text.setString(std::string("-- Save Map Failed --"));
 					}
 					else
 					{
-						message_text.setString(std::string("-- Saved Map ") + map_name + " --");
+						message_text.setString(std::string("-- Saved Map ") + (*maps)[map_index]->name+ " --");
 					}
+				}
+				else if (command.substr(0,5) == "CMAP ")
+				{
+					std::string map_name = command.substr(5,16);
+					int map_index_change = findMap(map_name);
+					
+					if (map_index_change < 0)
+					{
+						message_text.setString("-- Map Not Found --");
+					}
+					else
+					{
+						map_index = map_index_change;
+					}
+					
 				}
 				else if (command == "LSMP")
 				{
@@ -195,8 +245,9 @@ void Editor::handleInput(sf::Event event)
 				}
 				else
 				{
-					command_text.setString("$ -- Unkown Command: " + command + " --");
+					message_text.setString("-- Unkown Command: " + command + " --");
 				}
+				command_text.setString("$ ");
 				command = "";
 			}
 		}
