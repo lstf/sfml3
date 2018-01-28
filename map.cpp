@@ -6,19 +6,19 @@ Map::Map(std::string _name)
 	name = _name;
 }
 
-void Map::writeVecImg(std::vector<img> v, std::ofstream &o)
-{
-	int length = v.size();
-	sf::Vector2f pos;
-
-	o.write((char*)&length, sizeof(length));
-	for (int i = 0; i < v.size(); i++)
-	{
-		writeString(v[i].file, o);
-		pos = v[i].sp.getPosition();
-		o.write((char*)&pos, sizeof(pos));
-	}
-}
+//void Map::writeVecImg(std::vector<img> v, std::ofstream &o)
+//{
+//	int length = v.size();
+//	sf::Vector2f pos;
+//
+//	o.write((char*)&length, sizeof(length));
+//	for (int i = 0; i < v.size(); i++)
+//	{
+//		writeString(v[i].file, o);
+//		pos = v[i].sp.getPosition();
+//		o.write((char*)&pos, sizeof(pos));
+//	}
+//}
 
 void Map::writeRect(sf::IntRect r, std::ofstream &o)
 {
@@ -51,35 +51,63 @@ void Map::writeString(std::string s, std::ofstream &o)
 	}
 }
 
-void Map::readVecImg(std::vector<img> &v, std::ifstream &inp)
+
+sf::Texture* Map::getTexture(std::string img_name)
 {
-	int length;
-	sf::Vector2f p;
-	img	im;
-	sf::Texture t;
-
-	v.clear();
-	tx.clear();
-	tx_names.clear();
-
-	inp.read((char*)&length, sizeof(length));
-	for (int i = 0; i < length; i++)
+	for (int i = 0; i < tx.size(); i++)
 	{
-		readString(v[i].file, inp);
-		tx_names.insert(v[i].file);
-
-		inp.read((char*)&p, sizeof(p));
-
-		im.sp.setPosition(p);
-		v.push_back(im);
+		if (tx[i]->name == img_name)
+		{
+			return &(tx[i]->texture);
+		}
 	}
-
-	for (auto it = tx_names.begin(); it != tx_names.end(); ++it)
-	{
-		t.loadFromFile(MAP_DIR + *it);
-		tx.push_back(t);
-	}
+	return NULL;
 }
+
+bool Map::loadTexture(std::string img_name)
+{
+	tx.push_back(new named_tx);
+	tx[tx.size()-1]->name = img_name;
+	if(!tx[tx.size()-1]->texture.loadFromFile(TEX_DIR + img_name))
+	{
+		tx.pop_back();
+		return false;
+	}
+
+	
+	tx_names.insert(img_name);
+	return true;
+}
+
+//void Map::readVecImg(std::vector<img> &v, std::ifstream &inp)
+//{
+//	int length;
+//	sf::Vector2f p;
+//	img	im;
+//	sf::Texture t;
+//
+//	v.clear();
+//	tx.clear();
+//	tx_names.clear();
+//
+//	inp.read((char*)&length, sizeof(length));
+//	for (int i = 0; i < length; i++)
+//	{
+//		readString(v[i].file, inp);
+//		tx_names.insert(v[i].file);
+//
+//		inp.read((char*)&p, sizeof(p));
+//
+//		im.sp.setPosition(p);
+//		v.push_back(im);
+//	}
+//
+//	//for (auto it = tx_names.begin(); it != tx_names.end(); ++it)
+//	//{
+//	//	t.loadFromFile(MAP_DIR + *it);
+//	//	tx.push_back(t);
+//	//}
+//}
 
 void Map::readRect(sf::IntRect &r, std::ifstream &inp)
 {
@@ -146,11 +174,9 @@ bool Map::loadMap()
 	modified = false;
 
 	readString	(name, map_file);
-	std::cout << "MAP READ" << std::endl;
 	//readVecImg	(bg, map_file);
 	//readVecImg	(fg, map_file);
 	readVecGeo	(geometry, map_file);
-	std::cout << "GEOM READ" << std::endl;
 
 	map_file.close();
 
@@ -164,8 +190,17 @@ bool Map::addWall(const sf::Vector2i &_pos, const sf::Vector2i &_size)
 	return true;
 }
 
-bool Map::addDeco(const sf::Texture &_tx, const sf::Vector2i _pos, BgFg _bg)
+bool Map::addDeco(std::string name, const sf::Vector2f _pos, BgFg _bg)
 {
+	img* im = new img;
+	im->sp.setPosition(_pos);
+	im->name = name;
+	im->sp.setTexture(*(getTexture(name)));
+	if (_bg == BG)
+	{
+		bg.push_back(im);
+	}
+
 	modified = true;
 	return true;
 }

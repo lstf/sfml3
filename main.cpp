@@ -57,6 +57,7 @@ int main()
 					editor.setMaps							(&maps);
 					editor.map_index						= 0;
 					editor.console 							= false;
+					editor.decorating						= false;
 					editor.snap 							= false;
 					editor.geom	 							= false;
 					editor.deco								= true;
@@ -119,7 +120,13 @@ int main()
 
 				w::window.draw(rect);
 			}
-
+		}
+		if (editor.deco)
+		{
+			for (int i = maps[editor.map_index]->bg.size() - 1; i >= 0; i--)
+			{
+				w::window.draw(maps[editor.map_index]->bg[i]->sp);
+			}
 		}
 		w::window.draw(editor);
 		w::window.display();

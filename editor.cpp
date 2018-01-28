@@ -19,7 +19,11 @@ void Editor::orient(sf::Vector2i &u, sf::Vector2i &v)
 
 void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const
 {
-	if (mouse_left) w.draw(mouse_box);
+	if (!decorating && mouse_left) w.draw(mouse_box);
+	if (decorating)
+	{
+		w.draw(deco_cursor);
+	}
 	if (console)
 	{
 		w.draw(command_text);
@@ -57,6 +61,10 @@ bool Editor::getConsoleInput(const sf::Event &event, std::string &str)
 	else if (event.key.code == sf::Keyboard::Space)
 	{
 		str += ' ';
+	}
+	else if (event.key.code == sf::Keyboard::Period)
+	{
+		str += '.';
 	}
 	else
 	{
@@ -169,6 +177,48 @@ void Editor::handleInput(sf::Event event)
 						message_text.setString("-- Map Already Exists --");
 					}
 				}
+				else if (command.substr(0,5) == "LIMG ")
+				{
+					std::string img_name = command.substr(5,16);
+
+					if (!(*maps)[map_index]->loadTexture(img_name))
+					{
+						message_text.setString("-- Load Image Failed : " + img_name + " --");
+					}
+					else
+					{
+						message_text.setString("-- Loaded Image: " + img_name + " --");
+					}
+				}
+				else if (command == "LSIM")
+				{
+					std::string img_list;
+					for (int i = 0; i < (*maps)[map_index]->tx.size(); i++)
+					{
+						img_list += (*maps)[map_index]->tx[i]->name + "\n";
+					}
+					message_text.setString(img_list);
+				}
+				else if (command.substr(0,5) == "SIMG ")
+				{
+					std::string img_set = command.substr(5,16);
+					sf::Texture* tx = (*maps)[map_index]->getTexture(img_set);
+
+					if (tx)
+					{
+						decorating = true;
+						deco_cursor.setTexture(*tx);
+						deco_name = img_set;
+					}
+					else 
+					{
+						message_text.setString("-- Set Image Failed --");
+					}
+				}
+				else if (command == "GEDT")
+				{
+					decorating = false;
+				}
 //				else if (command.substr(0,5) == "DMAP ")
 //				{
 //					std::string map_name = command.substr(5,16);
@@ -267,10 +317,25 @@ void Editor::handleInput(sf::Event event)
 			 event.mouseButton.button == sf::Mouse::Left)
 	{
 		mouse_left = true;
-		mouse_pos.x = event.mouseButton.x;
-		mouse_pos.y = event.mouseButton.y;
-		mouse_box.setPosition((float)mouse_pos.x, (float)mouse_pos.y);
-		mouse_box.setSize(sf::Vector2f(0.0f, 0.0f));
+		if (decorating)
+		{
+			int x = event.mouseButton.x;
+			int y = event.mouseButton.y;
+			if (snap)
+			{
+				x -= x % 48;
+				y -= y % 48;
+			}
+			sf::Vector2f position((float)x, (float)y);
+			(*maps)[map_index]->addDeco(deco_name, position, BG);
+		}
+		else
+		{
+			mouse_pos.x = event.mouseButton.x;
+			mouse_pos.y = event.mouseButton.y;
+			mouse_box.setPosition((float)mouse_pos.x, (float)mouse_pos.y);
+			mouse_box.setSize(sf::Vector2f(0.0f, 0.0f));
+		}
 	}
 
 	//
@@ -279,13 +344,15 @@ void Editor::handleInput(sf::Event event)
 	else if (event.type == sf::Event::MouseButtonReleased &&
 			 event.mouseButton.button == sf::Mouse::Left)
 	{
-		sf::Vector2i r_mouse_pos(event.mouseButton.x, event.mouseButton.y);
-
 		mouse_left = false;
+		if (!decorating)
+		{
+			sf::Vector2i r_mouse_pos(event.mouseButton.x, event.mouseButton.y);
 
-		orient(mouse_pos, r_mouse_pos);
+			orient(mouse_pos, r_mouse_pos);
 
-		(*maps)[map_index]->addWall(mouse_pos, r_mouse_pos - mouse_pos);
+			(*maps)[map_index]->addWall(mouse_pos, r_mouse_pos - mouse_pos);
+		}
 	}
 
 	//
@@ -293,7 +360,7 @@ void Editor::handleInput(sf::Event event)
 	//
 	else if (event.type == sf::Event::MouseMoved)
 	{
-		if (mouse_left)
+		if (!decorating && mouse_left)
 		{
 			sf::Vector2i p_mouse_pos = mouse_pos;
 			sf::Vector2i m_mouse_pos(event.mouseMove.x, event.mouseMove.y);
@@ -308,6 +375,10 @@ void Editor::handleInput(sf::Event event)
 
 			mouse_box.setPosition(pos);
 			mouse_box.setSize(size);
+		}
+		if (decorating)
+		{
+			deco_cursor.setPosition(sf::Vector2f(event.mouseMove.x, event.mouseMove.y));
 		}
 	}
 }

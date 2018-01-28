@@ -43,6 +43,10 @@ public:
 
 	sf::Vector2i	mouse_pos;
 	sf::RectangleShape mouse_box;	
+	sf::Sprite 		deco_cursor;
+
+	bool			decorating;
+	std::string		deco_name;
 
 	bool			mouse_left;
 };

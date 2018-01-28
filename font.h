@@ -10,7 +10,7 @@ namespace font
 
 	int init()
 	{
-		if (!thintel.loadFromFile("thintel.ttf")) return 1;
+		if (!thintel.loadFromFile(".ats/fonts/thintel.ttf")) return 1;
 		return 0;
 	}
 }
