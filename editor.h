@@ -13,7 +13,7 @@ enum Modes
 	EDIT,
 	GEOM,
 	DECO
-}
+};
 
 class Editor: public sf::Drawable
 {
@@ -53,7 +53,6 @@ public:
 	bool 		console;
 	bool		message;
 	bool 		snap;
-	bool 		geom;
 	bool		deco;
 	int			map_index;
 
@@ -61,12 +60,11 @@ public:
 	sf::RectangleShape mouse_box;	
 	sf::Sprite 		deco_cursor;
 
-	bool			decorating;
 	std::string		deco_name;
 
 	bool			mouse_left;
 
-	modes mode;
+	Modes mode;
 };
 
 #endif
