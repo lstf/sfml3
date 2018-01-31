@@ -54,6 +54,86 @@ bool Map::toggleGeom()
 	return geom;
 }
 
+int Map::findRect(const sf::IntRect &r, const std::vector<sf::IntRect> &v)
+{
+	int i;
+	for (i = v.size()-1; i >= 0; i--)
+	{
+		if (v[i] == r)
+		{
+			break;
+		}
+	}
+	return i;
+}
+
+void Map::deleteSelect()
+{
+	auto iti = bg.begin();
+	for (int i = (int)bgSelection.size()-1; i >= 0; i--)
+	{
+		bg.erase(iti + bgSelection[i]);
+	}
+	bgSelection.clear();
+
+	auto itg = geometry.begin();
+	for (int i = (int)geometrySelection.size()-1; i >= 0; i--)
+	{
+		geometry.erase(itg + geometrySelection[i]);
+	}
+	geometrySelection.clear();
+}
+
+void Map::clearSelect()
+{
+	bgSelection.clear();
+	geometrySelection.clear();
+}
+
+void Map::select(sf::IntRect &s, std::vector<sf::IntRect> &v)
+{
+	if (deco)
+	{
+		sf::Vector2f pos;
+		sf::IntRect r;
+
+		r.width = 48;
+		r.height = 48;
+
+		for (int i = (int)bg.size()-1; i >= 0; i--)
+		{
+			pos = bg[i]->sp.getPosition();
+			r.left = pos.x;
+			r.top = pos.y;
+
+			if (s.intersects(r))
+			{
+				if (findRect(r,v) < 0)
+				{
+					v.push_back(r);
+					bgSelection.push_back(i);
+				}
+			}
+		}
+	}
+	if (geom)
+	{
+		for (int i = (int)geometry.size()-1; i >= 0; i--)
+		{
+			if (s.intersects(geometry[i]))
+			{
+				if (findRect(geometry[i], v) < 0)
+				{
+					v.push_back(geometry[i]);
+					geometrySelection.push_back(i);
+				}
+			}
+		}
+	}
+}
+
+
+
 void Map::writeVecImg(std::vector<img*> v, std::ofstream &o)
 {
 	int length = v.size();

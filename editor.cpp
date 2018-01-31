@@ -61,6 +61,20 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const
 	{
 		w.draw(deco_cursor, states);
 	}
+	if (selection.size())
+	{
+		sf::RectangleShape r;
+		r.setOutlineThickness(2.0);
+		r.setOutlineColor(sf::Color::White);
+		r.setFillColor(sf::Color::Transparent);
+		for (int i = selection.size()-1; i >= 0; i--)
+		{
+			r.setSize(sf::Vector2f((float)selection[i].width, (float)selection[i].height));
+			r.setPosition(sf::Vector2f((float)selection[i].left, (float)selection[i].top));
+			
+			w.draw(r, states);
+		}
+	}
 
 	//Static
 	w.setView(w.getDefaultView());
@@ -456,23 +470,14 @@ void Editor::handleInput(sf::Event event)
 		}
 		else if (mode == EDIT)
 		{
-		//	orient(mouse_pos, prev_mouse_pos);
-		//	sf::IntRect r(mouse_pos, prev_mouse_pos - mouse_pos);
-
-		//	if ((*maps)[map_index]->geom)
-		//	{
-		//		std::vector<IntRect>* geo = (*maps)[map_index]->geometry;
-		//		for (auto i = geo->begin(); i != geo->end() ; ++i)
-		//		{
-		//			if (r.intersects((*maps)[map_index]->geometry[i]))
-		//			{
-
-		//			}
-		//		}
-		//	}
-		//	if ((*maps)[map_index]->deco)
-		//	{
-		//	}
+			orient(mouse_pos, prev_mouse_pos);
+			sf::IntRect r(mouse_pos, prev_mouse_pos - mouse_pos);
+			if (!(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) 					|| sf::Keyboard::isKeyPressed(sf::Keyboard::RShift)))
+			{
+				(*maps)[map_index]->clearSelect();
+				selection.clear();
+			}
+			(*maps)[map_index]->select(r, selection);
 		}
 	}
 	//

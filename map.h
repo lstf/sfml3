@@ -1,9 +1,11 @@
 #ifndef _MAP_O
 #define _MAP_O
 #include <vector>
+#include <iterator>
 #include <string>
 #include <fstream>
 #include <unordered_set>
+#include <set>
 #include <iostream>
 
 #include <SFML/Graphics.hpp>
@@ -33,6 +35,9 @@ struct named_tx
 class Map : public sf::Drawable
 {
 private:
+	bool selection;
+	std::vector<int> bgSelection;
+	std::vector<int> geometrySelection;
 	std::vector<img*> fg;
 	bool deco;
 	bool geom;
@@ -62,6 +67,16 @@ public:
 
 	bool modified;
 	sf::Texture* getTexture(std::string img_name);
+	
+	int findRect(const sf::IntRect &r, const std::vector<sf::IntRect> &v);
+
+	void clearSelect();
+
+	void deleteSelect();
+
+	void select(sf::IntRect &s, std::vector<sf::IntRect> &v);
+
+	std::vector<sf::IntRect>* select(sf::IntRect s);
 
 	bool toggleDeco();
 	bool toggleGeom();

@@ -47,6 +47,8 @@ public:
 	sf::View view;
 	bool mouse_middle;
 
+	std::vector<sf::IntRect> selection;
+
 	std::string command;
 	sf::Text	command_text;
 	sf::Text	message_text;
