@@ -3,22 +3,70 @@
 Map::Map(std::string _name)
 {
 	modified = false;
+	deco = true;
+	geom = false;
 	name = _name;
 }
 
-//void Map::writeVecImg(std::vector<img> v, std::ofstream &o)
-//{
-//	int length = v.size();
-//	sf::Vector2f pos;
-//
-//	o.write((char*)&length, sizeof(length));
-//	for (int i = 0; i < v.size(); i++)
-//	{
-//		writeString(v[i].file, o);
-//		pos = v[i].sp.getPosition();
-//		o.write((char*)&pos, sizeof(pos));
-//	}
-//}
+void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const
+{
+	if (deco)
+	{
+		for (int i = (int)bg.size() - 1; i >= 0; i--)
+		{
+			w.draw(bg[i]->sp, states);
+		}
+	}
+	if (geom)
+	{
+		sf::RectangleShape 	rect;
+		rect.setOutlineThickness(2.0);
+		rect.setOutlineColor(sf::Color::Blue);
+		rect.setFillColor(sf::Color::Transparent);
+
+		sf::Vector2f size;
+		sf::Vector2f pos;
+
+		for (int i = (int)geometry.size() - 1; i >= 0; i--)
+		{
+			size.x 	= (float)geometry[i].width;
+			size.y 	= (float)geometry[i].height;
+			pos.x 	= (float)geometry[i].left;
+			pos.y 	= (float)geometry[i].top;
+			
+			rect.setPosition(pos);
+			rect.setSize(size);
+
+			w.draw(rect, states);
+		}
+	}
+}
+
+bool Map::toggleDeco()
+{
+	deco = !deco;
+	return deco;
+}
+
+bool Map::toggleGeom()
+{
+	geom = !geom;
+	return geom;
+}
+
+void Map::writeVecImg(std::vector<img*> v, std::ofstream &o)
+{
+	int length = v.size();
+	sf::Vector2f pos;
+
+	o.write((char*)&length, sizeof(length));
+	for (int i = 0; i < (int)v.size(); i++)
+	{
+		writeString(v[i]->name, o);
+		pos = v[i]->sp.getPosition();
+		o.write((char*)&pos, sizeof(pos));
+	}
+}
 
 void Map::writeRect(sf::IntRect r, std::ofstream &o)
 {
@@ -54,7 +102,7 @@ void Map::writeString(std::string s, std::ofstream &o)
 
 sf::Texture* Map::getTexture(std::string img_name)
 {
-	for (int i = 0; i < tx.size(); i++)
+	for (int i = 0; i < (int)tx.size(); i++)
 	{
 		if (tx[i]->name == img_name)
 		{
@@ -79,35 +127,57 @@ bool Map::loadTexture(std::string img_name)
 	return true;
 }
 
-//void Map::readVecImg(std::vector<img> &v, std::ifstream &inp)
-//{
-//	int length;
-//	sf::Vector2f p;
-//	img	im;
-//	sf::Texture t;
-//
-//	v.clear();
-//	tx.clear();
-//	tx_names.clear();
-//
-//	inp.read((char*)&length, sizeof(length));
-//	for (int i = 0; i < length; i++)
-//	{
-//		readString(v[i].file, inp);
-//		tx_names.insert(v[i].file);
-//
-//		inp.read((char*)&p, sizeof(p));
-//
-//		im.sp.setPosition(p);
-//		v.push_back(im);
-//	}
-//
-//	//for (auto it = tx_names.begin(); it != tx_names.end(); ++it)
-//	//{
-//	//	t.loadFromFile(MAP_DIR + *it);
-//	//	tx.push_back(t);
-//	//}
-//}
+bool Map::readVecImg(std::vector<img*> &v, std::ifstream &inp)
+{
+	int length;
+	sf::Vector2f p;
+	sf::Texture t;
+
+	v.clear();
+	tx.clear();
+	tx_names.clear();
+
+	inp.read((char*)&length, sizeof(length));
+	for (int i = 0; i < length; i++)
+	{
+		v.push_back(new img);
+
+		readString(v[i]->name, inp);
+		tx_names.insert(v[i]->name);
+
+		inp.read((char*)&p, sizeof(p));
+		v[v.size()-1]->sp.setPosition(p);
+	}
+
+	for (auto it = tx_names.begin(); it != tx_names.end(); ++it)
+	{
+		tx.push_back(new named_tx);
+
+		if (!tx[tx.size()-1]->texture.loadFromFile(TEX_DIR + *it))
+		{
+			return false;
+		}
+
+		tx[tx.size()-1]->name = *it;
+	}
+
+
+	std::string tx_name;
+	for (int i = 0; i < length; i++)
+	{
+		tx_name = v[i]->name;
+		for (int j = tx.size()-1; j >= 0; j--)
+		{
+			if (tx_name == tx[j]->name)
+			{
+				v[i]->sp.setTexture(tx[j]->texture);
+			}
+		}
+	}
+
+	return true;
+}
+
 
 void Map::readRect(sf::IntRect &r, std::ifstream &inp)
 {
@@ -156,7 +226,7 @@ bool Map::saveMap()
 	modified = false;
 
 	writeString	(name, map_file);
-	//writeVecImg	(bg, map_file);
+	writeVecImg	(bg, map_file);
 	//writeVecImg	(fg, map_file);
 	writeVecGeo	(geometry, map_file);
 
@@ -174,7 +244,7 @@ bool Map::loadMap()
 	modified = false;
 
 	readString	(name, map_file);
-	//readVecImg	(bg, map_file);
+	if (!readVecImg(bg, map_file)) return false;
 	//readVecImg	(fg, map_file);
 	readVecGeo	(geometry, map_file);
 
@@ -207,4 +277,5 @@ bool Map::addDeco(std::string name, const sf::Vector2f _pos, BgFg _bg)
 
 Map::~Map()
 {
+	
 }

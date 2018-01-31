@@ -1,5 +1,37 @@
 #include "editor.h"
 
+Editor::Editor(sf::RenderWindow* _w, std::vector<Map*>* _maps, sf::Font &_font)
+{
+	setWindow						(_w);
+	setMaps							(_maps);
+	map_index						= 0;
+	console 							= false;
+	decorating						= false;
+	snap 							= false;
+	geom	 							= false;
+	deco								= true;
+	command_text.setFont				(_font);
+	command_text.setCharacterSize	(48);
+	command_text.setFillColor		(sf::Color::White);
+	command_text.setPosition			(5,427);
+	command_text.setString			("$ ");
+	message_text.setFont				(_font);
+	message_text.setCharacterSize	(48);
+	message_text.setFillColor		(sf::Color::White);
+	message_text.setPosition			(5,0);
+
+	mouse_box.setFillColor			(sf::Color(0,0,0,0));
+	mouse_box.setOutlineColor		(sf::Color::Green);
+	mouse_box.setOutlineThickness	(2.0f);
+	mouse_left						= false;
+
+	view.setSize					(960,480);
+	view.setCenter					(480,240);
+	mouse_middle 					= false;
+
+	imgView							= false;
+}
+
 void Editor::orient(sf::Vector2i &u, sf::Vector2i &v)
 {
 	sf::Vector2i temp;
@@ -19,16 +51,35 @@ void Editor::orient(sf::Vector2i &u, sf::Vector2i &v)
 
 void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const
 {
-	if (!decorating && mouse_left) w.draw(mouse_box);
+	sf::View temp = w.getView();
+
+	//Scrolling
+	if (!decorating && mouse_left)
+	{
+		w.draw(mouse_box);
+	}
 	if (decorating)
 	{
-		w.draw(deco_cursor);
+		w.draw(deco_cursor, states);
 	}
+
+	//Static
+	w.setView(w.getDefaultView());
 	if (console)
 	{
-		w.draw(command_text);
-		w.draw(message_text);
+		w.draw(command_text, states);
+		w.draw(message_text, states);
 	}
+	if (imgView)
+	{
+		for (int i = (int)(*maps)[map_index]->tx.size()-1; i >= 0; i--)
+		{
+			sf::Sprite sp((*maps)[map_index]->tx[i]->texture);
+			sp.setPosition((i%3)*48+816,(i/3));
+			w.draw(sp, states);
+		}
+	}
+	w.setView(temp);
 }
 
 void Editor::setMaps(std::vector<Map*>* _maps)
@@ -39,6 +90,21 @@ void Editor::setMaps(std::vector<Map*>* _maps)
 void Editor::setWindow(sf::RenderWindow* _w)
 {
 	w = _w;
+}
+
+sf::Vector2i Editor::getMouseCoordinates()
+{
+	sf::Vector2f world_pos;
+	sf::Vector2i local_pos;	
+
+	local_pos = sf::Mouse::getPosition(*w);
+	world_pos = w->mapPixelToCoords(local_pos);
+	if (snap)
+	{
+		world_pos.x -= (int)world_pos.x % 48;
+		world_pos.y -= (int)world_pos.y % 48;
+	}
+	return sf::Vector2i((int)world_pos.x, (int)world_pos.y);
 }
 
 bool Editor::getConsoleInput(const sf::Event &event, std::string &str)
@@ -76,7 +142,7 @@ bool Editor::getConsoleInput(const sf::Event &event, std::string &str)
 
 int Editor::findMap(std::string mapName)
 {
-	for (int i = 0; i < maps->size(); i++)
+	for (int i = 0; i < (int)maps->size(); i++)
 	{
 		if (mapName == (*maps)[i]->name)
 		{
@@ -89,7 +155,7 @@ int Editor::findMap(std::string mapName)
 bool Editor::checkUnsaved(std::string &unsaved)
 {
 	unsaved = "-- Unsaved Maps --\n";
-	for (int i = 1; i < maps->size(); i++)
+	for (int i = 1; i < (int)maps->size(); i++)
 	{
 		if ((*maps)[i]->modified)
 		{
@@ -106,7 +172,8 @@ void Editor::handleInput(sf::Event event)
 	//
 	//	Key Pressed
 	//
-	if (event.type == sf::Event::KeyPressed)
+	if (event.type == sf::Event::KeyPressed &&
+		!mouse_left && !mouse_middle)
 	{
 		if (console)
 		{
@@ -145,7 +212,7 @@ void Editor::handleInput(sf::Event event)
 				}
 				else if (command == "GEOM")
 				{
-					geom = !geom;
+					geom = (*maps)[map_index]->toggleGeom();
 					message_text.setString(std::string("-- Geom ") + (geom ? "TRUE" : "FALSE") + " --"); 
 				}
 				else if (command == "SNAP")
@@ -155,12 +222,12 @@ void Editor::handleInput(sf::Event event)
 				}
 				else if (command == "DECO")
 				{
-					deco = !deco;
+					deco = (*maps)[map_index]->toggleDeco();
 					message_text.setString(std::string("-- Deco ") + (deco ? "TRUE" : "FALSE") + " --"); 
 				}
-				else if (command.substr(0,5) == "NMAP ")
+				else if (command.substr(0,8) == "NEW MAP ")
 				{
-					std::string map_name = command.substr(5,16);
+					std::string map_name = command.substr(8,16);
 					int map_index_new = findMap(map_name);
 
 
@@ -177,9 +244,9 @@ void Editor::handleInput(sf::Event event)
 						message_text.setString("-- Map Already Exists --");
 					}
 				}
-				else if (command.substr(0,5) == "LIMG ")
+				else if (command.substr(0,9) == "LOAD IMG ")
 				{
-					std::string img_name = command.substr(5,16);
+					std::string img_name = command.substr(9,16);
 
 					if (!(*maps)[map_index]->loadTexture(img_name))
 					{
@@ -190,18 +257,19 @@ void Editor::handleInput(sf::Event event)
 						message_text.setString("-- Loaded Image: " + img_name + " --");
 					}
 				}
-				else if (command == "LSIM")
+				else if (command == "LS IMG")
 				{
 					std::string img_list;
-					for (int i = 0; i < (*maps)[map_index]->tx.size(); i++)
+					imgView = true;
+					for (int i = 0; i < (int)(*maps)[map_index]->tx.size(); i++)
 					{
 						img_list += (*maps)[map_index]->tx[i]->name + "\n";
 					}
 					message_text.setString(img_list);
 				}
-				else if (command.substr(0,5) == "SIMG ")
+				else if (command.substr(0,8) == "SET IMG ")
 				{
-					std::string img_set = command.substr(5,16);
+					std::string img_set = command.substr(8,16);
 					sf::Texture* tx = (*maps)[map_index]->getTexture(img_set);
 
 					if (tx)
@@ -215,28 +283,11 @@ void Editor::handleInput(sf::Event event)
 						message_text.setString("-- Set Image Failed --");
 					}
 				}
-				else if (command == "GEDT")
+				else if (command == "EDIT GEOM")
 				{
 					decorating = false;
 				}
-//				else if (command.substr(0,5) == "DMAP ")
-//				{
-//					std::string map_name = command.substr(5,16);
-//					int map_index_dup = findMap(map_name);
-//					if (map_index_dup < 0)
-//					{
-//						message_text.setString("-- Duplicate Failed: " + map_name + " doesnt exist --");
-//					}
-//					else
-//					{
-//						maps->push_back(new Map(map_name));
-//						map_index = maps->size()-1;
-//						(*maps)[map_index]->name = map_name;
-//
-//						message_text.setString(std::string("-- New Map ") + map_name + " at map_index " + std::to_string(map_index) +  " --");
-//					}
-//				}
-				else if (command == "SMAP")
+				else if (command == "SAVE MAP")
 				{
 					if (!((*maps)[map_index]->saveMap()))
 					{
@@ -247,9 +298,9 @@ void Editor::handleInput(sf::Event event)
 						message_text.setString(std::string("-- Saved Map ") + (*maps)[map_index]->name+ " --");
 					}
 				}
-				else if (command.substr(0,5) == "CMAP ")
+				else if (command.substr(0,8) == "SET MAP ")
 				{
-					std::string map_name = command.substr(5,16);
+					std::string map_name = command.substr(8,16);
 					int map_index_change = findMap(map_name);
 					
 					if (map_index_change < 0)
@@ -259,14 +310,15 @@ void Editor::handleInput(sf::Event event)
 					else
 					{
 						map_index = map_index_change;
+						message_text.setString("-- " + map_name + " --");
 					}
 					
 				}
-				else if (command == "LSMP")
+				else if (command == "LS MAP")
 				{
 					std::string map_names;
 
-					for (int i = 0; i < maps->size(); i++)
+					for (int i = 0; i < (int)maps->size(); i++)
 					{
 						map_names += (*maps)[i]->name + '\n';
 					}
@@ -274,22 +326,25 @@ void Editor::handleInput(sf::Event event)
 					message_text.setString(map_names);
 
 				}
-				else if (command == "CLRM")
+				else if (command == "CLEAR")
 				{
 					message_text.setString("");
 				}
 				else if (command == "HELP")
 				{
 					std::string help_text;
-					help_text += "QUIT: Exit editor\n";
-					help_text += "CLRM: Clear message\n";
-					help_text += "GEOM: Toggle map geometry\n";
-					help_text += "DECO: Toggle map decorations (graphics)\n";
-					help_text += "SNAP: Cycle snap modes\n";
-					help_text += "LSMP: List maps\n";
-					help_text += "NMAP <file>: Create new map\n";
-					help_text += "LMAP <file>: Load map\n";
-					help_text += "SMAP <file>: Save map\n";
+					help_text += "QUIT: 			Exit editor\n";
+					help_text += "CLEAR:		 	Clear message\n";
+					help_text += "GEOM: 			Toggle map geometry\n";
+					help_text += "DECO: 			Toggle map decorations (graphics)\n";
+					help_text += "SNAP: 			Cycle snap modes\n";
+					help_text += "LS MAP: 			List maps\n";
+					help_text += "SET MAP <map>: 	Set working map to <map>\n";
+					help_text += "NEW MAP <file>: 	Create new map\n";
+					help_text += "SAVE MAP <file>: 	Save map\n";
+					help_text += "LS IMG: 			List imgs in map\n";
+					help_text += "LOAD IMG: 		Load img into map\n";
+					help_text += "SET IMG: 			Set working img\n";
 
 					message_text.setString(help_text);
 				}
@@ -314,71 +369,114 @@ void Editor::handleInput(sf::Event event)
 	// Left Mouse Down
 	//
 	else if (event.type == sf::Event::MouseButtonPressed &&
-			 event.mouseButton.button == sf::Mouse::Left)
+			 event.mouseButton.button == sf::Mouse::Left &&
+			 !mouse_middle)
 	{
 		mouse_left = true;
-		if (decorating)
+		mouse_pos = getMouseCoordinates();
+
+		sf::Vector2f position((float)mouse_pos.x, (float)mouse_pos.y);
+		if (mode == EDIT || mode == GEOM)
 		{
-			int x = event.mouseButton.x;
-			int y = event.mouseButton.y;
-			if (snap)
-			{
-				x -= x % 48;
-				y -= y % 48;
-			}
-			sf::Vector2f position((float)x, (float)y);
-			(*maps)[map_index]->addDeco(deco_name, position, BG);
-		}
-		else
-		{
-			mouse_pos.x = event.mouseButton.x;
-			mouse_pos.y = event.mouseButton.y;
-			mouse_box.setPosition((float)mouse_pos.x, (float)mouse_pos.y);
+			mouse_box.setPosition(position);
 			mouse_box.setSize(sf::Vector2f(0.0f, 0.0f));
 		}
+		else if (mode == DECO)
+		{
+			(*maps)[map_index]->addDeco(deco_name, position, BG);
+		}
 	}
-
 	//
 	// Left Mouse Up
 	//
 	else if (event.type == sf::Event::MouseButtonReleased &&
-			 event.mouseButton.button == sf::Mouse::Left)
+			 event.mouseButton.button == sf::Mouse::Left &&
+			 !mouse_middle)
 	{
 		mouse_left = false;
-		if (!decorating)
+		sf::Vector2i prev_mouse_pos = mouse_pos;
+
+		mouse_pos = getMouseCoordinates();
+
+		if (mode == GEOM)
 		{
-			sf::Vector2i r_mouse_pos(event.mouseButton.x, event.mouseButton.y);
+			orient(mouse_pos, prev_mouse_pos);
 
-			orient(mouse_pos, r_mouse_pos);
+			(*maps)[map_index]->addWall(mouse_pos, prev_mouse_pos - mouse_pos);
+		}
+		else if (mode == EDIT)
+		{
+			orient(mouse_pos, prev_mouse_pos);
+			sf::IntRect r(mouse_pos, prev_mouse_pos - mouse_pos);
 
-			(*maps)[map_index]->addWall(mouse_pos, r_mouse_pos - mouse_pos);
+			if ((*maps)[map_index]->geom)
+			{
+				std::vector<IntRect>* geo = (*maps)[map_index]->geometry;
+				for (auto i = geo->begin(); i != geo->end() ; ++i)
+				{
+					if (r.intersects((*maps)[map_index]->geometry[i]))
+					{
+
+					}
+				}
+			}
+			if ((*maps)[map_index]->deco)
+			{
+			}
 		}
 	}
-
+	//
+	// Middle Mouse down
+	//
+	else if (event.type == sf::Event::MouseButtonPressed &&
+			 event.mouseButton.button == sf::Mouse::Right &&
+			 !mouse_left)
+	{
+		mouse_middle = true;
+		mouse_pos.x = event.mouseButton.x;
+		mouse_pos.y = event.mouseButton.y;
+	}
+	//
+	// Middle Mouse Up
+	//
+	else if (event.type == sf::Event::MouseButtonReleased &&
+			 event.mouseButton.button == sf::Mouse::Right &&
+			 !mouse_left)
+	{
+		mouse_middle = false;
+	}
+	
 	//
 	// Mouse Moved
 	//
 	else if (event.type == sf::Event::MouseMoved)
 	{
+		sf::Vector2i move_mouse_pos = getMouseCoordinates();
+		sf::Vector2i prev_mouse_pos = mouse_pos;
+
 		if (!decorating && mouse_left)
 		{
-			sf::Vector2i p_mouse_pos = mouse_pos;
-			sf::Vector2i m_mouse_pos(event.mouseMove.x, event.mouseMove.y);
 			sf::Vector2f size;
 			sf::Vector2f pos;
 
-			orient(p_mouse_pos, m_mouse_pos);
-			pos.x = (float)(p_mouse_pos.x);
-			pos.y = (float)(p_mouse_pos.y);
-			size.x = (float)(m_mouse_pos.x - p_mouse_pos.x);
-			size.y = (float)(m_mouse_pos.y - p_mouse_pos.y);
+			orient(prev_mouse_pos, move_mouse_pos);
+			pos.x = (float)(prev_mouse_pos.x);
+			pos.y = (float)(prev_mouse_pos.y);
+			size.x = (float)(move_mouse_pos.x - prev_mouse_pos.x);
+			size.y = (float)(move_mouse_pos.y - prev_mouse_pos.y);
 
 			mouse_box.setPosition(pos);
 			mouse_box.setSize(size);
 		}
 		if (decorating)
 		{
-			deco_cursor.setPosition(sf::Vector2f(event.mouseMove.x, event.mouseMove.y));
+			deco_cursor.setPosition(sf::Vector2f((float)move_mouse_pos.x, (float)move_mouse_pos.y));
+		}
+		if (mouse_middle)
+		{
+			view.move(sf::Vector2f((float)(mouse_pos.x - event.mouseMove.x), (float)(mouse_pos.y - event.mouseMove.y)));
+			mouse_pos.x = event.mouseMove.x;
+			mouse_pos.y = event.mouseMove.y;
 		}
 	}
 }

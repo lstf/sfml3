@@ -30,24 +30,28 @@ struct named_tx
 	std::string name;
 };
 
-class Map
+class Map : public sf::Drawable
 {
 private:
 	std::vector<img*> fg;
+	bool deco;
+	bool geom;
 
 	Map();
 
 	//saveMap() helper functions
-//	void writeVecImg	(std::vector<img> v, std::ofstream &o);
+	void writeVecImg	(std::vector<img*> v, std::ofstream &o);
 	void writeRect		(sf::IntRect r, std::ofstream &o);
 	void writeVecGeo	(std::vector<sf::IntRect> v, std::ofstream &o);
 	void writeString	(std::string s, std::ofstream &o);
 
 	//loadMap() helper functions
-//	void readVecImg		(std::vector<img> &v, std::ifstream &inp);
+	bool readVecImg		(std::vector<img*> &v, std::ifstream &inp);
 	void readRect		(sf::IntRect &r, std::ifstream &inp);
 	void readVecGeo		(std::vector<sf::IntRect> &v, std::ifstream &inp);
 	void readString		(std::string &s, std::ifstream &inp);
+
+	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
 public:
 	std::vector<img*> bg;
@@ -59,6 +63,8 @@ public:
 	bool modified;
 	sf::Texture* getTexture(std::string img_name);
 
+	bool toggleDeco();
+	bool toggleGeom();
 	bool loadTexture(std::string img_name);
 	Map(std::string _name);
 	bool addWall(const sf::Vector2i &_pos, const sf::Vector2i &_size);

@@ -8,6 +8,13 @@
 
 #include "map.h"
 
+enum Modes
+{
+	EDIT,
+	GEOM,
+	DECO
+}
+
 class Editor: public sf::Drawable
 {
 private:
@@ -21,7 +28,12 @@ private:
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
+	//Translates screen coords to world coords and performs snapping
+	sf::Vector2i getMouseCoordinates();
+
 public:
+	Editor(sf::RenderWindow* _w, std::vector<Map*>* _maps, sf::Font &_font);
+
 	void setMaps(std::vector<Map*>* _maps);
 	void setWindow(sf::RenderWindow* w);
 
@@ -29,7 +41,11 @@ public:
 	int findMap(std::string mapName);
 	bool getConsoleInput(const sf::Event &event, std::string &str);
 	void handleInput(sf::Event event);
-	
+
+	bool imgView;
+
+	sf::View view;
+	bool mouse_middle;
 
 	std::string command;
 	sf::Text	command_text;
@@ -49,6 +65,8 @@ public:
 	std::string		deco_name;
 
 	bool			mouse_left;
+
+	modes mode;
 };
 
 #endif

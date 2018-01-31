@@ -2,7 +2,6 @@
 #define _WINDOW_DEFINED
 
 #include <SFML/Graphics.hpp>
-#include "font.h"
 
 namespace w 
 {
@@ -22,9 +21,9 @@ namespace w
 		if (show_fps) frame_rate.setString(std::to_string(fps));
 	}
 
-	int init()
+	int init(sf::Font &_font)
 	{
-		frame_rate.setFont(font::thintel);
+		frame_rate.setFont(_font);
 		frame_rate.setString("0");
 		frame_rate.setCharacterSize(20);
 		frame_rate.setFillColor(sf::Color::Yellow);
