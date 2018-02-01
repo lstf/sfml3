@@ -1,88 +1,55 @@
 #include "editor.h"
 
-Editor::Editor(sf::RenderWindow* _w, std::vector<Map*>* _maps, sf::Font &_font)
-{
-	setWindow						(_w);
-	setMaps							(_maps);
-	map_index						= 0;
-	console 						= false;
-	snap 							= false;
-	deco							= true;
-	command_text.setFont			(_font);
-	command_text.setCharacterSize	(48);
-	command_text.setFillColor		(sf::Color::White);
-	command_text.setPosition		(5,427);
-	command_text.setString			("$ ");
-	message_text.setFont			(_font);
-	message_text.setCharacterSize	(48);
-	message_text.setFillColor		(sf::Color::White);
-	message_text.setPosition		(5,0);
-
-	mouse_box.setFillColor			(sf::Color(0,0,0,0));
-	mouse_box.setOutlineColor		(sf::Color::Green);
-	mouse_box.setOutlineThickness	(2.0f);
-	mouse_left						= false;
-
-	view.setSize					(960,480);
-	view.setCenter					(480,240);
-	mouse_middle 					= false;
-
-	imgView							= false;
-	mode							= EDIT;
-}
-
-void Editor::orient(sf::Vector2i &u, sf::Vector2i &v)
-{
-	sf::Vector2i temp;
-	if (v.x < u.x)
-	{
-		temp.x = v.x;
-		v.x = u.x;
-		u.x = temp.x;
-	}
-	if (v.y < u.y)
-	{
-		temp.y = v.y;
-		v.y = u.y;
-		u.y = temp.y;
-	}
-}
-
 void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const
 {
-	sf::View temp = w.getView();
+	sf::View temp = w.getView();	//Store window view
 
 	//Scrolling
-	if ((mode == EDIT || mode == GEOM) && mouse_left)
+	//Green mouse_box for geometry
+	if (mode == EDIT && mouse_left && !selectClicked)
 	{
 		w.draw(mouse_box);
 	}
+	//White mouse_box for editing
+	else if (mode == GEOM && mouse_left)
+	{
+		w.draw(mouse_box);
+	}
+	//Texture cursor
 	else if (mode == DECO)
 	{
 		w.draw(deco_cursor, states);
 	}
+	//White boxes for selection
 	if (selection.size())
 	{
 		sf::RectangleShape r;
+		sf::Vector2f v;
 		r.setOutlineThickness(2.0);
 		r.setOutlineColor(sf::Color::White);
 		r.setFillColor(sf::Color::Transparent);
 		for (int i = selection.size()-1; i >= 0; i--)
 		{
-			r.setSize(sf::Vector2f((float)selection[i].width, (float)selection[i].height));
-			r.setPosition(sf::Vector2f((float)selection[i].left, (float)selection[i].top));
+			v.x = (float)selection[i].width;
+			v.y = (float)selection[i].height;
+			r.setSize(v);
+			v.x = (float)selection[i].left;
+			v.y = (float)selection[i].top;
+			r.setPosition(v);
 			
 			w.draw(r, states);
 		}
 	}
 
 	//Static
-	w.setView(w.getDefaultView());
+	w.setView(w.getDefaultView());	//Reset window view to default
+	//Console text and message
 	if (console)
 	{
 		w.draw(command_text, states);
 		w.draw(message_text, states);
 	}
+	//Img pane
 	if (imgView)
 	{
 		int length = (int)(*maps)[map_index]->tx.size();
@@ -100,44 +67,23 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const
 		r.setSize(sf::Vector2f((float)3*48,(float)(((length/3)+1)*48)));
 		w.draw(r, states);
 	}
-	w.setView(temp);
-}
-
-void Editor::setMaps(std::vector<Map*>* _maps)
-{
-	maps = _maps;
-}
-
-void Editor::setWindow(sf::RenderWindow* _w)
-{
-	w = _w;
-}
-
-sf::Vector2i Editor::getMouseCoordinates()
-{
-	sf::Vector2f world_pos;
-	sf::Vector2i local_pos;	
-
-	local_pos = sf::Mouse::getPosition(*w);
-	world_pos = w->mapPixelToCoords(local_pos);
-	if (snap)
-	{
-		world_pos.x -= (int)world_pos.x % 48;
-		world_pos.y -= (int)world_pos.y % 48;
-	}
-	return sf::Vector2i((int)world_pos.x, (int)world_pos.y);
+	w.setView(temp);	//Restore view
 }
 
 bool Editor::getConsoleInput(const sf::Event &event, std::string &str)
 {
+	//Allowed characters
+	//Alphabetical
 	if (event.key.code >= 0 && event.key.code <= 25)
 	{
 		str += char(event.key.code + 65);
 	}
+	//Numerical
 	else if (event.key.code >= 26 && event.key.code <= 35)
 	{
 		str += char(event.key.code - 26 + 48);
 	}
+	//Backspace
 	else if (event.key.code == sf::Keyboard::BackSpace)
 	{
 		if (str != "")
@@ -145,10 +91,12 @@ bool Editor::getConsoleInput(const sf::Event &event, std::string &str)
 			str.pop_back(); 
 		}
 	}
+	//Space
 	else if (event.key.code == sf::Keyboard::Space)
 	{
 		str += ' ';
 	}
+	//Period
 	else if (event.key.code == sf::Keyboard::Period)
 	{
 		str += '.';
@@ -161,16 +109,21 @@ bool Editor::getConsoleInput(const sf::Event &event, std::string &str)
 	return true;
 }
 
-int Editor::findMap(std::string mapName)
+sf::Vector2i Editor::getMouseCoordinates()
 {
-	for (int i = 0; i < (int)maps->size(); i++)
+	sf::Vector2f world_pos;
+	sf::Vector2i local_pos;	
+
+	local_pos = sf::Mouse::getPosition(*w);			//Get screen coords
+	world_pos = w->mapPixelToCoords(local_pos);		//Translate to world coords
+
+	if (snap)										//Apply snapping
 	{
-		if (mapName == (*maps)[i]->name)
-		{
-			return i;
-		}
+		world_pos.x -= (int)world_pos.x % 48;
+		world_pos.y -= (int)world_pos.y % 48;
 	}
-	return -1;
+
+	return sf::Vector2i((int)world_pos.x, (int)world_pos.y);
 }
 
 bool Editor::checkUnsaved(std::string &unsaved)
@@ -188,6 +141,257 @@ bool Editor::checkUnsaved(std::string &unsaved)
 	return false;
 }
 
+int Editor::findMap(std::string mapName)
+{
+	for (int i = 0; i < (int)maps->size(); i++)
+	{
+		if (mapName == (*maps)[i]->name)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+void Editor::orient(sf::Vector2i &u, sf::Vector2i &v)
+{
+	int temp;
+	if (v.x < u.x)	//if v is left of u, swap horizontally
+	{
+		temp = v.x;
+		v.x = u.x;
+		u.x = temp;
+	}
+	if (v.y < u.y)	//if v is below u, swap vertically
+	{
+		temp = v.y;
+		v.y = u.y;
+		u.y = temp;
+	}
+}
+
+Editor::Editor(sf::RenderWindow* _w, std::vector<Map*>* _maps, sf::Font &_font)
+{
+	w								= _w;
+	maps							= _maps;
+	map_index						= 0;
+	console 						= false;
+	snap 							= false;
+	command_text.setFont			(_font);
+	command_text.setCharacterSize	(48);
+	command_text.setFillColor		(sf::Color::White);
+	command_text.setPosition		(5,427);
+	command_text.setString			("$ ");
+	message_text.setFont			(_font);
+	message_text.setCharacterSize	(32);
+	message_text.setFillColor		(sf::Color::White);
+	message_text.setPosition		(5,0);
+
+	mouse_box.setFillColor			(sf::Color(0,0,0,0));
+	mouse_box.setOutlineColor		(sf::Color::Green);
+	mouse_box.setOutlineThickness	(2.0f);
+	mouse_left						= false;
+
+	view.setSize					(960,480);
+	view.setCenter					(480,240);
+	mouse_middle 					= false;
+
+	imgView							= false;
+	setMode							(EDIT);
+	selectClicked 					= false;
+}
+
+void Editor::setMode(Modes _mode)
+{
+	mode = _mode;
+	if (_mode == EDIT)
+	{
+		mouse_box.setOutlineColor(sf::Color::White);
+	}
+	else if (_mode == GEOM)
+	{
+		mouse_box.setOutlineColor(sf::Color::Green);
+	}
+}
+
+void Editor::helpCommand()
+{
+	std::string help_text;
+	help_text += "QUIT: 			Exit editor\n";
+	help_text += "CLEAR:		 	Clear message\n";
+	help_text += "GEOM: 			Toggle map geometry\n";
+	help_text += "DECO: 			Toggle map decorations (graphics)\n";
+	help_text += "SNAP: 			Toggle snap modes\n\n";
+	help_text += "MAP +\n";
+	help_text += "LS: 			List maps\n";
+	help_text += "SET <map>: 	Set working map to <map>\n";
+	help_text += "NEW <file>: 	Create new map\n";
+	help_text += "SAVE:		 	Save map\n\n";
+
+	help_text += "IMG +\n";
+	help_text += "LS: 			List imgs in map\n";
+	help_text += "SET: 			Set working img\n";
+	help_text += "LOAD <file>: 	Load img into map\n";
+	help_text += "PANE:			Show img pane\n";
+
+	message_text.setString(help_text);
+}
+
+void Editor::quitCommand(const std::string &_arg)
+{
+	if (_arg == "")
+	{
+		std::string unsaved_maps;
+
+		if (checkUnsaved(unsaved_maps))
+		{
+			message_text.setString(unsaved_maps);
+		}
+		else
+		{
+			w->close();
+		}
+	}
+	else if (command.substr(4,16) == " OVERRIDE")
+	{
+		w->close();
+	}
+}
+
+void Editor::toggleCommand(bool &togg, const std::string &_name)
+{
+	std::string message;
+	togg = !togg;
+	message = "-- ";
+	message += _name + " " + (togg ? "TRUE" : "FALSE") + " --";
+	message_text.setString(message);
+}
+
+void Editor::mapCommand()
+{
+	if (command.substr(4,2) == "LS")
+	{
+		std::string map_names;
+
+		for (int i = 0; i < (int)maps->size(); i++)
+		{
+			map_names += (*maps)[i]->name + '\n';
+		}
+
+		message_text.setString(map_names);
+	}
+	else if (command.substr(4,3) == "SET")
+	{
+		std::string map_name = command.substr(8,16);
+		int map_index_change = findMap(map_name);
+
+		setMode(EDIT);
+			
+		if (map_index_change < 0)
+		{
+			message_text.setString("-- Map Not Found --");
+		}
+		else
+		{
+			map_index = map_index_change;
+			message_text.setString("-- " + map_name + " --");
+		}	
+	}
+	else if (command.substr(4,3) == "NEW")
+	{
+		std::string map_name = command.substr(8,16);
+		int map_index_new = findMap(map_name);
+
+		setMode(EDIT);
+
+		if (map_index_new < 0)
+		{
+			std::string message;
+			maps->push_back(new Map(map_name));
+			map_index = maps->size()-1;
+			(*maps)[map_index]->name = map_name;
+
+			message = "-- New Map ";
+			message += map_name+"at map_index "+std::to_string(map_index)+" --";
+			message_text.setString(message);
+		}
+		else
+		{
+			message_text.setString("-- Map Already Exists --");
+		}
+	}
+	else if (command.substr(4,16) == "SAVE")
+	{
+		if (!((*maps)[map_index]->saveMap()))
+		{
+			message_text.setString(std::string("-- Save Map Failed --"));
+		}
+		else
+		{
+			std::string message =  "-- Saved Map ";
+			message += (*maps)[map_index]->name+" --";
+			message_text.setString(message);
+		}
+	}
+	else unknownCommand();
+}
+
+void Editor::imgCommand()
+{
+	if (command.substr(4,2) == "LS")
+	{
+		std::string img_list;
+
+		for (int i = 0; i < (int)(*maps)[map_index]->tx.size(); i++)
+		{
+			img_list += (*maps)[map_index]->tx[i]->name + "\n";
+		}
+
+		message_text.setString(img_list);
+	}
+	else if (command.substr(4,3) == "SET")
+	{
+		std::string img_set = command.substr(8,16);
+		sf::Texture* tx = (*maps)[map_index]->getTexture(img_set);
+
+		if (tx)
+		{
+			sf::Vector2i v(sf::Mouse::getPosition(*w));
+			mode = DECO;
+			deco_cursor.setTexture(*tx);
+			deco_cursor.setPosition(sf::Vector2f((float)v.x, (float)v.y));
+			deco_name = img_set;
+		}
+		else 
+		{
+			message_text.setString("-- Set Image Failed --");
+		}
+	}
+	else if (command.substr(4,4) == "LOAD")
+	{
+		std::string img_name = command.substr(9,16);
+
+		if (!(*maps)[map_index]->loadTexture(img_name))
+		{
+			message_text.setString("-- Load Image Failed : " + img_name + " --");
+		}
+		else
+		{
+			message_text.setString("-- Loaded Image: " + img_name + " --");
+		}	
+	}
+	else if (command.substr(4,4) == "PANE")
+	{
+		imgView = !imgView;
+	}
+	else unknownCommand();
+}
+
+void Editor::unknownCommand()
+{
+	message_text.setString("-- Unkown Command: " + command + " --");
+}
+
 void Editor::handleInput(sf::Event event)
 {
 	//
@@ -196,18 +400,39 @@ void Editor::handleInput(sf::Event event)
 	if (event.type == sf::Event::KeyPressed &&
 		!mouse_left && !mouse_middle)
 	{
-		if (console)
+		if (event.key.code == sf::Keyboard::Escape &&
+			!mouse_left && !mouse_middle)
+		{
+			setMode(EDIT);
+		}
+		if (event.key.code == sf::Keyboard::Tab &&
+			!mouse_left && !mouse_middle)
+		{
+			setMode(GEOM);
+		}
+		else if (event.key.code == sf::Keyboard::Delete)
+		{
+			if (!selection.empty())
+			{
+				(*maps)[map_index]->deleteSelect();
+				selection.clear();
+			}
+		}
+		else if (event.key.code == sf::Keyboard::D &&
+				 sf::Keyboard::isKeyPressed(sf::Keyboard::LControl))
+		{
+			if (!selection.empty())
+			{
+				(*maps)[map_index]->duplicateSelect();
+			}
+		}
+		else if (console)
 		{
 			if (event.key.code == sf::Keyboard::Tilde)
 			{
 				console = false;
 				command = "";
 				event.key.code = sf::Keyboard::Equal;
-			}
-
-			if (event.key.code == sf::Keyboard::Escape)
-			{
-				mode = EDIT;
 			}
 
 			//Get console input
@@ -219,173 +444,41 @@ void Editor::handleInput(sf::Event event)
 			//Handle commands
 			if (event.key.code == sf::Keyboard::Return)
 			{
-				if (command == "QUIT")
+				if (command == 					"HELP")
 				{
-					std::string unsaved_maps;
-
-					if (checkUnsaved(unsaved_maps))
-					{
-						message_text.setString(unsaved_maps);
-					}
-					else
-					{
-						w->close();
-					}
+					helpCommand();
 				}
-				else if(command == "QUIT OVERRIDE")
+				else if (command.substr(0,4) == "QUIT")
 				{
-					w->close();
+					quitCommand(command.substr(4,16));
 				}
-				else if (command == "SNAP")
-				{
-					snap = !snap;
-					message_text.setString(std::string("-- Snap ") + (snap ? "TRUE" : "FALSE") + " --"); 
-				}
-				else if (command == "GEOM")
-				{
-					message_text.setString(std::string("-- Geom ") + ((*maps)[map_index]->toggleGeom() ? "TRUE" : "FALSE") + " --"); 
-				}
-				else if (command == "DECO")
-				{
-					deco = (*maps)[map_index]->toggleDeco();
-					message_text.setString(std::string("-- Deco ") + (deco ? "TRUE" : "FALSE") + " --"); 
-				}
-				else if (command.substr(0,8) == "NEW MAP ")
-				{
-					mode = EDIT;
-					mouse_box.setOutlineColor(sf::Color::White);
-					std::string map_name = command.substr(8,16);
-					int map_index_new = findMap(map_name);
-
-
-					if (map_index_new < 0)
-					{
-						maps->push_back(new Map(map_name));
-						map_index = maps->size()-1;
-						(*maps)[map_index]->name = map_name;
-
-						message_text.setString(std::string("-- New Map ") + map_name + " at map_index " + std::to_string(map_index) +  " --");
-					}
-					else
-					{
-						message_text.setString("-- Map Already Exists --");
-					}
-				}
-				else if (command == "SAVE MAP")
-				{
-					if (!((*maps)[map_index]->saveMap()))
-					{
-						message_text.setString(std::string("-- Save Map Failed --"));
-					}
-					else
-					{
-						message_text.setString(std::string("-- Saved Map ") + (*maps)[map_index]->name+ " --");
-					}
-				}
-				else if (command.substr(0,8) == "SET MAP ")
-				{
-					mode = EDIT;
-					mouse_box.setOutlineColor(sf::Color::White);
-					std::string map_name = command.substr(8,16);
-					int map_index_change = findMap(map_name);
-					
-					if (map_index_change < 0)
-					{
-						message_text.setString("-- Map Not Found --");
-					}
-					else
-					{
-						map_index = map_index_change;
-						message_text.setString("-- " + map_name + " --");
-					}
-					
-				}
-				else if (command == "LS MAP")
-				{
-					std::string map_names;
-
-					for (int i = 0; i < (int)maps->size(); i++)
-					{
-						map_names += (*maps)[i]->name + '\n';
-					}
-
-					message_text.setString(map_names);
-
-				}
-				else if (command.substr(0,9) == "LOAD IMG ")
-				{
-					std::string img_name = command.substr(9,16);
-
-					if (!(*maps)[map_index]->loadTexture(img_name))
-					{
-						message_text.setString("-- Load Image Failed : " + img_name + " --");
-					}
-					else
-					{
-						message_text.setString("-- Loaded Image: " + img_name + " --");
-					}
-				}
-				else if (command == "LS IMG")
-				{
-					std::string img_list;
-					for (int i = 0; i < (int)(*maps)[map_index]->tx.size(); i++)
-					{
-						img_list += (*maps)[map_index]->tx[i]->name + "\n";
-					}
-					message_text.setString(img_list);
-				}
-				else if (command == "IMG PANE")
-				{
-					imgView = !imgView;
-				}
-				else if (command.substr(0,8) == "SET IMG ")
-				{
-					std::string img_set = command.substr(8,16);
-					sf::Texture* tx = (*maps)[map_index]->getTexture(img_set);
-
-					if (tx)
-					{
-						sf::Vector2i v(sf::Mouse::getPosition(*w));
-						mode = DECO;
-						deco_cursor.setTexture(*tx);
-						deco_cursor.setPosition(sf::Vector2f((float)v.x, (float)v.y));
-						deco_name = img_set;
-					}
-					else 
-					{
-						message_text.setString("-- Set Image Failed --");
-					}
-				}
-				else if (command == "EDIT GEOM")
-				{
-					mode = GEOM;
-					mouse_box.setOutlineColor(sf::Color::Green);
-				}
-				else if (command == "CLEAR")
+				else if (command == 			"CLEAR")
 				{
 					message_text.setString("");
 				}
-				else if (command == "HELP")
+				else if (command == 			"GEOM")
 				{
-					std::string help_text;
-					help_text += "QUIT: 			Exit editor\n";
-					help_text += "CLEAR:		 	Clear message\n";
-					help_text += "GEOM: 			Toggle map geometry\n";
-					help_text += "DECO: 			Toggle map decorations (graphics)\n";
-					help_text += "SNAP: 			Cycle snap modes\n";
-					help_text += "LS MAP: 			List maps\n";
-					help_text += "SET MAP <map>: 	Set working map to <map>\n";
-					help_text += "NEW MAP <file>: 	Create new map\n";
-					help_text += "SAVE MAP <file>: 	Save map\n";
-					help_text += "LS IMG: 			List imgs in map\n";
-					help_text += "LOAD IMG: 		Load img into map\n";
-					help_text += "SET IMG: 			Set working img\n";
-
-					message_text.setString(help_text);
+					toggleCommand((*maps)[map_index]->geom, "Geometry");
+				}
+				else if (command == 			"DECO")
+				{
+					toggleCommand((*maps)[map_index]->deco, "Decoration");
+				}
+				else if (command == 			"SNAP")
+				{
+					toggleCommand(snap, "Snap");
+				}
+				else if (command.substr(0,3) == "MAP")
+				{
+					mapCommand();
+				}
+				else if (command.substr(0,3) ==	"IMG")
+				{
+					imgCommand();
 				}
 				else
 				{
-					message_text.setString("-- Unkown Command: " + command + " --");
+					unknownCommand();
 				}
 				command_text.setString("$ ");
 				command = "";
@@ -396,10 +489,6 @@ void Editor::handleInput(sf::Event event)
 			if (event.key.code == sf::Keyboard::Tilde)
 			{
 				console = true;
-			}
-			if (event.key.code == sf::Keyboard::Escape)
-			{
-				mode = EDIT;
 			}
 		}
 	}
@@ -439,14 +528,31 @@ void Editor::handleInput(sf::Event event)
 		}
 		if (!imgPaneClicked)
 		{
-			if (mode == EDIT || mode == GEOM)
+			if (mode == EDIT)
+			{
+				selectClicked = false;
+				for (int i = selection.size()-1; i >=0; i--)
+				{
+					if (selection[i].contains(mouse_pos))
+					{
+						selectClicked = true;
+						break;
+					}
+				}
+				if (!selectClicked)
+				{
+					mouse_box.setPosition(position);
+					mouse_box.setSize(sf::Vector2f(0.0f, 0.0f));
+				}
+			}
+			else if (mode == GEOM)
 			{
 				mouse_box.setPosition(position);
 				mouse_box.setSize(sf::Vector2f(0.0f, 0.0f));
 			}
 			else if (mode == DECO)
 			{
-				(*maps)[map_index]->addDeco(deco_name, position, BG);
+				(*maps)[map_index]->addDeco(deco_name, position);
 			}
 		}
 	}
@@ -470,14 +576,24 @@ void Editor::handleInput(sf::Event event)
 		}
 		else if (mode == EDIT)
 		{
-			orient(mouse_pos, prev_mouse_pos);
-			sf::IntRect r(mouse_pos, prev_mouse_pos - mouse_pos);
-			if (!(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) 					|| sf::Keyboard::isKeyPressed(sf::Keyboard::RShift)))
+			if (selectClicked)
 			{
-				(*maps)[map_index]->clearSelect();
-				selection.clear();
+				selectClicked = false;
 			}
-			(*maps)[map_index]->select(r, selection);
+			else 
+			{
+				orient(mouse_pos, prev_mouse_pos);
+				sf::IntRect r(mouse_pos, prev_mouse_pos - mouse_pos);
+
+				if (!(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) ||
+					  sf::Keyboard::isKeyPressed(sf::Keyboard::RShift)))
+				{
+					(*maps)[map_index]->clearSelect();
+					selection.clear();
+				}
+
+				(*maps)[map_index]->select(r, selection);
+			}
 		}
 	}
 	//
@@ -500,7 +616,6 @@ void Editor::handleInput(sf::Event event)
 	{
 		mouse_middle = false;
 	}
-	
 	//
 	// Mouse Moved
 	//
@@ -509,7 +624,37 @@ void Editor::handleInput(sf::Event event)
 		sf::Vector2i move_mouse_pos = getMouseCoordinates();
 		sf::Vector2i prev_mouse_pos = mouse_pos;
 
-		if ((mode == EDIT || mode == GEOM) && !mouse_middle)
+		if (mode == EDIT && !mouse_middle)
+		{
+			if (selectClicked)
+			{
+				sf::Vector2f offset;
+				offset.x = (float)(move_mouse_pos.x - prev_mouse_pos.x);
+				offset.y = (float)(move_mouse_pos.y - prev_mouse_pos.y);
+				mouse_pos = move_mouse_pos;
+				(*maps)[map_index]->moveSelect(offset);
+				for (int i = selection.size()-1; i >= 0; i--)
+				{
+					selection[i].left += (int)offset.x;
+					selection[i].top += (int)offset.y;
+				}
+			}
+			else
+			{
+				sf::Vector2f size;
+				sf::Vector2f pos;
+
+				orient(prev_mouse_pos, move_mouse_pos);
+				pos.x = (float)(prev_mouse_pos.x);
+				pos.y = (float)(prev_mouse_pos.y);
+				size.x = (float)(move_mouse_pos.x - prev_mouse_pos.x);
+				size.y = (float)(move_mouse_pos.y - prev_mouse_pos.y);
+
+				mouse_box.setPosition(pos);
+				mouse_box.setSize(size);
+			}
+		}
+		if (mode == GEOM && !mouse_middle)
 		{
 			sf::Vector2f size;
 			sf::Vector2f pos;
@@ -525,11 +670,15 @@ void Editor::handleInput(sf::Event event)
 		}
 		else if (mode == DECO && !mouse_middle)
 		{
-			deco_cursor.setPosition(sf::Vector2f((float)move_mouse_pos.x, (float)move_mouse_pos.y));
+			sf::Vector2f v((float)move_mouse_pos.x, (float)move_mouse_pos.y);
+			deco_cursor.setPosition(v);
 		}
 		if (mouse_middle)
 		{
-			view.move(sf::Vector2f((float)(mouse_pos.x - event.mouseMove.x), (float)(mouse_pos.y - event.mouseMove.y)));
+			sf::Vector2f v;
+			v.x = (float)(mouse_pos.x - event.mouseMove.x);
+			v.y = (float)(mouse_pos.y - event.mouseMove.y);
+			view.move(v);
 			mouse_pos.x = event.mouseMove.x;
 			mouse_pos.y = event.mouseMove.y;
 		}

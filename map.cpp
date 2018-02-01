@@ -1,13 +1,5 @@
 #include "map.h"
 
-Map::Map(std::string _name)
-{
-	modified = false;
-	deco = true;
-	geom = false;
-	name = _name;
-}
-
 void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const
 {
 	if (deco)
@@ -42,97 +34,60 @@ void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const
 	}
 }
 
-bool Map::toggleDeco()
+
+
+bool Map::addWall(const sf::Vector2i &_pos, const sf::Vector2i &_size)
 {
-	deco = !deco;
-	return deco;
+	modified = true;
+	geometry.push_back(sf::IntRect(_pos, _size));
+	return true;
 }
 
-bool Map::toggleGeom()
+bool Map::addDeco(std::string name, const sf::Vector2f _pos)
 {
-	geom = !geom;
-	return geom;
+	img* im = new img;
+	im->sp.setPosition(_pos);
+	im->name = name;
+	im->sp.setTexture(*(getTexture(name)));
+	bg.push_back(im);
+
+	modified = true;
+	return true;
 }
 
-int Map::findRect(const sf::IntRect &r, const std::vector<sf::IntRect> &v)
+bool Map::loadTexture(std::string img_name)
 {
-	int i;
-	for (i = v.size()-1; i >= 0; i--)
+	tx.push_back(new named_tx);
+	tx[tx.size()-1]->name = img_name;
+	if(!tx[tx.size()-1]->texture.loadFromFile(TEX_DIR + img_name))
 	{
-		if (v[i] == r)
-		{
-			break;
-		}
+		tx.pop_back();
+		return false;
 	}
-	return i;
+
+	
+	tx_names.insert(img_name);
+	return true;
 }
 
-void Map::deleteSelect()
+
+
+bool Map::saveMap()
 {
-	auto iti = bg.begin();
-	for (int i = (int)bgSelection.size()-1; i >= 0; i--)
-	{
-		bg.erase(iti + bgSelection[i]);
-	}
-	bgSelection.clear();
+	std::ofstream map_file((MAP_DIR + name).c_str(), std::ios::out|std::ios::binary);
 
-	auto itg = geometry.begin();
-	for (int i = (int)geometrySelection.size()-1; i >= 0; i--)
-	{
-		geometry.erase(itg + geometrySelection[i]);
-	}
-	geometrySelection.clear();
+	if (!map_file.is_open()) return false;
+
+	modified = false;
+
+	writeString	(name, map_file);
+	writeVecImg	(bg, map_file);
+	writeVecGeo	(geometry, map_file);
+
+	map_file.close();
+	
+	return true;
 }
-
-void Map::clearSelect()
-{
-	bgSelection.clear();
-	geometrySelection.clear();
-}
-
-void Map::select(sf::IntRect &s, std::vector<sf::IntRect> &v)
-{
-	if (deco)
-	{
-		sf::Vector2f pos;
-		sf::IntRect r;
-
-		r.width = 48;
-		r.height = 48;
-
-		for (int i = (int)bg.size()-1; i >= 0; i--)
-		{
-			pos = bg[i]->sp.getPosition();
-			r.left = pos.x;
-			r.top = pos.y;
-
-			if (s.intersects(r))
-			{
-				if (findRect(r,v) < 0)
-				{
-					v.push_back(r);
-					bgSelection.push_back(i);
-				}
-			}
-		}
-	}
-	if (geom)
-	{
-		for (int i = (int)geometry.size()-1; i >= 0; i--)
-		{
-			if (s.intersects(geometry[i]))
-			{
-				if (findRect(geometry[i], v) < 0)
-				{
-					v.push_back(geometry[i]);
-					geometrySelection.push_back(i);
-				}
-			}
-		}
-	}
-}
-
-
 
 void Map::writeVecImg(std::vector<img*> v, std::ofstream &o)
 {
@@ -180,30 +135,21 @@ void Map::writeString(std::string s, std::ofstream &o)
 }
 
 
-sf::Texture* Map::getTexture(std::string img_name)
-{
-	for (int i = 0; i < (int)tx.size(); i++)
-	{
-		if (tx[i]->name == img_name)
-		{
-			return &(tx[i]->texture);
-		}
-	}
-	return NULL;
-}
 
-bool Map::loadTexture(std::string img_name)
+bool Map::loadMap()
 {
-	tx.push_back(new named_tx);
-	tx[tx.size()-1]->name = img_name;
-	if(!tx[tx.size()-1]->texture.loadFromFile(TEX_DIR + img_name))
-	{
-		tx.pop_back();
-		return false;
-	}
+	std::ifstream map_file((MAP_DIR + name).c_str(), std::ios::in|std::ios::binary);
 
-	
-	tx_names.insert(img_name);
+	if (!map_file.is_open()) return false;
+
+	modified = false;
+
+	readString	(name, map_file);
+	if (!readVecImg(bg, map_file)) return false;
+	readVecGeo	(geometry, map_file);
+
+	map_file.close();
+
 	return true;
 }
 
@@ -258,7 +204,6 @@ bool Map::readVecImg(std::vector<img*> &v, std::ifstream &inp)
 	return true;
 }
 
-
 void Map::readRect(sf::IntRect &r, std::ifstream &inp)
 {
 	inp.read((char*)&r.left, sizeof(r.left));
@@ -297,62 +242,150 @@ void Map::readString(std::string &s, std::ifstream &inp)
 	}
 }
 
-bool Map::saveMap()
+
+
+sf::Texture* Map::getTexture(std::string img_name)
 {
-	std::ofstream map_file((MAP_DIR + name).c_str(), std::ios::out|std::ios::binary);
-
-	if (!map_file.is_open()) return false;
-
-	modified = false;
-
-	writeString	(name, map_file);
-	writeVecImg	(bg, map_file);
-	//writeVecImg	(fg, map_file);
-	writeVecGeo	(geometry, map_file);
-
-	map_file.close();
-	
-	return true;
+	for (int i = 0; i < (int)tx.size(); i++)
+	{
+		if (tx[i]->name == img_name)
+		{
+			return &(tx[i]->texture);
+		}
+	}
+	return NULL;
 }
 
-bool Map::loadMap()
+int Map::findRect(const sf::IntRect &r, const std::vector<sf::IntRect> &v)
 {
-	std::ifstream map_file((MAP_DIR + name).c_str(), std::ios::in|std::ios::binary);
-
-	if (!map_file.is_open()) return false;
-
-	modified = false;
-
-	readString	(name, map_file);
-	if (!readVecImg(bg, map_file)) return false;
-	//readVecImg	(fg, map_file);
-	readVecGeo	(geometry, map_file);
-
-	map_file.close();
-
-	return true;
+	int i;
+	for (i = v.size()-1; i >= 0; i--)
+	{
+		if (v[i] == r)
+		{
+			break;
+		}
+	}
+	return i;
 }
 
-bool Map::addWall(const sf::Vector2i &_pos, const sf::Vector2i &_size)
+
+
+void Map::select(sf::IntRect &s, std::vector<sf::IntRect> &v)
+{
+	if (deco)
+	{
+		sf::Vector2f pos;
+		sf::IntRect r;
+
+		r.width = 48;
+		r.height = 48;
+
+		for (int i = (int)bg.size()-1; i >= 0; i--)
+		{
+			pos = bg[i]->sp.getPosition();
+			r.left = pos.x;
+			r.top = pos.y;
+
+			if (s.intersects(r))
+			{
+				if (findRect(r,v) < 0)
+				{
+					v.push_back(r);
+					bgSelection.push_back(i);
+				}
+			}
+		}
+	}
+	if (geom)
+	{
+		for (int i = (int)geometry.size()-1; i >= 0; i--)
+		{
+			if (s.intersects(geometry[i]))
+			{
+				if (findRect(geometry[i], v) < 0)
+				{
+					v.push_back(geometry[i]);
+					geometrySelection.push_back(i);
+				}
+			}
+		}
+	}
+}
+
+void Map::clearSelect()
+{
+	bgSelection.clear();
+	geometrySelection.clear();
+}
+
+void Map::deleteSelect()
 {
 	modified = true;
-	geometry.push_back(sf::IntRect(_pos, _size));
-	return true;
+	auto iti = bg.begin();
+	int length = (int)bgSelection.size();
+	for (int i = 0; i < length; i++)
+	{
+		bg.erase(iti + bgSelection[i]);
+	}
+	bgSelection.clear();
+
+	auto itg = geometry.begin();
+	length = (int)geometrySelection.size();
+	for (int i = 0; i < length; i++)
+	{
+		geometry.erase(itg + geometrySelection[i]);
+	}
+	geometrySelection.clear();
 }
 
-bool Map::addDeco(std::string name, const sf::Vector2f _pos, BgFg _bg)
+void Map::duplicateSelect()
 {
-	img* im = new img;
-	im->sp.setPosition(_pos);
-	im->name = name;
-	im->sp.setTexture(*(getTexture(name)));
-	if (_bg == BG)
+	modified = true;
+
+	int length = (int)bgSelection.size();
+	for (int i = 0; i < length; i++)
 	{
-		bg.push_back(im);
+		bg.push_back(new img);
+		bg[bg.size()-1]->name = bg[bgSelection[i]]->name;
+		bg[bg.size()-1]->sp.setTexture(*bg[bgSelection[i]]->sp.getTexture());
+		bg[bg.size()-1]->sp.setPosition(bg[bgSelection[i]]->sp.getPosition());
+		bgSelection[i] = bg.size()-1;
 	}
 
+	length = (int)geometrySelection.size();
+	for (int i = 0; i < length; i++)
+	{
+		geometry.push_back(geometry[geometrySelection[i]]);
+		geometrySelection[i] = geometry.size()-1;
+	}
+}
+
+void Map::moveSelect(const sf::Vector2f &v)
+{
 	modified = true;
-	return true;
+	int length = (int)bgSelection.size();
+	for (int i = 0; i < length; i++)
+	{
+		bg[bgSelection[i]]->sp.move(v);
+	}
+
+	length = (int)geometrySelection.size();
+	for (int i = 0; i < length; i++)
+	{
+		geometry[geometrySelection[i]].left += (int)v.x;
+		geometry[geometrySelection[i]].top += (int)v.y;
+	}
+}
+
+
+
+Map::Map(std::string _name)
+{
+	modified = false;
+	deco = true;
+	geom = false;
+	name = _name;
 }
 
 Map::~Map()
