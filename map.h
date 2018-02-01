@@ -93,6 +93,8 @@ private:
 public:
 	std::string name;
 
+	std::vector<sf::IntRect>* getGeom();
+
 	//Constructor - Creates Map from map file with _name
 	Map(std::string _name);
 	bool saveMap();

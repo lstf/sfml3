@@ -379,6 +379,10 @@ void Map::moveSelect(const sf::Vector2f &v)
 }
 
 
+std::vector<sf::IntRect>* Map::getGeom()
+{
+	return &geometry;
+}
 
 Map::Map(std::string _name)
 {
