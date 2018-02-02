@@ -34,7 +34,7 @@ private:
 	std::vector<int> bgSelection;
 	std::vector<int> geometrySelection;
 	std::vector<img*> bg;
-	std::vector<sf::IntRect> geometry;
+	std::vector<sf::FloatRect> geometry;
 	std::vector<named_tx*> tx;
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
@@ -47,7 +47,7 @@ private:
 	bool geom; 		//Draw geometry
 
 	//Adds geometry
-	bool addWall(const sf::Vector2i &_pos, const sf::Vector2i &_size);
+	bool addWall(const sf::Vector2f &_pos, const sf::Vector2f &_size);
 	//Adds decoration
 	bool addDeco(std::string name, const sf::Vector2f _pos);
 	//Loads new texture
@@ -60,23 +60,23 @@ private:
 		std::unordered_set<std::string> tx_names;
 		//saveMap() helper functions
 		void writeVecImg	(std::vector<img*> v, std::ofstream &o);
-		void writeRect		(sf::IntRect r, std::ofstream &o);
-		void writeVecGeo	(std::vector<sf::IntRect> v, std::ofstream &o);
+		void writeRect		(sf::FloatRect r, std::ofstream &o);
+		void writeVecGeo	(std::vector<sf::FloatRect> v, std::ofstream &o);
 		void writeString	(std::string s, std::ofstream &o);
 
 		//loadMap() helper functions
 		bool readVecImg		(std::vector<img*> &v, std::ifstream &inp);
-		void readRect		(sf::IntRect &r, std::ifstream &inp);
-		void readVecGeo		(std::vector<sf::IntRect> &v, std::ifstream &inp);
+		void readRect		(sf::FloatRect &r, std::ifstream &inp);
+		void readVecGeo		(std::vector<sf::FloatRect> &v, std::ifstream &inp);
 		void readString		(std::string &s, std::ifstream &inp);
 
 	//Returns texture by name
 	sf::Texture* getTexture(std::string img_name);
 	//Returns index of rectange in vector (-1 if not found)
-	int findRect(const sf::IntRect &r, const std::vector<sf::IntRect> &v);
+	int findRect(const sf::FloatRect &r, const std::vector<sf::FloatRect> &v);
 
 	//Select visible decoration and geometry inside rectangle s
-	void select(sf::IntRect &s, std::vector<sf::IntRect> &v);
+	void select(sf::FloatRect &s, std::vector<sf::FloatRect> &v);
 	//Deselect all
 	void clearSelect();
 	//Delete selected
@@ -93,7 +93,7 @@ private:
 public:
 	std::string name;
 
-	std::vector<sf::IntRect>* getGeom();
+	std::vector<sf::FloatRect>* getGeom();
 
 	//Constructor - Creates Map from map file with _name
 	Map(std::string _name);

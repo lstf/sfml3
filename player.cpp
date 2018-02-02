@@ -80,39 +80,63 @@ void Player::handleInput(sf::Event event)
 	}
 }
 
-void Player::update(std::vector<sf::IntRect>* geo, float frameTime)
+void Player::updateCollide()
+{
+	collide.top[L].c = false; 
+	collide.top[M].c = false;
+	collide.top[R].c = false;
+	collide.down[L].c = false;
+	collide.down[M].c = false;
+	collide.down[R].c = false;
+	collide.right[T].c = false;
+	collide.right[M].c = false;
+	collide.right[D].c = false;
+	collide.left[T].c = false;
+	collide.left[M].c = false;
+	collide.left[T].c = false;
+	collide.top[L].p = sp.getPosition() + sf::Vector2f(0, -1.0);
+	collide.top[M].p = collide.top[L].p + sf::Vector2f(16.0, 0);
+	collide.top[R].p = collide.top[L].p + sf::Vector2f(31.0, 0);
+	collide.down[L].p = collide.top[L].p + sf::Vector2f(0, 49.0);
+	collide.down[M].p = collide.down[L].p + sf::Vector2f(16.0, 0);
+	collide.down[R].p = collide.down[L].p + sf::Vector2f(31.0, 0);
+	collide.right[T].p = collide.top[L].p + sf::Vector2f(32.0, 2.0);
+	collide.right[M].p = collide.right[T].p + sf::Vector2f(0, 16.0);
+	collide.right[D].p = collide.right[T].p + sf::Vector2f(0, 31.0);
+	collide.left[T].p = collide.right[T].p + sf::Vector2f(-33.0, 0);
+	collide.left[M].p = collide.right[T].p + sf::Vector2f(0, 16.0);
+	collide.left[D].p = collide.right[T].p + sf::Vector2f(0, 31.0);
+}
+
+void Player::update(std::vector<sf::FloatRect>* geo, float frameTime)
 {
 	bool grounded = false;
 	bool blockedRight = false;
 	int blockRightGeo;
 	int	groundGeo;
+	sf::FloatRect bounds = sp.getGlobalBounds();
+	
+	updateCollide();
+
 	colbox.down.top = sp.getPosition().y + 48;
 	colbox.down.left = sp.getPosition().x;
 	colbox.right.top = sp.getPosition().y;
 	colbox.right.left = sp.getPosition().x + 32;
 
-	sf::IntRect downInt;
-	downInt.top = colbox.down.top;
-	downInt.left = colbox.down.left;
-	downInt.height = colbox.down.height;
-	downInt.width = colbox.down.width;
-
-	sf::IntRect rightInt;
-	rightInt.top = colbox.right.top;
-	rightInt.left = colbox.right.left;
-	rightInt.width = colbox.right.width;
-	rightInt.height = colbox.right.height;
-
 	//DOWN
 	for (int i = geo->size()-1; i >= 0; i--)
 	{
-		
-		if (!grounded && downInt.intersects((*geo)[i]))
+		for (int j = 0; j < 3; j++)
+		{
+			//if (collide.top[j
+		}
+			
+		if (!grounded && colbox.down.intersects((*geo)[i]))
 		{
 			grounded = true;
 			groundGeo = i;
 		}
-		if (!blockedRight && rightInt.intersects((*geo)[i]))
+		if (!blockedRight && colbox.right.intersects((*geo)[i]))
 		{
 			blockedRight = true;
 			blockRightGeo = i;
@@ -121,8 +145,7 @@ void Player::update(std::vector<sf::IntRect>* geo, float frameTime)
 	//RIGHT
 	if (blockedRight)
 	{
-		sf::IntRect intBounds;
-		if (intBounds.intersects((*geo)[blockRightGeo]))
+		if (bounds.intersects((*geo)[blockRightGeo]))
 		{
 			sp.setPosition((*geo)[blockRightGeo].left-32, sp.getPosition().y);
 		}
@@ -134,19 +157,13 @@ void Player::update(std::vector<sf::IntRect>* geo, float frameTime)
 		{
 			fallS = fallM;
 		}
-		sp.move((float)0, fallS);
+		sp.move(0.0, fallS);
 		colbox.down.top += fallS;
 	}
 	else
 	{
-		sf::IntRect intBounds;
-		intBounds.left = (int)sp.getPosition().x;
-		intBounds.top = (int)sp.getPosition().y;
-		intBounds.width = 32;
-		intBounds.height = 48;
-
 		////Inside floor->on top of floor
-		if (intBounds.intersects((*geo)[groundGeo]))
+		if (bounds.intersects((*geo)[groundGeo]))
 		{
 			sp.setPosition(sp.getPosition().x, (*geo)[groundGeo].top-48);
 		}
@@ -169,12 +186,12 @@ void Player::update(std::vector<sf::IntRect>* geo, float frameTime)
 	{
 		if (state == WALKING_LEFT)
 		{
-			sp.move(-1*frameTime*speed, (float)0);
+			sp.move(-1*frameTime*speed, 0.0);
 			colbox.down.left -= frameTime*speed;
 		}
 		else if (state == WALKING_RIGHT && !blockedRight)
 		{
-			sp.move(frameTime*speed, (float)0);
+			sp.move(frameTime*speed, 0.0);
 			colbox.down.left += frameTime*speed;
 		}
 		advanceAnimation();

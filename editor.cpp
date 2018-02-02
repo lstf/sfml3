@@ -30,11 +30,11 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const
 		r.setFillColor(sf::Color::Transparent);
 		for (int i = selection.size()-1; i >= 0; i--)
 		{
-			v.x = (float)selection[i].width;
-			v.y = (float)selection[i].height;
+			v.x = selection[i].width;
+			v.y = selection[i].height;
 			r.setSize(v);
-			v.x = (float)selection[i].left;
-			v.y = (float)selection[i].top;
+			v.x = selection[i].left;
+			v.y = selection[i].top;
 			r.setPosition(v);
 			
 			w.draw(r, states);
@@ -109,7 +109,7 @@ bool Editor::getConsoleInput(const sf::Event &event, std::string &str)
 	return true;
 }
 
-sf::Vector2i Editor::getMouseCoordinates()
+sf::Vector2f Editor::getMouseCoordinates()
 {
 	sf::Vector2f world_pos;
 	sf::Vector2i local_pos;	
@@ -119,11 +119,11 @@ sf::Vector2i Editor::getMouseCoordinates()
 
 	if (snap)										//Apply snapping
 	{
-		world_pos.x -= (int)world_pos.x % 48;
-		world_pos.y -= (int)world_pos.y % 48;
+		world_pos.x = (int)world_pos.x - (int)world_pos.x % 48;
+		world_pos.y = (int)world_pos.y - (int)world_pos.y % 48;
 	}
 
-	return sf::Vector2i((int)world_pos.x, (int)world_pos.y);
+	return world_pos;
 }
 
 bool Editor::checkUnsaved(std::string &unsaved)
@@ -153,9 +153,9 @@ int Editor::findMap(std::string mapName)
 	return -1;
 }
 
-void Editor::orient(sf::Vector2i &u, sf::Vector2i &v)
+void Editor::orient(sf::Vector2f &u, sf::Vector2f &v)
 {
-	int temp;
+	float temp;
 	if (v.x < u.x)	//if v is left of u, swap horizontally
 	{
 		temp = v.x;
@@ -500,60 +500,55 @@ void Editor::handleInput(sf::Event event)
 			 event.mouseButton.button == sf::Mouse::Left &&
 			 !mouse_middle)
 	{
-		bool imgPaneClicked = false;
 		mouse_left = true;
 		mouse_pos = getMouseCoordinates();
 
-		sf::Vector2f position((float)mouse_pos.x, (float)mouse_pos.y);
-		if (imgView)
+		if (mode == EDIT)
 		{
-			sf::IntRect r;
-			r.width = 48;
-			r.height = 48;
-			for (int i = (int)(*maps)[map_index]->tx.size()-1; i >= 0; i--)
+			if (imgView)
 			{
-				r.left = (i%3)*48+816-2;
-				r.top = i/3*48+2;
-				if (r.contains(sf::Vector2i(event.mouseButton.x, event.mouseButton.y)))
+				sf::FloatRect r;
+				r.width = 48.0;
+				r.height = 48.0;
+				for (int i = (int)(*maps)[map_index]->tx.size()-1; i >= 0; i--)
 				{
-					sf::Vector2i v(getMouseCoordinates());
-					mode = DECO;
-					deco_cursor.setTexture((*maps)[map_index]->tx[i]->texture);
-					deco_cursor.setPosition(sf::Vector2f((float)v.x, (float)v.y));
-					deco_name = (*maps)[map_index]->tx[i]->name;
-					imgPaneClicked = true;
-					break;
-				}
-			}
-		}
-		if (!imgPaneClicked)
-		{
-			if (mode == EDIT)
-			{
-				selectClicked = false;
-				for (int i = selection.size()-1; i >=0; i--)
-				{
-					if (selection[i].contains(mouse_pos))
+					r.left = (i%3)*48+816-2;
+					r.top = i/3*48+2;
+					if (r.contains(sf::Vector2f(event.mouseButton.x, event.mouseButton.y)))
 					{
-						selectClicked = true;
+						sf::Vector2i v(getMouseCoordinates());
+						mode = DECO;
+						deco_cursor.setTexture((*maps)[map_index]->tx[i]->texture);
+						deco_cursor.setPosition(mouse_pos);
+						deco_name = (*maps)[map_index]->tx[i]->name;
 						break;
 					}
 				}
-				if (!selectClicked)
+			}
+
+			selectClicked = false;
+			for (int i = selection.size()-1; i >=0; i--)
+			{
+				if (selection[i].contains(mouse_pos))
 				{
-					mouse_box.setPosition(position);
-					mouse_box.setSize(sf::Vector2f(0.0f, 0.0f));
+					selectClicked = true;
+					break;
 				}
 			}
-			else if (mode == GEOM)
+			if (!selectClicked)
 			{
-				mouse_box.setPosition(position);
+				mouse_box.setPosition(mouse_pos);
 				mouse_box.setSize(sf::Vector2f(0.0f, 0.0f));
 			}
-			else if (mode == DECO)
-			{
-				(*maps)[map_index]->addDeco(deco_name, position);
-			}
+		}
+		else if (mode == GEOM)
+		{
+			mouse_box.setPosition(mouse_pos);
+			mouse_box.setSize(sf::Vector2f(0.0f, 0.0f));
+		}
+		else if (mode == DECO)
+		{
+			(*maps)[map_index]->addDeco(deco_name, mouse_pos);
 		}
 	}
 	//
@@ -564,7 +559,7 @@ void Editor::handleInput(sf::Event event)
 			 !mouse_middle)
 	{
 		mouse_left = false;
-		sf::Vector2i prev_mouse_pos = mouse_pos;
+		sf::Vector2f prev_mouse_pos = mouse_pos;
 
 		mouse_pos = getMouseCoordinates();
 
@@ -583,7 +578,7 @@ void Editor::handleInput(sf::Event event)
 			else 
 			{
 				orient(mouse_pos, prev_mouse_pos);
-				sf::IntRect r(mouse_pos, prev_mouse_pos - mouse_pos);
+				sf::FloatRect r(mouse_pos, prev_mouse_pos - mouse_pos);
 
 				if (!(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) ||
 					  sf::Keyboard::isKeyPressed(sf::Keyboard::RShift)))
@@ -604,8 +599,8 @@ void Editor::handleInput(sf::Event event)
 			 !mouse_left)
 	{
 		mouse_middle = true;
-		mouse_pos.x = event.mouseButton.x;
-		mouse_pos.y = event.mouseButton.y;
+		mouse_pos.x = (float)event.mouseButton.x;
+		mouse_pos.y = (float)event.mouseButton.y;
 	}
 	//
 	// Middle Mouse Up
@@ -621,66 +616,47 @@ void Editor::handleInput(sf::Event event)
 	//
 	else if (event.type == sf::Event::MouseMoved)
 	{
-		sf::Vector2i move_mouse_pos = getMouseCoordinates();
-		sf::Vector2i prev_mouse_pos = mouse_pos;
+		sf::Vector2f move_mouse_pos = getMouseCoordinates();
+		sf::Vector2f prev_mouse_pos = mouse_pos;
 
 		if (mode == EDIT && !mouse_middle)
 		{
 			if (selectClicked)
 			{
-				sf::Vector2f offset;
-				offset.x = (float)(move_mouse_pos.x - prev_mouse_pos.x);
-				offset.y = (float)(move_mouse_pos.y - prev_mouse_pos.y);
 				mouse_pos = move_mouse_pos;
-				(*maps)[map_index]->moveSelect(offset);
+
+				(*maps)[map_index]->moveSelect(move_mouse_pos - prev_mouse_pos);
+
 				for (int i = selection.size()-1; i >= 0; i--)
 				{
-					selection[i].left += (int)offset.x;
-					selection[i].top += (int)offset.y;
+					selection[i].top += (move_mouse_pos - prev_mouse_pos).y;
+					selection[i].left += (move_mouse_pos - prev_mouse_pos).x;
 				}
 			}
 			else
 			{
-				sf::Vector2f size;
-				sf::Vector2f pos;
-
 				orient(prev_mouse_pos, move_mouse_pos);
-				pos.x = (float)(prev_mouse_pos.x);
-				pos.y = (float)(prev_mouse_pos.y);
-				size.x = (float)(move_mouse_pos.x - prev_mouse_pos.x);
-				size.y = (float)(move_mouse_pos.y - prev_mouse_pos.y);
 
-				mouse_box.setPosition(pos);
-				mouse_box.setSize(size);
+				mouse_box.setPosition(prev_mouse_pos);
+				mouse_box.setSize(move_mouse_pos - prev_mouse_pos);
 			}
 		}
 		if (mode == GEOM && !mouse_middle)
 		{
-			sf::Vector2f size;
-			sf::Vector2f pos;
-
 			orient(prev_mouse_pos, move_mouse_pos);
-			pos.x = (float)(prev_mouse_pos.x);
-			pos.y = (float)(prev_mouse_pos.y);
-			size.x = (float)(move_mouse_pos.x - prev_mouse_pos.x);
-			size.y = (float)(move_mouse_pos.y - prev_mouse_pos.y);
 
-			mouse_box.setPosition(pos);
-			mouse_box.setSize(size);
+			mouse_box.setPosition(prev_mouse_pos);
+			mouse_box.setSize(move_mouse_pos - prev_mouse_pos);
 		}
 		else if (mode == DECO && !mouse_middle)
 		{
-			sf::Vector2f v((float)move_mouse_pos.x, (float)move_mouse_pos.y);
-			deco_cursor.setPosition(v);
+			deco_cursor.setPosition(move_mouse_pos);
 		}
 		if (mouse_middle)
 		{
-			sf::Vector2f v;
-			v.x = (float)(mouse_pos.x - event.mouseMove.x);
-			v.y = (float)(mouse_pos.y - event.mouseMove.y);
-			view.move(v);
-			mouse_pos.x = event.mouseMove.x;
-			mouse_pos.y = event.mouseMove.y;
+			sf::Vector2f v((float)event.mouseMove.x, (float)event.mouseMove.y);
+			view.move(mouse_pos - v);
+			mouse_pos = v;
 		}
 	}
 }

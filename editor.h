@@ -47,8 +47,8 @@ private:
 		
 	//Translates screen coords to world coords and performs snapping
 	//Returns resulting vector
-	sf::Vector2i getMouseCoordinates();
-		sf::Vector2i				mouse_pos;		//Mouse position storage
+	sf::Vector2f getMouseCoordinates();
+		sf::Vector2f				mouse_pos;		//Mouse position storage
 		sf::RectangleShape 			mouse_box;		//drawable box for EDIT and GEOM
 		sf::Sprite 					deco_cursor;	//drawable sprite for DECO
 		std::string					deco_name;		//name of deco_cursor's tx
@@ -56,7 +56,7 @@ private:
 		bool						mouse_left;		//True if left button active
 		bool 						mouse_middle;	//True if middle button active 
 		bool 						selectClicked;	//True if selection left clicked
-		std::vector<sf::IntRect> 	selection;		//Rect locations of selected objects
+		std::vector<sf::FloatRect> 	selection;		//Rect locations of selected objects
 
 
 	bool imgView;	//True if img pane active
@@ -69,7 +69,7 @@ private:
 	int findMap(std::string mapName);
 
 	//Swap u and v components so they form a rectangle
-	void orient(sf::Vector2i &u, sf::Vector2i &v);
+	void orient(sf::Vector2f &u, sf::Vector2f &v);
 
 public:
 	sf::View 			view;			//Editor centered view

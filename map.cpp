@@ -11,35 +11,33 @@ void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const
 	}
 	if (geom)
 	{
-		sf::RectangleShape 	rect;
-		rect.setOutlineThickness(2.0);
-		rect.setOutlineColor(sf::Color::Blue);
-		rect.setFillColor(sf::Color::Transparent);
+		sf::RectangleShape gRect;
+		sf::Vector2f gV;
 
-		sf::Vector2f size;
-		sf::Vector2f pos;
+		gRect.setOutlineThickness(2.0);
+		gRect.setOutlineColor(sf::Color::Blue);
+		gRect.setFillColor(sf::Color::Transparent);
 
 		for (int i = (int)geometry.size() - 1; i >= 0; i--)
 		{
-			size.x 	= (float)geometry[i].width;
-			size.y 	= (float)geometry[i].height;
-			pos.x 	= (float)geometry[i].left;
-			pos.y 	= (float)geometry[i].top;
-			
-			rect.setPosition(pos);
-			rect.setSize(size);
+			gV.x = geometry[i].left;
+			gV.y = geometry[i].top;
+			gRect.setPosition(gV);
+			gV.x = geometry[i].width;
+			gV.y = geometry[i].height;
+			gRect.setSize(gV);
 
-			w.draw(rect, states);
+			w.draw(gRect, states);
 		}
 	}
 }
 
 
 
-bool Map::addWall(const sf::Vector2i &_pos, const sf::Vector2i &_size)
+bool Map::addWall(const sf::Vector2f &_pos, const sf::Vector2f &_size)
 {
 	modified = true;
-	geometry.push_back(sf::IntRect(_pos, _size));
+	geometry.push_back(sf::FloatRect(_pos, _size));
 	return true;
 }
 
@@ -103,7 +101,7 @@ void Map::writeVecImg(std::vector<img*> v, std::ofstream &o)
 	}
 }
 
-void Map::writeRect(sf::IntRect r, std::ofstream &o)
+void Map::writeRect(sf::FloatRect r, std::ofstream &o)
 {
 	o.write((char*)&r.left, sizeof(r.left));
 	o.write((char*)&r.top, sizeof(r.top));
@@ -111,7 +109,7 @@ void Map::writeRect(sf::IntRect r, std::ofstream &o)
 	o.write((char*)&r.height, sizeof(r.height));
 }
 
-void Map::writeVecGeo(std::vector<sf::IntRect> v, std::ofstream &o)
+void Map::writeVecGeo(std::vector<sf::FloatRect> v, std::ofstream &o)
 {
 	int length = v.size();
 
@@ -204,7 +202,7 @@ bool Map::readVecImg(std::vector<img*> &v, std::ifstream &inp)
 	return true;
 }
 
-void Map::readRect(sf::IntRect &r, std::ifstream &inp)
+void Map::readRect(sf::FloatRect &r, std::ifstream &inp)
 {
 	inp.read((char*)&r.left, sizeof(r.left));
 	inp.read((char*)&r.top, sizeof(r.top));
@@ -212,10 +210,10 @@ void Map::readRect(sf::IntRect &r, std::ifstream &inp)
 	inp.read((char*)&r.height, sizeof(r.height));
 }
 
-void Map::readVecGeo(std::vector<sf::IntRect> &v, std::ifstream &inp)
+void Map::readVecGeo(std::vector<sf::FloatRect> &v, std::ifstream &inp)
 {
 	int length;
-	sf::IntRect t;
+	sf::FloatRect t;
 
 	v.clear();
 
@@ -256,7 +254,7 @@ sf::Texture* Map::getTexture(std::string img_name)
 	return NULL;
 }
 
-int Map::findRect(const sf::IntRect &r, const std::vector<sf::IntRect> &v)
+int Map::findRect(const sf::FloatRect &r, const std::vector<sf::FloatRect> &v)
 {
 	int i;
 	for (i = v.size()-1; i >= 0; i--)
@@ -271,21 +269,15 @@ int Map::findRect(const sf::IntRect &r, const std::vector<sf::IntRect> &v)
 
 
 
-void Map::select(sf::IntRect &s, std::vector<sf::IntRect> &v)
+void Map::select(sf::FloatRect &s, std::vector<sf::FloatRect> &v)
 {
 	if (deco)
 	{
-		sf::Vector2f pos;
-		sf::IntRect r;
-
-		r.width = 48;
-		r.height = 48;
+		sf::FloatRect r;
 
 		for (int i = (int)bg.size()-1; i >= 0; i--)
 		{
-			pos = bg[i]->sp.getPosition();
-			r.left = pos.x;
-			r.top = pos.y;
+			r = bg[i]->sp.getGlobalBounds();
 
 			if (s.intersects(r))
 			{
@@ -379,7 +371,7 @@ void Map::moveSelect(const sf::Vector2f &v)
 }
 
 
-std::vector<sf::IntRect>* Map::getGeom()
+std::vector<sf::FloatRect>* Map::getGeom()
 {
 	return &geometry;
 }
@@ -390,6 +382,7 @@ Map::Map(std::string _name)
 	deco = true;
 	geom = false;
 	name = _name;
+	
 }
 
 Map::~Map()

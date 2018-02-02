@@ -8,6 +8,11 @@
 
 #define PLAY_DIR "./ats/player/"
 #define PLAY_FPS 12.0
+#define L 0
+#define M 1
+#define R 2
+#define T 0
+#define D 2
 
 enum Animation
 {
@@ -20,6 +25,20 @@ enum States
 	STANDING,
 	WALKING_LEFT,
 	WALKING_RIGHT
+};
+
+struct CollisionPoint
+{
+	sf::Vector2f p;
+	bool c;
+};
+
+struct CollisionPoints
+{
+	CollisionPoint top[3];
+	CollisionPoint down[3];
+	CollisionPoint right[3];
+	CollisionPoint left[3];
 };
 
 struct CollisionBoxes
@@ -37,7 +56,7 @@ struct InputBools
 class Player : public sf::Drawable
 {
 private:
-	std::vector<sf::IntRect>* geometry;
+	std::vector<sf::FloatRect>* geometry;
 	void* spriteSheet;
 	int spriteSheetLength;
 	sf::Clock animationClock;
@@ -55,6 +74,9 @@ private:
 	float fallS;
 	float fallM;
 	CollisionBoxes colbox;
+	CollisionPoints collide;
+
+	void updateCollide();
 
 	void setState(States _state);
 	
@@ -65,7 +87,7 @@ private:
 public:
 	void handleInput(sf::Event event);
 
-	void update(std::vector<sf::IntRect>* geo, float frameTime);
+	void update(std::vector<sf::FloatRect>* geo, float frameTime);
 		
 	void advanceAnimation();
 
