@@ -55,7 +55,7 @@ int main()
 
 
 	//Editor setup
-	Editor			editor(&w::window, &maps, thintel);
+	Editor			editor(&w::window, &player, &maps, thintel);
 	w::window.setView(editor.view);
 
 	/**************************************************************************/

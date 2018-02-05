@@ -2,17 +2,20 @@
 #define PLAYER_O
 #include <vector>
 #include <string>
+#include <iostream>
 #include <fstream>
+#include <cmath>
 
 #include <SFML/Graphics.hpp>
 
 #define PLAY_DIR "./ats/player/"
 #define PLAY_FPS 12.0
-#define L 0
-#define M 1
-#define R 2
-#define T 0
-#define D 2
+
+const int L = 0;
+const int M = 1;
+const int R = 2;
+const int T = 0;
+const int D = 2;
 
 enum Animation
 {
@@ -31,6 +34,7 @@ struct CollisionPoint
 {
 	sf::Vector2f p;
 	bool c;
+	int i;
 };
 
 struct CollisionPoints
@@ -39,6 +43,9 @@ struct CollisionPoints
 	CollisionPoint down[3];
 	CollisionPoint right[3];
 	CollisionPoint left[3];
+	CollisionPoint bl;
+	CollisionPoint br;
+
 };
 
 struct CollisionBoxes
@@ -73,10 +80,12 @@ private:
 	int fallA;
 	float fallS;
 	float fallM;
+	sf::Vector2f velocity;
 	CollisionBoxes colbox;
 	CollisionPoints collide;
+	bool fresh;
 
-	void updateCollide();
+	void updateCollide(std::vector<sf::FloatRect>* geo);
 
 	void setState(States _state);
 	
@@ -84,8 +93,12 @@ private:
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
+	bool collisionResolver(sf::Vector2f op, std::vector<sf::FloatRect>* geo);
+
 public:
 	void handleInput(sf::Event event);
+
+	void setPosition(sf::Vector2f _pos);
 
 	void update(std::vector<sf::FloatRect>* geo, float frameTime);
 		

@@ -7,6 +7,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "map.h"
+#include "player.h"
 
 enum Modes
 {
@@ -20,6 +21,7 @@ class Editor: public sf::Drawable
 private:
 	std::vector<Map*>*		maps;			//map list belonging to main
 	sf::RenderWindow*		w;				//window belonging to main
+	Player*					player;
 
 	Modes mode;								//Current editor mode
 
@@ -75,7 +77,7 @@ public:
 	sf::View 			view;			//Editor centered view
 	int					map_index;		//working map index
 
-	Editor(sf::RenderWindow* _w, std::vector<Map*>* _maps, sf::Font &_font);
+	Editor(sf::RenderWindow* _w, Player* _p, std::vector<Map*>* _maps, sf::Font &_font);
 
 	void handleInput(sf::Event event);
 };

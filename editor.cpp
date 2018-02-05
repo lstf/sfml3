@@ -119,8 +119,10 @@ sf::Vector2f Editor::getMouseCoordinates()
 
 	if (snap)										//Apply snapping
 	{
-		world_pos.x = (int)world_pos.x - (int)world_pos.x % 48;
-		world_pos.y = (int)world_pos.y - (int)world_pos.y % 48;
+		world_pos.x = (int)world_pos.x - ((int)world_pos.x) % 48;
+		world_pos.y = (int)world_pos.y - ((int)world_pos.y) % 48;
+		if (world_pos.x < 0) world_pos.x -= 48;
+		if (world_pos.y < 0) world_pos.y -= 48;
 	}
 
 	return world_pos;
@@ -170,8 +172,9 @@ void Editor::orient(sf::Vector2f &u, sf::Vector2f &v)
 	}
 }
 
-Editor::Editor(sf::RenderWindow* _w, std::vector<Map*>* _maps, sf::Font &_font)
+Editor::Editor(sf::RenderWindow* _w, Player* _p, std::vector<Map*>* _maps,  sf::Font &_font)
 {
+	player 							= _p;
 	w								= _w;
 	maps							= _maps;
 	map_index						= 0;
@@ -503,7 +506,11 @@ void Editor::handleInput(sf::Event event)
 		mouse_left = true;
 		mouse_pos = getMouseCoordinates();
 
-		if (mode == EDIT)
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+		{
+			player->setPosition(mouse_pos);
+		}
+		else if (mode == EDIT)
 		{
 			if (imgView)
 			{

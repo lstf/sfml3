@@ -12,9 +12,9 @@ void Player::setAnimation(Animation a)
 
 	switch(a)
 	{
-	case RIGHT:
-		animationRow = 0;
-		animationFrameCount = 6;
+		case RIGHT:
+			animationRow = 0;
+			animationFrameCount = 6;
 	break;
 	case LEFT:
 		animationRow = 1;
@@ -23,15 +23,36 @@ void Player::setAnimation(Animation a)
 	}
 }
 
+void Player::setPosition(sf::Vector2f _pos)
+{
+	sp.setPosition(_pos);
+}
+
 void Player::draw(sf::RenderTarget& w, sf::RenderStates states) const
 {
 	sf::RectangleShape down;
-	down.setPosition(sf::Vector2f(colbox.down.left,colbox.down.top));
-	down.setSize(sf::Vector2f(colbox.down.width,colbox.down.height));
-	down.setOutlineColor(sf::Color::Blue);
+	down.setSize(sf::Vector2f(1,1));
 	down.setOutlineThickness(1.0);
 	down.setFillColor(sf::Color::Transparent);
-	w.draw(down, states);
+
+	for (int i = 0; i < 3; i++)
+	{
+		down.setOutlineColor(sf::Color::Yellow);
+		down.setPosition(collide.top[i].p);
+		if (collide.top[i].c) w.draw(down, states);
+
+		down.setPosition(collide.down[i].p);
+		if (collide.down[i].c) w.draw(down, states);
+
+		down.setOutlineColor(sf::Color::Blue);
+		down.setPosition(collide.right[i].p);
+		if (collide.right[i].c) w.draw(down, states);
+
+		down.setPosition(collide.left[i].p);
+		if (collide.left[i].c) w.draw(down, states);
+
+
+	}
 	w.draw(sp, states);
 }
 
@@ -53,15 +74,14 @@ void Player::handleInput(sf::Event event)
 		{
 			input.left = false;
 		}
-
-		if (input.left)
-		{
-			setState(WALKING_LEFT);
-		}
-		else if (input.right)
-		{
-			setState(WALKING_RIGHT);
-		}
+	}
+	if (input.left)
+	{
+		setState(WALKING_LEFT);
+	}
+	else if (input.right)
+	{
+		setState(WALKING_RIGHT);
 	}
 	if (!input.left && !input.right)
 	{
@@ -69,19 +89,24 @@ void Player::handleInput(sf::Event event)
 	}
 	if (event.type == sf::Event::MouseButtonPressed)
 	{
-		if (event.mouseButton.button == sf::Mouse::Right &&
-			sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
-		{
-			fallS = 0;
-			sp.setPosition(sf::Vector2f(event.mouseButton.x, event.mouseButton.y));
-			colbox.down.top = event.mouseButton.y + 48;
-			colbox.down.left = event.mouseButton.x;
-		}
+	
 	}
 }
 
-void Player::updateCollide()
+void Player::updateCollide(std::vector<sf::FloatRect>* geo)
 {
+	collide.top[L].i = -1; 
+	collide.top[M].i = -1;
+	collide.top[R].i = -1;
+	collide.down[L].i = -1;
+	collide.down[M].i = -1;
+	collide.down[R].i = -1;
+	collide.right[T].i = -1;
+	collide.right[M].i = -1;
+	collide.right[D].i = -1;
+	collide.left[T].i = -1;
+	collide.left[M].i = -1;
+	collide.left[D].i = -1;
 	collide.top[L].c = false; 
 	collide.top[M].c = false;
 	collide.top[R].c = false;
@@ -93,83 +118,141 @@ void Player::updateCollide()
 	collide.right[D].c = false;
 	collide.left[T].c = false;
 	collide.left[M].c = false;
-	collide.left[T].c = false;
-	collide.top[L].p = sp.getPosition() + sf::Vector2f(0, -1.0);
+	collide.left[D].c = false;
+	collide.bl.c = false;
+	collide.br.c = false;
+	collide.top[L].p = sp.getPosition() + sf::Vector2f(0, 0);
 	collide.top[M].p = collide.top[L].p + sf::Vector2f(16.0, 0);
 	collide.top[R].p = collide.top[L].p + sf::Vector2f(31.0, 0);
-	collide.down[L].p = collide.top[L].p + sf::Vector2f(0, 49.0);
+	collide.down[L].p = collide.top[L].p + sf::Vector2f(0, 47.0);
 	collide.down[M].p = collide.down[L].p + sf::Vector2f(16.0, 0);
 	collide.down[R].p = collide.down[L].p + sf::Vector2f(31.0, 0);
-	collide.right[T].p = collide.top[L].p + sf::Vector2f(32.0, 2.0);
-	collide.right[M].p = collide.right[T].p + sf::Vector2f(0, 16.0);
-	collide.right[D].p = collide.right[T].p + sf::Vector2f(0, 31.0);
-	collide.left[T].p = collide.right[T].p + sf::Vector2f(-33.0, 0);
-	collide.left[M].p = collide.right[T].p + sf::Vector2f(0, 16.0);
-	collide.left[D].p = collide.right[T].p + sf::Vector2f(0, 31.0);
-}
+	collide.br.p = collide.down[R].p + sf::Vector2f(2.0, 0);
+	collide.bl.p = collide.down[L].p - sf::Vector2f(2.0, 0);
+	collide.right[T].p = collide.top[L].p + sf::Vector2f(31.0, 0);
+	collide.right[M].p = collide.right[T].p + sf::Vector2f(0, 24.0);
+	collide.right[D].p = collide.right[T].p + sf::Vector2f(0, 47.0);
+	collide.left[T].p = collide.right[T].p + sf::Vector2f(-31.0, 0);
+	collide.left[M].p = collide.right[M].p + sf::Vector2f(-31.0, 0);
+	collide.left[D].p = collide.right[D].p + sf::Vector2f(-31.0, 0);
+	collide.right[T].p += sf::Vector2f(2,0);
+	collide.right[M].p += sf::Vector2f(2,0);
+	collide.right[D].p += sf::Vector2f(2,0);
+	collide.down[L].p += sf::Vector2f(0,2);
+	collide.down[M].p += sf::Vector2f(0,2);
+	collide.down[R].p += sf::Vector2f(0,2);
+	collide.left[L].p -= sf::Vector2f(2,0);
+	collide.left[M].p -= sf::Vector2f(2,0);
+	collide.left[R].p -= sf::Vector2f(2,0);
+	collide.top[L].p -= sf::Vector2f(0,2);
+	collide.top[M].p -= sf::Vector2f(0,2);
+	collide.top[R].p -= sf::Vector2f(0,2);
 
-void Player::update(std::vector<sf::FloatRect>* geo, float frameTime)
-{
-	bool grounded = false;
-	bool blockedRight = false;
-	int blockRightGeo;
-	int	groundGeo;
-	sf::FloatRect bounds = sp.getGlobalBounds();
-	
-	updateCollide();
-
-	colbox.down.top = sp.getPosition().y + 48;
-	colbox.down.left = sp.getPosition().x;
-	colbox.right.top = sp.getPosition().y;
-	colbox.right.left = sp.getPosition().x + 32;
-
-	//DOWN
 	for (int i = geo->size()-1; i >= 0; i--)
 	{
 		for (int j = 0; j < 3; j++)
 		{
-			//if (collide.top[j
-		}
-			
-		if (!grounded && colbox.down.intersects((*geo)[i]))
-		{
-			grounded = true;
-			groundGeo = i;
-		}
-		if (!blockedRight && colbox.right.intersects((*geo)[i]))
-		{
-			blockedRight = true;
-			blockRightGeo = i;
+			if ((*geo)[i].contains(collide.top[j].p))
+			{
+				collide.top[j].i = i;
+				collide.top[j].c = true;
+			}
+			if ((*geo)[i].contains(collide.down[j].p))
+			{
+				collide.down[j].i = i;
+				collide.down[j].c = true;
+			}
+			if ((*geo)[i].contains(collide.left[j].p))
+			{
+				collide.left[j].i = i;
+				collide.left[j].c = true;
+			}
+			if ((*geo)[i].contains(collide.right[j].p))
+			{
+				collide.right[j].i = i;
+				collide.right[j].c = true;
+			}
+			if ((*geo)[i].contains(collide.br.p))
+			{
+				collide.br.c = true;
+			}
+			if ((*geo)[i].contains(collide.bl.p))
+			{
+				collide.bl.c = true;
+			}
 		}
 	}
-	//RIGHT
-	if (blockedRight)
+}
+
+bool Player::collisionResolver(sf::Vector2f op, std::vector<sf::FloatRect>* geo)
+{
+	sf::Vector2f diff = sp.getPosition() - op;
+
+	if (diff.x != 0 && diff.y != 0 &&
+		std::fabs(std::fabs(diff.x/diff.y) - 1) < 0.1)
 	{
-		if (bounds.intersects((*geo)[blockRightGeo]))
-		{
-			sp.setPosition((*geo)[blockRightGeo].left-32, sp.getPosition().y);
-		}
-	}
-	if (!grounded)
-	{
-		fallS += frameTime*fallA;
-		if (fallS > fallM)
-		{
-			fallS = fallM;
-		}
-		sp.move(0.0, fallS);
-		colbox.down.top += fallS;
-	}
-	else
-	{
-		////Inside floor->on top of floor
-		if (bounds.intersects((*geo)[groundGeo]))
-		{
-			sp.setPosition(sp.getPosition().x, (*geo)[groundGeo].top-48);
-		}
-		fallS = 0.0;
+		
 	}
 
+	int n = 0;
+	bool moved = false;
+	for (int j = (*geo).size()-1; j >= 0; j--)
+	{
+		while ((*geo)[j].intersects(sp.getGlobalBounds()))
+		{
+			moved = true;
+			n++;
+			if (n > 10)
+			{
+				break;
+			}
+			sp.setPosition(op + sf::Vector2f(diff.x*(1.0-n*.1), (diff.y*(1.0-n*.1)))); 
+		}
+	}
+	return moved;
+}
+
+void Player::update(std::vector<sf::FloatRect>* geo, float frameTime)
+{
+	if (fresh)
+	{
+		updateCollide(geo);
+		fresh = false;
+	}
+	CollisionPoints old_collision = collide;
+	sf::Vector2f old_position = sp.getPosition();
+
+	velocity.x = 0;
+	
+	//Gravity
+	if (!old_collision.down[R].c &&
+		!old_collision.down[M].c &&
+		!old_collision.down[L].c)
+	{
+		velocity.y += frameTime*fallA;
+		velocity.y = velocity.y > fallM ? fallM : velocity.y;
+	}
+	else 
+	{
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) &&
+			!old_collision.top[L].c &&
+			!old_collision.top[M].c &&
+			!old_collision.top[R].c)
+		{
+			velocity.y = -5;
+		}
+		else
+		{
+			velocity.y = 0;
+		}
+	}
+	if (velocity.y < 0 &&
+		(old_collision.top[L].c ||
+		old_collision.top[M].c ||
+		old_collision.top[R].c))
+	{
+		velocity.y = 0;
+	}
 	if (stateModified)
 	{
 		stateModified = false;
@@ -184,17 +267,57 @@ void Player::update(std::vector<sf::FloatRect>* geo, float frameTime)
 	}
 	if (state != STANDING)
 	{
-		if (state == WALKING_LEFT)
+		if (state == WALKING_LEFT &&
+			!old_collision.left[T].c &&
+			!old_collision.left[M].c &&
+			!old_collision.left[D].c)
 		{
-			sp.move(-1*frameTime*speed, 0.0);
+			velocity.x = -1*frameTime*speed;
 			colbox.down.left -= frameTime*speed;
 		}
-		else if (state == WALKING_RIGHT && !blockedRight)
+		else if (state == WALKING_RIGHT &&
+				!old_collision.right[T].c &&
+				!old_collision.right[M].c &&
+				!old_collision.right[D].c)
 		{
-			sp.move(frameTime*speed, 0.0);
+			velocity.x = frameTime*speed;
 			colbox.down.left += frameTime*speed;
 		}
 		advanceAnimation();
+	}
+
+	bool moved;
+	
+	sp.move(velocity);
+
+	moved = collisionResolver(old_position, geo);
+	
+	updateCollide(geo);
+
+	if (moved)
+	{
+		bool floating = true;
+
+		for (int i = 0; i < 3; i++)
+		{
+			if (collide.top[i].c) floating = false;
+			if (collide.down[i].c) floating = false;
+			if (collide.left[i].c) floating = false;
+			if (collide.right[i].c) floating = false;
+		}
+
+		if (floating)
+		{
+			if (velocity.x == 0)
+			{
+				
+			}
+			else
+			{
+				velocity = sf::Vector2f(velocity.x, 0);
+				sp.move(velocity + sf::Vector2f(0, -1));
+			}
+		}
 	}
 }
 
@@ -249,7 +372,9 @@ Player::Player()
 		colbox.right.height = 48;
 		fallA = 10;
 		fallS = 0.0;
-		fallM = 200.0;
+		fallM = 10.0;
+		velocity = sf::Vector2f(0,0);
+		fresh = true;
 	}
 }
 
