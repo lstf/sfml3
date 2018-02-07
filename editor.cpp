@@ -4,6 +4,29 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const
 {
 	sf::View temp = w.getView();	//Store window view
 
+	if (snap)
+	{
+		sf::RectangleShape r;
+		sf::Color color(255,0,0,32);
+		r.setSize(sf::Vector2f(32,32));
+		r.setOutlineThickness(1.0);
+		r.setOutlineColor(color);
+		r.setFillColor(sf::Color::Transparent);
+		sf::Vector2f offset = view.getCenter() - sf::Vector2f(512,272);
+		sf::Vector2i snap_coord((int)offset.x,(int)offset.y);
+		offset -= sf::Vector2f(snap_coord.x, snap_coord.y);
+		snap_coord -= sf::Vector2i(snap_coord.x%32, snap_coord.y%32);
+		offset += sf::Vector2f(snap_coord.x, snap_coord.y);
+		for (int i = 0; i < 32; i++)
+		{
+			for (int j = 0; j < 17; j++)
+			{
+				r.setPosition(offset + sf::Vector2f(i*32,j*32));
+				w.draw(r, states);
+			}
+		}
+	}
+
 	//Scrolling
 	//Green mouse_box for geometry
 	if (mode == EDIT && mouse_left && !selectClicked)
@@ -41,6 +64,8 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const
 		}
 	}
 
+	
+
 	//Static
 	w.setView(w.getDefaultView());	//Reset window view to default
 	//Console text and message
@@ -49,22 +74,23 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const
 		w.draw(command_text, states);
 		w.draw(message_text, states);
 	}
+	
 	//Img pane
 	if (imgView)
 	{
 		int length = (int)(*maps)[map_index]->tx.size();
 		sf::RectangleShape r;
-		r.setPosition(816-2, 2);
+		r.setPosition(832-2, 2);
 		r.setOutlineThickness(2.0);
 		r.setOutlineColor(sf::Color::Cyan);
 		r.setFillColor(sf::Color::Transparent);
 		for (int i = length-1; i >= 0; i--)
 		{
 			sf::Sprite sp((*maps)[map_index]->tx[i]->texture);
-			sp.setPosition((i%3)*48+816-2,(i/3)*48+2);
+			sp.setPosition((i%4)*32+832-2,(i/4)*32+2);
 			w.draw(sp, states);
 		}
-		r.setSize(sf::Vector2f((float)3*48,(float)(((length/3)+1)*48)));
+		r.setSize(sf::Vector2f((float)4*32,(float)(((length/4)+1)*32)));
 		w.draw(r, states);
 	}
 	w.setView(temp);	//Restore view
@@ -119,10 +145,10 @@ sf::Vector2f Editor::getMouseCoordinates()
 
 	if (snap)										//Apply snapping
 	{
-		world_pos.x = (int)world_pos.x - ((int)world_pos.x) % 48;
-		world_pos.y = (int)world_pos.y - ((int)world_pos.y) % 48;
-		if (world_pos.x < 0) world_pos.x -= 48;
-		if (world_pos.y < 0) world_pos.y -= 48;
+		world_pos.x = (int)world_pos.x - ((int)world_pos.x) % 32;
+		world_pos.y = (int)world_pos.y - ((int)world_pos.y) % 32;
+		if (world_pos.x < 0) world_pos.x -= 32;
+		if (world_pos.y < 0) world_pos.y -= 32;
 	}
 
 	return world_pos;
@@ -215,6 +241,32 @@ void Editor::setMode(Modes _mode)
 	{
 		mouse_box.setOutlineColor(sf::Color::Green);
 	}
+	else if (_mode == DECO)
+	{
+	}
+	else if (_mode == PLAY)
+	{
+		console = false;
+		w->setView(player->view);
+	}
+	else if (_mode == DOOR)
+	{
+	}
+	else if (_mode == DOOR_TARGET)
+	{
+	}
+}
+
+sf::View Editor::getView()
+{
+	if (mode == PLAY)
+	{
+		return player->view;
+	}
+	else
+	{
+		return view;
+	}
 }
 
 void Editor::helpCommand()
@@ -272,6 +324,10 @@ void Editor::toggleCommand(bool &togg, const std::string &_name)
 
 void Editor::mapCommand()
 {
+	if (command == "MAP")
+	{
+		message_text.setString(std::string("-- ") + (*maps)[map_index]->name + " --");
+	}
 	if (command.substr(4,2) == "LS")
 	{
 		std::string map_names;
@@ -390,6 +446,28 @@ void Editor::imgCommand()
 	else unknownCommand();
 }
 
+
+void Editor::doorCommand()
+{
+	std::string door_target = command.substr(5,16);
+	int map_index_change = findMap(door_target);
+
+		
+	if (map_index_change < 0)
+	{
+		message_text.setString("-- Map Not Found --");
+		setMode(EDIT);
+	}
+	else
+	{
+		door = (*maps)[map_index]->addDoor();
+		door->target =  map_index_change;
+		message_text.setString("-- Door to " + door_target + " --");
+		std::cout << door->target << std::endl;
+		setMode(DOOR);
+	}
+}
+
 void Editor::unknownCommand()
 {
 	message_text.setString("-- Unkown Command: " + command + " --");
@@ -467,6 +545,10 @@ void Editor::handleInput(sf::Event event)
 				{
 					toggleCommand((*maps)[map_index]->deco, "Decoration");
 				}
+				else if (command.substr(0,4) ==	"DOOR")
+				{
+					doorCommand();
+				}
 				else if (command == 			"SNAP")
 				{
 					toggleCommand(snap, "Snap");
@@ -509,6 +591,7 @@ void Editor::handleInput(sf::Event event)
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
 		{
 			player->setPosition(mouse_pos);
+			setMode(PLAY);
 		}
 		else if (mode == EDIT)
 		{
@@ -556,6 +639,18 @@ void Editor::handleInput(sf::Event event)
 		else if (mode == DECO)
 		{
 			(*maps)[map_index]->addDeco(deco_name, mouse_pos);
+		}
+		else if (mode == DOOR)
+		{
+			door->sp.setPosition(mouse_pos + sf::Vector2f(0,16));
+			setMode(DOOR_TARGET);
+			map_index = door->target;
+		}
+		else if (mode == DOOR_TARGET)
+		{
+			door->target_pos = mouse_pos + sf::Vector2f(0,16);
+			player->setPosition(mouse_pos);
+			setMode(EDIT);
 		}
 	}
 	//
@@ -658,6 +753,10 @@ void Editor::handleInput(sf::Event event)
 		else if (mode == DECO && !mouse_middle)
 		{
 			deco_cursor.setPosition(move_mouse_pos);
+		}
+		else if (mode == DOOR && !mouse_middle)
+		{
+			door->sp.setPosition(move_mouse_pos + sf::Vector2f(0,16));
 		}
 		if (mouse_middle)
 		{

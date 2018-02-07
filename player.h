@@ -43,9 +43,6 @@ struct CollisionPoints
 	CollisionPoint down[3];
 	CollisionPoint right[3];
 	CollisionPoint left[3];
-	CollisionPoint bl;
-	CollisionPoint br;
-
 };
 
 struct CollisionBoxes
@@ -60,8 +57,48 @@ struct InputBools
 	bool right = false;
 };
 
-class Player : public sf::Drawable
+struct SpriteSheet
 {
+	void* 		png;
+	int 		pngSize;
+	int 		x;
+	int 		y;
+	int 		frameCount;
+	sf::Clock	clock;
+	float		time;
+	Animation	dir;
+	float		fps;
+};
+
+
+class Weapon : public sf::Drawable
+{
+private:
+	SpriteSheet sp_sheet;
+	sf::Sprite sp;
+	sf::Texture tx;
+
+	
+
+	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
+	
+public:
+	bool active;
+
+	void advanceAnimation();
+
+	void attack();
+
+	void setDirection(Animation _a);
+
+	void setPosition(sf::Vector2f _pos);
+
+	Weapon();
+
+};
+
+class Player : public sf::Drawable
+{ 
 private:
 	std::vector<sf::FloatRect>* geometry;
 	void* spriteSheet;
@@ -71,19 +108,20 @@ private:
 	int animationCol;
 	int animationFrameCount;
 	int animationRow;
-	sf::Sprite sp;
 	sf::Texture tx;
 	InputBools input;
 	States state;
 	bool stateModified;
 	int speed;
 	int fallA;
-	float fallS;
 	float fallM;
 	sf::Vector2f velocity;
-	CollisionBoxes colbox;
 	CollisionPoints collide;
 	bool fresh;
+	Weapon weapon;
+
+
+
 
 	void updateCollide(std::vector<sf::FloatRect>* geo);
 
@@ -96,6 +134,10 @@ private:
 	bool collisionResolver(sf::Vector2f op, std::vector<sf::FloatRect>* geo);
 
 public:
+	sf::Sprite sp;
+
+	sf::View view;
+
 	void handleInput(sf::Event event);
 
 	void setPosition(sf::Vector2f _pos);
@@ -103,6 +145,8 @@ public:
 	void update(std::vector<sf::FloatRect>* geo, float frameTime);
 		
 	void advanceAnimation();
+
+	void refresh();
 
 	Player();
 };

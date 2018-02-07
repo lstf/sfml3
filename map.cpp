@@ -1,5 +1,71 @@
 #include "map.h"
 
+Door::Door()
+{
+	opening = false;
+	traversed = false;
+
+	std::ifstream inp(std::string(DOOR_DIR) + "D.PNG", std::ifstream::binary);
+
+	inp.seekg(0, inp.end);
+	sp_sheet.pngSize = inp.tellg();
+	inp.seekg(0, inp.beg);
+
+	sp_sheet.png = (void*)new char[sp_sheet.pngSize];
+	inp.read((char*)sp_sheet.png, sp_sheet.pngSize);
+
+	sp_sheet.tx.loadFromMemory(sp_sheet.png, sp_sheet.pngSize, sf::IntRect(0,0,32,48));
+	sp.setTexture(sp_sheet.tx);
+
+	sp_sheet.clock.restart();
+	sp_sheet.time = 0;
+	sp_sheet.x = 0;
+	sp_sheet.y = 0;
+	sp_sheet.frameCount = 3;
+	sp_sheet.fps = 6;
+}
+
+void Door::draw(sf::RenderTarget& w, sf::RenderStates states) const
+{
+	w.draw(sp, states);
+}
+
+void Door::open()
+{
+	if (!traversed)
+	{
+		opening = true;	
+	}
+}
+
+void Door::advanceAnimation()
+{
+	sp_sheet.time += sp_sheet.clock.getElapsedTime().asSeconds();
+	if (sp_sheet.time > 1/sp_sheet.fps)
+	{
+		sp_sheet.time = 0;
+		sp_sheet.clock.restart();
+		if (opening)
+		{
+			sp_sheet.x++;
+			if (sp_sheet.x >= sp_sheet.frameCount)
+			{
+				opening = false;
+				traversed = true;
+				sp_sheet.x = 0;
+			}
+			sp_sheet.tx.loadFromMemory(sp_sheet.png, sp_sheet.pngSize, sf::IntRect(sp_sheet.x*32,0,32,48));
+			sp.setTexture(sp_sheet.tx);
+		}
+	}
+	
+}
+
+void Door::update()
+{
+	advanceAnimation();	
+}
+
 void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const
 {
 	if (deco)
@@ -30,9 +96,37 @@ void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const
 			w.draw(gRect, states);
 		}
 	}
+	for (int i = (int)doors.size()-1; i >= 0; i--)
+	{
+		w.draw(*doors.at(i));
+	}
 }
 
+void Map::update(sf::FloatRect player)
+{
+	for (int i = (int)doors.size()-1; i >= 0; i--)
+	{
+		if (doors.at(i)->traversed)
+		{
+			doors.at(i)->traversed = false;
+			nextMap = doors.at(i)->target;
+			nextMap_pos = doors.at(i)->target_pos;
+			return;
+		}
+		if (player.intersects(doors.at(i)->sp.getGlobalBounds())
+			&& sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+		{
+			doors.at(i)->open();
+		}
+		doors.at(i)->update();
+	}
+}
 
+Door* Map::addDoor()
+{
+	doors.push_back(new Door);
+	return doors.at(doors.size()-1);
+}
 
 bool Map::addWall(const sf::Vector2f &_pos, const sf::Vector2f &_size)
 {
@@ -81,6 +175,7 @@ bool Map::saveMap()
 	writeString	(name, map_file);
 	writeVecImg	(bg, map_file);
 	writeVecGeo	(geometry, map_file);
+	writeDoors	(map_file);
 
 	map_file.close();
 	
@@ -118,7 +213,6 @@ void Map::writeVecGeo(std::vector<sf::FloatRect> v, std::ofstream &o)
 	{
 		writeRect(v[i], o);
 	}
-
 }
 
 void Map::writeString(std::string s, std::ofstream &o)
@@ -132,7 +226,19 @@ void Map::writeString(std::string s, std::ofstream &o)
 	}
 }
 
-
+void Map::writeDoors(std::ofstream &o)
+{
+	int length = doors.size();
+	sf::Vector2f sp_pos;
+	o.write((char*)&length, sizeof(length));
+	for (int i = 0; i < length; i++)
+	{
+		sp_pos = doors.at(i)->sp.getPosition();
+		o.write((char*)&sp_pos, sizeof(sp_pos));
+		o.write((char*)&doors.at(i)->target, sizeof(doors.at(i)->target));
+		o.write((char*)&doors.at(i)->target_pos, sizeof(doors.at(i)->target_pos));
+	}
+}
 
 bool Map::loadMap()
 {
@@ -145,6 +251,7 @@ bool Map::loadMap()
 	readString	(name, map_file);
 	if (!readVecImg(bg, map_file)) return false;
 	readVecGeo	(geometry, map_file);
+	readDoors	(map_file);
 
 	map_file.close();
 
@@ -240,7 +347,25 @@ void Map::readString(std::string &s, std::ifstream &inp)
 	}
 }
 
+void Map::readDoors(std::ifstream &inp)
+{
+	int length;
+	int target;
 
+	sf::Vector2f sp_pos;
+
+	inp.read((char*)&length, sizeof(length));
+	for (int i = 0; i < length; i++)
+	{
+		doors.push_back(new Door);
+		inp.read((char*)&sp_pos, sizeof(sp_pos));
+		doors.at(i)->sp.setPosition(sp_pos);
+		inp.read((char*)&target, sizeof(target));
+		doors.at(i)->target = target;
+		inp.read((char*)&sp_pos, sizeof(sp_pos));
+		doors.at(i)->target_pos = sp_pos;
+	}
+}
 
 sf::Texture* Map::getTexture(std::string img_name)
 {
@@ -303,12 +428,21 @@ void Map::select(sf::FloatRect &s, std::vector<sf::FloatRect> &v)
 			}
 		}
 	}
+	for (int i = (int)doors.size()-1; i >= 0; i--)
+	{
+		if (s.intersects(doors.at(i)->sp.getGlobalBounds()))
+		{
+			v.push_back(doors.at(i)->sp.getGlobalBounds());
+			doorSelection.push_back(i);
+		}
+	}
 }
 
 void Map::clearSelect()
 {
 	bgSelection.clear();
 	geometrySelection.clear();
+	doorSelection.clear();
 }
 
 void Map::deleteSelect()
@@ -329,6 +463,14 @@ void Map::deleteSelect()
 		geometry.erase(itg + geometrySelection[i]);
 	}
 	geometrySelection.clear();
+
+	auto itd = doorSelection.begin();
+	length = (int)doorSelection.size();
+	for (int i = 0; i < length; i++)
+	{
+		doorSelection.erase(itd + doorSelection[i]);
+	}
+	doorSelection.clear();
 }
 
 void Map::duplicateSelect()
@@ -382,7 +524,7 @@ Map::Map(std::string _name)
 	deco = true;
 	geom = false;
 	name = _name;
-	
+	nextMap = 0;
 }
 
 Map::~Map()

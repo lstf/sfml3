@@ -12,6 +12,7 @@
 
 #define MAP_DIR "./ats/mps/"
 #define TEX_DIR "./ats/mps/tx/"
+#define DOOR_DIR "./ats/mps/doors/"
 
 struct img
 {
@@ -21,8 +22,47 @@ struct img
 
 struct named_tx
 {
+	void* png;
 	sf::Texture texture;
 	std::string name;
+};
+
+struct DSpriteSheet
+{
+	void* 		png = NULL;
+	sf::Texture tx;
+	int 		pngSize = 0;
+	int 		x = 0;
+	int 		y = 0;
+	int 		frameCount = 1;
+	sf::Clock	clock;
+	float		time = 0;
+	float		fps = 1;
+};
+
+
+class Door : public sf::Drawable
+{
+private:
+	DSpriteSheet sp_sheet;
+	sf::Texture tx;
+	bool opening;
+
+	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
+	
+	
+public:
+	sf::Sprite sp;
+	int target;
+	sf::Vector2f target_pos;
+
+
+	bool traversed;
+	void setTargetPos(sf::Vector2f _target_pos);
+	void open();
+	void advanceAnimation();
+	void update();
+	Door();
 };
 
 class Map : public sf::Drawable
@@ -30,12 +70,13 @@ class Map : public sf::Drawable
 	friend class Editor;
 
 private:
-
 	std::vector<int> bgSelection;
 	std::vector<int> geometrySelection;
+	std::vector<int> doorSelection;
 	std::vector<img*> bg;
 	std::vector<sf::FloatRect> geometry;
 	std::vector<named_tx*> tx;
+	std::vector<Door*> doors;
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
@@ -46,6 +87,8 @@ private:
 	bool deco;		//Draw environment sprites
 	bool geom; 		//Draw geometry
 
+	//Adds Door
+	Door* addDoor();
 	//Adds geometry
 	bool addWall(const sf::Vector2f &_pos, const sf::Vector2f &_size);
 	//Adds decoration
@@ -63,12 +106,14 @@ private:
 		void writeRect		(sf::FloatRect r, std::ofstream &o);
 		void writeVecGeo	(std::vector<sf::FloatRect> v, std::ofstream &o);
 		void writeString	(std::string s, std::ofstream &o);
+		void writeDoors		(std::ofstream &o);
 
 		//loadMap() helper functions
 		bool readVecImg		(std::vector<img*> &v, std::ifstream &inp);
 		void readRect		(sf::FloatRect &r, std::ifstream &inp);
 		void readVecGeo		(std::vector<sf::FloatRect> &v, std::ifstream &inp);
 		void readString		(std::string &s, std::ifstream &inp);
+		void readDoors		(std::ifstream &inp);
 
 	//Returns texture by name
 	sf::Texture* getTexture(std::string img_name);
@@ -91,11 +136,14 @@ private:
 	////
 
 public:
+	int nextMap;
+	sf::Vector2f nextMap_pos;
 	std::string name;
 
 	std::vector<sf::FloatRect>* getGeom();
 
 	//Constructor - Creates Map from map file with _name
+	void update(sf::FloatRect player);
 	Map(std::string _name);
 	bool saveMap();
 	bool loadMap();

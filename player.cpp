@@ -1,5 +1,83 @@
 #include "player.h"
 
+Weapon::Weapon()
+{
+	std::ifstream inp(std::string(PLAY_DIR) + "W.PNG", std::ifstream::binary);
+	if (!inp.is_open())
+	{
+		//Bad
+	}
+	else 
+	{
+		inp.seekg(0, inp.end);
+		sp_sheet.pngSize = inp.tellg();
+		inp.seekg(0, inp.beg);
+
+		sp_sheet.png = (void*)new char[sp_sheet.pngSize];
+		inp.read((char*)sp_sheet.png, sp_sheet.pngSize);
+
+		tx.loadFromMemory(sp_sheet.png, sp_sheet.pngSize, sf::IntRect(0,0,32,32));
+		sp.setTexture(tx);
+
+		sp_sheet.clock.restart();
+		sp_sheet.time = 0;
+		sp_sheet.x = 0;
+		sp_sheet.y = 0;
+		sp_sheet.frameCount = 4;
+		sp_sheet.dir = RIGHT;
+		sp_sheet.fps = 6;
+
+		active = false;
+	}
+}
+
+void Weapon::advanceAnimation()
+{
+	sp_sheet.time += sp_sheet.clock.getElapsedTime().asSeconds();
+	if (sp_sheet.time > 1/sp_sheet.fps)
+	{
+		sp_sheet.clock.restart();
+		sp_sheet.x++;
+		if (sp_sheet.x >= sp_sheet.frameCount)
+		{
+			active = false;
+			sp_sheet.x = 0;
+		}
+		sp_sheet.y =  sp_sheet.dir == RIGHT ? 0 : 1;
+
+		tx.loadFromMemory(sp_sheet.png, sp_sheet.pngSize, sf::IntRect(sp_sheet.x*32, sp_sheet.y*32, 32, 32));
+		sp.setTexture(tx);
+	}
+}
+
+void Weapon::draw(sf::RenderTarget& w, sf::RenderStates states) const
+{
+	w.draw(sp, states);
+}
+
+
+void Weapon::attack()
+{
+	if (!active)
+	{
+		active = true;
+	}
+}
+
+void Weapon::setDirection(Animation _a)
+{
+	sp_sheet.dir = _a;
+	sp_sheet.x = -1;
+	advanceAnimation();
+}
+
+void Weapon::setPosition(sf::Vector2f _pos)
+{
+	sf::Vector2f offset(0,0);
+	offset.x = sp_sheet.dir == RIGHT ? 16 : -16;
+	sp.setPosition(_pos + offset);
+}
+
 void Player::setState(States _state)
 {
 	state = _state;
@@ -50,10 +128,9 @@ void Player::draw(sf::RenderTarget& w, sf::RenderStates states) const
 
 		down.setPosition(collide.left[i].p);
 		if (collide.left[i].c) w.draw(down, states);
-
-
 	}
 	w.draw(sp, states);
+	w.draw(weapon, states);
 }
 
 void Player::handleInput(sf::Event event)
@@ -61,6 +138,10 @@ void Player::handleInput(sf::Event event)
 	input.left = sf::Keyboard::isKeyPressed(sf::Keyboard::Left);
 	input.right = sf::Keyboard::isKeyPressed(sf::Keyboard::Right);
 
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
+	{
+		weapon.attack();
+	}
 	if (event.type == sf::Event::KeyPressed)
 	{
 		//Pick most recent direction so left + right doesnt stop movement
@@ -78,10 +159,12 @@ void Player::handleInput(sf::Event event)
 	if (input.left)
 	{
 		setState(WALKING_LEFT);
+		weapon.setDirection(LEFT);
 	}
 	else if (input.right)
 	{
 		setState(WALKING_RIGHT);
+		weapon.setDirection(RIGHT);
 	}
 	if (!input.left && !input.right)
 	{
@@ -119,16 +202,12 @@ void Player::updateCollide(std::vector<sf::FloatRect>* geo)
 	collide.left[T].c = false;
 	collide.left[M].c = false;
 	collide.left[D].c = false;
-	collide.bl.c = false;
-	collide.br.c = false;
 	collide.top[L].p = sp.getPosition() + sf::Vector2f(0, 0);
 	collide.top[M].p = collide.top[L].p + sf::Vector2f(16.0, 0);
 	collide.top[R].p = collide.top[L].p + sf::Vector2f(31.0, 0);
 	collide.down[L].p = collide.top[L].p + sf::Vector2f(0, 47.0);
 	collide.down[M].p = collide.down[L].p + sf::Vector2f(16.0, 0);
 	collide.down[R].p = collide.down[L].p + sf::Vector2f(31.0, 0);
-	collide.br.p = collide.down[R].p + sf::Vector2f(2.0, 0);
-	collide.bl.p = collide.down[L].p - sf::Vector2f(2.0, 0);
 	collide.right[T].p = collide.top[L].p + sf::Vector2f(31.0, 0);
 	collide.right[M].p = collide.right[T].p + sf::Vector2f(0, 24.0);
 	collide.right[D].p = collide.right[T].p + sf::Vector2f(0, 47.0);
@@ -171,14 +250,6 @@ void Player::updateCollide(std::vector<sf::FloatRect>* geo)
 			{
 				collide.right[j].i = i;
 				collide.right[j].c = true;
-			}
-			if ((*geo)[i].contains(collide.br.p))
-			{
-				collide.br.c = true;
-			}
-			if ((*geo)[i].contains(collide.bl.p))
-			{
-				collide.bl.c = true;
 			}
 		}
 	}
@@ -273,7 +344,6 @@ void Player::update(std::vector<sf::FloatRect>* geo, float frameTime)
 			!old_collision.left[D].c)
 		{
 			velocity.x = -1*frameTime*speed;
-			colbox.down.left -= frameTime*speed;
 		}
 		else if (state == WALKING_RIGHT &&
 				!old_collision.right[T].c &&
@@ -281,9 +351,12 @@ void Player::update(std::vector<sf::FloatRect>* geo, float frameTime)
 				!old_collision.right[D].c)
 		{
 			velocity.x = frameTime*speed;
-			colbox.down.left += frameTime*speed;
 		}
 		advanceAnimation();
+	}
+	if (weapon.active)
+	{
+		weapon.advanceAnimation();
 	}
 
 	bool moved;
@@ -319,6 +392,13 @@ void Player::update(std::vector<sf::FloatRect>* geo, float frameTime)
 			}
 		}
 	}
+	refresh();
+}
+
+void Player::refresh()
+{
+	weapon.setPosition(sp.getPosition());
+	view.setCenter(sp.getPosition());
 }
 
 void Player::advanceAnimation()
@@ -362,19 +442,13 @@ Player::Player()
 		state = STANDING;
 		stateModified = false;
 		speed = 200;
-		colbox.down.top = 48;
-		colbox.down.left = 0;
-		colbox.down.width = 32;
-		colbox.down.height = 1;
-		colbox.right.top = 0;
-		colbox.right.left = 32;
-		colbox.right.width = 1;
-		colbox.right.height = 48;
 		fallA = 10;
-		fallS = 0.0;
 		fallM = 10.0;
 		velocity = sf::Vector2f(0,0);
 		fresh = true;
+		view.setSize(960,480);
+		view.setCenter(0,0);
+
 	}
 }
 

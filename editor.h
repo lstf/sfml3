@@ -13,7 +13,10 @@ enum Modes
 {
 	EDIT,
 	GEOM,
-	DECO
+	DECO,
+	PLAY,
+	DOOR,
+	DOOR_TARGET
 };
 
 class Editor: public sf::Drawable
@@ -36,6 +39,8 @@ private:
 		bool 		console;		//True if console active
 		//Print help screen
 		void helpCommand();
+		//Door subprogram
+		void doorCommand();
 		//Quit subprogram
 		void quitCommand(const std::string &_arg);
 		//Toggles boolean and prints message to screen
@@ -61,10 +66,10 @@ private:
 		std::vector<sf::FloatRect> 	selection;		//Rect locations of selected objects
 
 
+	Door* door;
+
 	bool imgView;	//True if img pane active
 
-	//Set Mode 
-	void setMode(Modes _mode);
 	//Returns true if unsaved maps exist and lists them in unsaved
 	bool checkUnsaved(std::string &unsaved);
 	//Returns index of mapName if it exists and -1 otherwise
@@ -76,6 +81,11 @@ private:
 public:
 	sf::View 			view;			//Editor centered view
 	int					map_index;		//working map index
+
+	//Set Mode 
+	void setMode(Modes _mode);
+
+	sf::View getView();
 
 	Editor(sf::RenderWindow* _w, Player* _p, std::vector<Map*>* _maps, sf::Font &_font);
 

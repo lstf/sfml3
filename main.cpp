@@ -87,11 +87,22 @@ int main()
 
 		//updates
 		player.update(maps[editor.map_index]->getGeom(), frameTime);
+		maps[editor.map_index]->update(player.sp.getGlobalBounds());
+		if (maps[editor.map_index]->nextMap != 0)
+		{
+			int map_i = maps[editor.map_index]->nextMap;
+			maps[editor.map_index]->nextMap = 0;
+			player.sp.setPosition(maps[editor.map_index]->nextMap_pos);
+			player.refresh();
+			editor.map_index = map_i;
+			std::cout << "X: " << player.sp.getPosition().x << "Y: " << player.sp.getPosition().y << std::endl;
+			std::cout << editor.map_index << std::endl;
+		}
 
 		//Drawing
         w::window.clear();
 
-		w::window.setView(editor.view);
+		w::window.setView(editor.getView());
 
 		w::window.draw(*(maps[editor.map_index]));
 		w::window.draw(player);
