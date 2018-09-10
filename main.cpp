@@ -8,6 +8,8 @@
 #include "editor.h"
 #include "player.h"
 
+#include "dbox.h"
+
 int main()
 {
 	sf::Font thintel;
@@ -26,6 +28,8 @@ int main()
 	std::vector<Map*> maps;
 	std::string map_name;
 	int 		map_count;
+
+	Player player;
 
 	maps.push_back(new Map("null map"));
 
@@ -46,12 +50,11 @@ int main()
 		{
 			std::cout << std::string("(map load) Failed to open ") + MAP_DIR + map_name;
 		}
+		maps[maps.size()-1]->setPlayer(&player);
 	}
 
 	maps_file.close();
 
-
-	Player player;
 
 
 	//Editor setup
@@ -80,20 +83,23 @@ int main()
                 w::window.close();
 			}
 
+
 			//Send event to listening classes
 			editor.handleInput(event);
 			player.handleInput(event);
+			maps[editor.map_index]->handleInput(event);
 		}	
 
 		//updates
 		player.update(maps[editor.map_index]->getGeom(), frameTime);
-		maps[editor.map_index]->update(player.sp.getGlobalBounds());
+		maps[editor.map_index]->update();
 		if (maps[editor.map_index]->nextMap != 0)
 		{
 			int map_i = maps[editor.map_index]->nextMap;
 			maps[editor.map_index]->nextMap = 0;
 			player.sp.setPosition(maps[editor.map_index]->nextMap_pos);
 			player.refresh();
+			player.unpause();
 			editor.map_index = map_i;
 			std::cout << "X: " << player.sp.getPosition().x << "Y: " << player.sp.getPosition().y << std::endl;
 			std::cout << editor.map_index << std::endl;
@@ -121,7 +127,7 @@ int main()
 	}
 	
 	maps_file_out << maps.size()-1 << std::endl;
-	for (int i = 1; i < maps.size(); i++)
+	for (unsigned int i = 1; i < maps.size(); i++)
 	{
 		maps_file_out << maps[i]->name << std::endl;
 	}

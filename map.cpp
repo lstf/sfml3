@@ -66,6 +66,11 @@ void Door::update()
 	advanceAnimation();	
 }
 
+void Map::setPlayer(Player* p)
+{
+	player = p;
+}
+
 void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const
 {
 	if (deco)
@@ -102,7 +107,26 @@ void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const
 	}
 }
 
-void Map::update(sf::FloatRect player)
+void Map::handleInput(sf::Event event)
+{
+	if (event.type == sf::Event::KeyPressed)
+	{
+		if (event.key.code == sf::Keyboard::Up)
+		{
+			for (int i = (int)doors.size()-1; i >= 0; i--)
+			{
+				if (player->sp.getGlobalBounds().intersects(doors.at(i)->sp.getGlobalBounds()))
+				{
+					player->pause();
+					doors.at(i)->open();
+					break;
+				}
+			}		
+		}
+	}
+}
+
+void Map::update()
 {
 	for (int i = (int)doors.size()-1; i >= 0; i--)
 	{
@@ -112,11 +136,6 @@ void Map::update(sf::FloatRect player)
 			nextMap = doors.at(i)->target;
 			nextMap_pos = doors.at(i)->target_pos;
 			return;
-		}
-		if (player.intersects(doors.at(i)->sp.getGlobalBounds())
-			&& sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-		{
-			doors.at(i)->open();
 		}
 		doors.at(i)->update();
 	}

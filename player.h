@@ -8,6 +8,12 @@
 
 #include <SFML/Graphics.hpp>
 
+//BLOOD TEST CODE
+//
+#include "blood.h"
+//
+#include "txmap.h"
+
 #define PLAY_DIR "./ats/player/"
 #define PLAY_FPS 12.0
 
@@ -101,8 +107,7 @@ class Player : public sf::Drawable
 { 
 private:
 	std::vector<sf::FloatRect>* geometry;
-	void* spriteSheet;
-	int spriteSheetLength;
+	Png png;
 	sf::Clock animationClock;
 	float animationTime;
 	int animationCol;
@@ -119,9 +124,12 @@ private:
 	CollisionPoints collide;
 	bool fresh;
 	Weapon weapon;
+	bool paused;
 
-
-
+	//BLOOD TEST CODE
+	//
+	Blood blood;
+	//
 
 	void updateCollide(std::vector<sf::FloatRect>* geo);
 
@@ -137,6 +145,10 @@ public:
 	sf::Sprite sp;
 
 	sf::View view;
+
+	void pause();
+
+	void unpause();
 
 	void handleInput(sf::Event event);
 

@@ -2,33 +2,22 @@
 
 Weapon::Weapon()
 {
-	std::ifstream inp(std::string(PLAY_DIR) + "W.PNG", std::ifstream::binary);
-	if (!inp.is_open())
-	{
-		//Bad
-	}
-	else 
-	{
-		inp.seekg(0, inp.end);
-		sp_sheet.pngSize = inp.tellg();
-		inp.seekg(0, inp.beg);
+	Png png = txmap::get_png(std::string(PLAY_DIR) + "W.PNG");
+	sp_sheet.png = png.mem;
+	sp_sheet.pngSize = png.length;
 
-		sp_sheet.png = (void*)new char[sp_sheet.pngSize];
-		inp.read((char*)sp_sheet.png, sp_sheet.pngSize);
+	tx.loadFromMemory(sp_sheet.png, sp_sheet.pngSize, sf::IntRect(0,0,32,32));
+	sp.setTexture(tx);
 
-		tx.loadFromMemory(sp_sheet.png, sp_sheet.pngSize, sf::IntRect(0,0,32,32));
-		sp.setTexture(tx);
+	sp_sheet.clock.restart();
+	sp_sheet.time = 0;
+	sp_sheet.x = 0;
+	sp_sheet.y = 0;
+	sp_sheet.frameCount = 4;
+	sp_sheet.dir = RIGHT;
+	sp_sheet.fps = 6;
 
-		sp_sheet.clock.restart();
-		sp_sheet.time = 0;
-		sp_sheet.x = 0;
-		sp_sheet.y = 0;
-		sp_sheet.frameCount = 4;
-		sp_sheet.dir = RIGHT;
-		sp_sheet.fps = 6;
-
-		active = false;
-	}
+	active = false;
 }
 
 void Weapon::advanceAnimation()
@@ -84,20 +73,30 @@ void Player::setState(States _state)
 	stateModified = true;
 }
 
+void Player::pause()
+{
+	paused = true;
+}
+
+void Player::unpause()
+{
+	paused = false;
+}
+
 void Player::setAnimation(Animation a)
 {
 	animationCol = 0;
 
 	switch(a)
 	{
-		case RIGHT:
-			animationRow = 0;
-			animationFrameCount = 6;
-	break;
+	case RIGHT:
+		animationRow = 0;
+		animationFrameCount = 6;
+		break;
 	case LEFT:
 		animationRow = 1;
 		animationFrameCount = 6;
-	break;	
+		break;	
 	}
 }
 
@@ -131,10 +130,19 @@ void Player::draw(sf::RenderTarget& w, sf::RenderStates states) const
 	}
 	w.draw(sp, states);
 	w.draw(weapon, states);
+	//BLOOD TEST CODE
+	//
+	w.draw(blood, states);
+	/////////////////
 }
 
 void Player::handleInput(sf::Event event)
 {
+	if (paused)
+	{
+		return;
+	}
+
 	input.left = sf::Keyboard::isKeyPressed(sf::Keyboard::Left);
 	input.right = sf::Keyboard::isKeyPressed(sf::Keyboard::Right);
 
@@ -172,7 +180,10 @@ void Player::handleInput(sf::Event event)
 	}
 	if (event.type == sf::Event::MouseButtonPressed)
 	{
-	
+		//BLOOD TEST CODE
+		//
+		blood.shoot_blood(50, sp.getPosition(), 0, .8, 10);
+		////////////////
 	}
 }
 
@@ -285,6 +296,15 @@ bool Player::collisionResolver(sf::Vector2f op, std::vector<sf::FloatRect>* geo)
 
 void Player::update(std::vector<sf::FloatRect>* geo, float frameTime)
 {
+	//BLOOD TEST CODE
+	//
+	blood.update(geo, frameTime);
+	////////////////
+	if (paused)
+	{
+		return;
+	}
+
 	if (fresh)
 	{
 		updateCollide(geo);
@@ -403,7 +423,6 @@ void Player::refresh()
 
 void Player::advanceAnimation()
 {
-	
 	animationTime += animationClock.getElapsedTime().asSeconds();
 	if (animationTime > 1/PLAY_FPS)
 	{
@@ -412,7 +431,7 @@ void Player::advanceAnimation()
 		animationCol++;
 		animationCol %= animationFrameCount;
 
-		tx.loadFromMemory(spriteSheet, spriteSheetLength, sf::IntRect(animationCol*32, animationRow*48,32,48));
+		tx.loadFromMemory(png.mem, png.length, sf::IntRect(animationCol*32, animationRow*48,32,48));
 		sp.setTexture(tx);
 	}
 }
@@ -420,35 +439,25 @@ void Player::advanceAnimation()
 
 Player::Player()
 {
-	std::ifstream inp(std::string(PLAY_DIR) + "P.PNG", std::ifstream::binary);
-	if (!inp.is_open())
-	{
-		//Bad
-	}
-	else 
-	{
-		inp.seekg(0, inp.end);
-		spriteSheetLength = inp.tellg();
-		inp.seekg(0, inp.beg);
-		spriteSheet = (void*)new char[spriteSheetLength];
-		inp.read((char*)spriteSheet, spriteSheetLength);
-		tx.loadFromMemory(spriteSheet, spriteSheetLength, sf::IntRect(0,0,32,48));
-		sp.setTexture(tx);
-		animationClock.restart();
-		animationTime = 0;
-		animationCol = 0;
-		animationFrameCount = 1;
-		animationRow = 0;
-		state = STANDING;
-		stateModified = false;
-		speed = 200;
-		fallA = 10;
-		fallM = 10.0;
-		velocity = sf::Vector2f(0,0);
-		fresh = true;
-		view.setSize(960,480);
-		view.setCenter(0,0);
+	png = txmap::get_png(std::string(PLAY_DIR) + "P.PNG");
+	tx.loadFromMemory(png.mem, png.length, sf::IntRect(0,0,32,48));
 
-	}
+	sp.setTexture(tx);
+
+	animationClock.restart();
+	animationTime = 0;
+	animationCol = 0;
+	animationFrameCount = 1;
+	animationRow = 0;
+	state = STANDING;
+	stateModified = false;
+	speed = 200;
+	fallA = 10;
+	fallM = 10.0;
+	velocity = sf::Vector2f(0,0);
+	fresh = true;
+	view.setSize(960,480);
+	view.setCenter(0,0);
+	paused = false;
 }
 

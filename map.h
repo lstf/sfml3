@@ -10,6 +10,8 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "player.h"
+
 #define MAP_DIR "./ats/mps/"
 #define TEX_DIR "./ats/mps/tx/"
 #define DOOR_DIR "./ats/mps/doors/"
@@ -137,13 +139,16 @@ private:
 
 public:
 	int nextMap;
+	Player* player;
 	sf::Vector2f nextMap_pos;
 	std::string name;
 
 	std::vector<sf::FloatRect>* getGeom();
 
 	//Constructor - Creates Map from map file with _name
-	void update(sf::FloatRect player);
+	void setPlayer(Player* p);
+	void handleInput(sf::Event event);
+	void update();
 	Map(std::string _name);
 	bool saveMap();
 	bool loadMap();
