@@ -7,7 +7,13 @@
 #include <SFML/Graphics.hpp>
 
 #include "map.h"
+#include "entity.h"
 #include "player.h"
+#include "sign.h"
+#include "enemy.h"
+#include "testenemy.h"
+
+#define ABS(x) ((x) < 0 ? (x) * -1 : (x))
 
 enum Modes
 {
@@ -16,7 +22,9 @@ enum Modes
 	DECO,
 	PLAY,
 	DOOR,
-	DOOR_TARGET
+	DOOR_TARGET,
+	SIGN,
+	ENEMY
 };
 
 class Editor: public sf::Drawable
@@ -49,6 +57,8 @@ private:
 		void mapCommand();
 		//Img subprogram
 		void imgCommand();
+		void signCommand();
+		void enemyCommand();
 		//Print unknown command to screen in message
 		void unknownCommand();
 		
@@ -64,6 +74,8 @@ private:
 		bool 						mouse_middle;	//True if middle button active 
 		bool 						selectClicked;	//True if selection left clicked
 		std::vector<sf::FloatRect> 	selection;		//Rect locations of selected objects
+		Entity*						active_ent;
+		Enemy*						active_enm;
 
 
 	Door* door;
@@ -81,6 +93,8 @@ private:
 public:
 	sf::View 			view;			//Editor centered view
 	int					map_index;		//working map index
+
+	bool consoleActive();
 
 	//Set Mode 
 	void setMode(Modes _mode);

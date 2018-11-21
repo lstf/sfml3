@@ -1,31 +1,10 @@
 #include "dbox.h"
 
-void stringBreak(queue<string> &l, string msg)
+void DBox::init()
 {
-	string word;
-
-	for (auto it = msg.begin(); it != msg.end(); it++)
-	{
-		if (*it == ' ')
-		{
-			l.push(word);
-			word = "";
-		}
-		else
-		{
-			word += *it;
-		}
-	}
-	if (word != "")
-	{
-		l.push(word);
-	}
-}
-
-DBox::DBox()
-{
-	tx.loadFromFile(ATS_DIR + string("dbg.png"));
-	sp.setTexture(tx);
+	prev_paused = isPaused();
+	pause();
+	sp.setTexture(*txmap::get_tx("ats/dbg.png"));
 	font.loadFromFile(ATS_DIR + string("fonts/thintel.ttf"));
 	text.setFont(font);
 	text.setCharacterSize(32);
@@ -45,6 +24,29 @@ DBox::DBox()
 	text.setPosition(text_x, text_y);
 }
 
+DBox::DBox(DBox** p, string file)
+{
+	ptr = p;
+	init();
+
+	ifstream f(file.c_str());
+	if (!f.is_open())
+	{
+		setText("Could not find text file");
+		return;
+	}
+
+	string line;
+
+	while (getline(f, line))
+	{
+		lines.push(line);
+		lines.back() += "\n";
+	}
+
+	fillBox();	
+}
+
 void DBox::draw(sf::RenderTarget& w, sf::RenderStates states) const
 {
 	sf::View temp = w.getView();
@@ -56,29 +58,49 @@ void DBox::draw(sf::RenderTarget& w, sf::RenderStates states) const
 
 void DBox::fillBox()
 {
-	string prev;
-	string next;
+	string msg;
 	text.setString("");
-	while (!words.empty())
+	for (int i = 0; i < 4; i++)
 	{
-		prev = text.getString();
-		next = prev + (prev == "" ? string("") : string(" ")) + words.front();
-		text.setString(next);
-		if (text.getLocalBounds().width > text_width)
+		if (!lines.empty())
 		{
-			text.setString(prev + string("\n") + words.front());
+			msg += lines.front();
+			lines.pop();
 		}
-		if (text.getLocalBounds().height > text_height)
+		else
 		{
-			text.setString(prev);
+			text.setString(msg);
 			return;
 		}
-		words.pop();
 	}
+	text.setString(msg);
 }
 
 void DBox::setText(string msg)
 {
-	words = queue<string>();
-	stringBreak(words, msg);
+	lines = queue<string>();
+	lines.push(msg);
+	fillBox();
+}
+
+void DBox::update(sf::Event e)
+{
+	if (e.type == sf::Event::KeyPressed)
+	{
+		if (e.key.code == sf::Keyboard::X ||
+			e.key.code == sf::Keyboard::Z)
+		{
+			fillBox();
+		}
+
+	}
+	if (text.getString() == "")
+	{
+		if (!prev_paused)
+		{
+			unpause();
+		}
+		*ptr = NULL;
+		delete this;
+	}
 }

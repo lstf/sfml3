@@ -67,20 +67,14 @@ void Weapon::setPosition(sf::Vector2f _pos)
 	sp.setPosition(_pos + offset);
 }
 
+sf::FloatRect Weapon::bounds() {
+	return sp.getGlobalBounds();
+}
+
 void Player::setState(States _state)
 {
 	state = _state;
 	stateModified = true;
-}
-
-void Player::pause()
-{
-	paused = true;
-}
-
-void Player::unpause()
-{
-	paused = false;
 }
 
 void Player::setAnimation(Animation a)
@@ -130,21 +124,19 @@ void Player::draw(sf::RenderTarget& w, sf::RenderStates states) const
 	}
 	w.draw(sp, states);
 	w.draw(weapon, states);
-	//BLOOD TEST CODE
-	//
-	w.draw(blood, states);
-	/////////////////
 }
 
 void Player::handleInput(sf::Event event)
 {
-	if (paused)
+	if (isPaused())
 	{
 		return;
 	}
 
 	input.left = sf::Keyboard::isKeyPressed(sf::Keyboard::Left);
 	input.right = sf::Keyboard::isKeyPressed(sf::Keyboard::Right);
+	input.down = sf::Keyboard::isKeyPressed(sf::Keyboard::Down);
+	input.up = sf::Keyboard::isKeyPressed(sf::Keyboard::Up);
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
 	{
@@ -163,6 +155,15 @@ void Player::handleInput(sf::Event event)
 		{
 			input.left = false;
 		}
+		else if (event.key.code == sf::Keyboard::Up && input.down) {
+			input.down = false;
+		}
+		else if (event.key.code == sf::Keyboard::Down && input.up) {
+			input.up = false;
+		}
+		else if (event.key.code == sf::Keyboard::Z) {
+			input.jump = true;
+		}
 	}
 	if (input.left)
 	{
@@ -178,12 +179,9 @@ void Player::handleInput(sf::Event event)
 	{
 		setState(STANDING);
 	}
-	if (event.type == sf::Event::MouseButtonPressed)
+	if (input.up)
 	{
-		//BLOOD TEST CODE
-		//
-		blood.shoot_blood(50, sp.getPosition(), 0, .8, 10);
-		////////////////
+		interaction = true;
 	}
 }
 
@@ -294,13 +292,9 @@ bool Player::collisionResolver(sf::Vector2f op, std::vector<sf::FloatRect>* geo)
 	return moved;
 }
 
-void Player::update(std::vector<sf::FloatRect>* geo, float frameTime)
+void Player::update(std::vector<sf::FloatRect>* geo, double frameTime)
 {
-	//BLOOD TEST CODE
-	//
-	blood.update(geo, frameTime);
-	////////////////
-	if (paused)
+	if (isPaused())
 	{
 		return;
 	}
@@ -320,17 +314,19 @@ void Player::update(std::vector<sf::FloatRect>* geo, float frameTime)
 		!old_collision.down[M].c &&
 		!old_collision.down[L].c)
 	{
-		velocity.y += frameTime*fallA;
-		velocity.y = velocity.y > fallM ? fallM : velocity.y;
+		velocity.y += frameTime*frameTime*fallA;
+		velocity.y = velocity.y > fallM*frameTime ? fallM*frameTime : velocity.y;
 	}
 	else 
 	{
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) &&
-			!old_collision.top[L].c &&
-			!old_collision.top[M].c &&
-			!old_collision.top[R].c)
-		{
-			velocity.y = -5;
+		if (input.jump) {
+			if (!old_collision.top[L].c &&
+				!old_collision.top[M].c &&
+				!old_collision.top[R].c)
+			{
+				velocity.y = jumph*frameTime;
+			}
+			input.jump = false;
 		}
 		else
 		{
@@ -436,6 +432,13 @@ void Player::advanceAnimation()
 	}
 }
 
+sf::FloatRect Player::weaponBounds() {
+	return weapon.bounds();
+}
+
+bool Player::weaponActive() {
+	return weapon.active;
+}
 
 Player::Player()
 {
@@ -452,12 +455,24 @@ Player::Player()
 	state = STANDING;
 	stateModified = false;
 	speed = 200;
-	fallA = 10;
-	fallM = 10.0;
+	fallA = 1000;
+	fallM = 1000;
+	jumph = -400;
 	velocity = sf::Vector2f(0,0);
 	fresh = true;
+	interaction = false;
 	view.setSize(960,480);
 	view.setCenter(0,0);
-	paused = false;
 }
 
+sf::FloatRect Player::bounds() {
+	return sp.getGlobalBounds();
+}
+
+bool Player::interacted() {
+	if (interaction) {
+		interaction = false;
+		return true;
+	}
+	return false;
+}

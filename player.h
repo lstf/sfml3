@@ -8,10 +8,7 @@
 
 #include <SFML/Graphics.hpp>
 
-//BLOOD TEST CODE
-//
-#include "blood.h"
-//
+#include "game.h"
 #include "txmap.h"
 
 #define PLAY_DIR "./ats/player/"
@@ -61,6 +58,9 @@ struct InputBools
 {
 	bool left = false;
 	bool right = false;
+	bool up = false;
+	bool down = false;
+	bool jump = false;
 };
 
 struct SpriteSheet
@@ -99,11 +99,13 @@ public:
 
 	void setPosition(sf::Vector2f _pos);
 
+	sf::FloatRect bounds();
+
 	Weapon();
 
 };
 
-class Player : public sf::Drawable
+class Player : public sf::Drawable , public Game_State 
 { 
 private:
 	std::vector<sf::FloatRect>* geometry;
@@ -119,17 +121,13 @@ private:
 	bool stateModified;
 	int speed;
 	int fallA;
-	float fallM;
+	int fallM;
+	int jumph;
 	sf::Vector2f velocity;
 	CollisionPoints collide;
 	bool fresh;
 	Weapon weapon;
-	bool paused;
-
-	//BLOOD TEST CODE
-	//
-	Blood blood;
-	//
+	bool interaction;
 
 	void updateCollide(std::vector<sf::FloatRect>* geo);
 
@@ -146,19 +144,23 @@ public:
 
 	sf::View view;
 
-	void pause();
+	sf::FloatRect bounds();
 
-	void unpause();
+	bool interacted();
 
 	void handleInput(sf::Event event);
 
 	void setPosition(sf::Vector2f _pos);
 
-	void update(std::vector<sf::FloatRect>* geo, float frameTime);
+	void update(std::vector<sf::FloatRect>* geo, double frameTime);
 		
 	void advanceAnimation();
 
 	void refresh();
+
+	sf::FloatRect weaponBounds();
+
+	bool weaponActive();
 
 	Player();
 };

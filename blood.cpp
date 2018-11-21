@@ -25,7 +25,7 @@ Blood_drop::Blood_drop(sf::Vector2f pos, float theta, float var, float vel)
 	r.setFillColor(sf::Color::Red);
 }
 
-void Blood_drop::update(vector<sf::FloatRect>* geo, float frameTime)
+void Blood_drop::update(vector<sf::FloatRect>* geo, double frameTime)
 {
 	if (!stationary)
 	{
@@ -35,7 +35,8 @@ void Blood_drop::update(vector<sf::FloatRect>* geo, float frameTime)
 		r.move(velocity);
 		for (auto it = geo->begin(); it != geo->end(); it++)
 		{
-			if (r.getGlobalBounds().intersects(*it))
+			if (r.getGlobalBounds().intersects(*it) &&
+				(rand() % 4) == 0)
 			{
 				stationary = true;
 			}
@@ -51,11 +52,13 @@ void Blood::draw(sf::RenderTarget& w, sf::RenderStates states) const
 	}
 }
 
+
 Blood::Blood()
 {
+	maxbloods = 256;
 }
 
-void Blood::update(vector<sf::FloatRect>* geo, float frameTime)
+void Blood::update(vector<sf::FloatRect>* geo, double frameTime)
 {
 	for (auto it = bloods.begin(); it != bloods.end(); it++)
 	{
@@ -70,7 +73,10 @@ void Blood::shoot_blood(int quantity, sf::Vector2f pos, float theta, float var, 
 {
 	for (int i = 0; i < quantity; i++)
 	{
-		bloods.push_back(Blood_drop(pos,theta,var,vel));
+		bloods.push_front(Blood_drop(pos,theta,var,vel));
+	}
+	for (int i = bloods.size() - maxbloods; i > 0; i--) {
+		bloods.pop_back();
 	}
 }
 

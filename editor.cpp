@@ -6,8 +6,14 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const
 
 	if (snap)
 	{
+		sf::RectangleShape rc;
 		sf::RectangleShape r;
 		sf::Color color(255,0,0,32);
+
+		rc.setSize(sf::Vector2f(1920,1080));
+		rc.setOutlineThickness(2.0);
+		rc.setOutlineColor(sf::Color::Red);
+		rc.setFillColor(sf::Color::Transparent);
 		r.setSize(sf::Vector2f(32,32));
 		r.setOutlineThickness(1.0);
 		r.setOutlineColor(color);
@@ -25,6 +31,7 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const
 				w.draw(r, states);
 			}
 		}
+		w.draw(rc, states);
 	}
 
 	//Scrolling
@@ -133,6 +140,11 @@ bool Editor::getConsoleInput(const sf::Event &event, std::string &str)
 	}
 
 	return true;
+}
+
+bool Editor::consoleActive()
+{
+	return console;
 }
 
 sf::Vector2f Editor::getMouseCoordinates()
@@ -254,6 +266,8 @@ void Editor::setMode(Modes _mode)
 	}
 	else if (_mode == DOOR_TARGET)
 	{
+	}
+	else if (_mode == SIGN) {
 	}
 }
 
@@ -446,6 +460,15 @@ void Editor::imgCommand()
 	else unknownCommand();
 }
 
+void Editor::signCommand() {
+	active_ent = new Sign("ats/text/"+command.substr(5,16));
+	setMode(SIGN);
+}
+
+void Editor::enemyCommand() {
+	active_enm = new Test_Enemy();
+	setMode(ENEMY);
+}
 
 void Editor::doorCommand()
 {
@@ -561,6 +584,12 @@ void Editor::handleInput(sf::Event event)
 				{
 					imgCommand();
 				}
+				else if (command.substr(0,4) ==	"SIGN") {
+					signCommand();
+				}
+				else if (command.substr(0,5) ==	"ENEMY") {
+					enemyCommand();
+				}
 				else
 				{
 					unknownCommand();
@@ -652,6 +681,14 @@ void Editor::handleInput(sf::Event event)
 			player->setPosition(mouse_pos);
 			setMode(EDIT);
 		}
+		else if (mode == SIGN) {
+			active_ent = NULL;
+			setMode(EDIT);
+		}
+		else if (mode == ENEMY) {
+			active_enm = NULL;
+			setMode(EDIT);
+		}
 	}
 	//
 	// Left Mouse Up
@@ -669,7 +706,11 @@ void Editor::handleInput(sf::Event event)
 		{
 			orient(mouse_pos, prev_mouse_pos);
 
-			(*maps)[map_index]->addWall(mouse_pos, prev_mouse_pos - mouse_pos);
+			if (!(ABS(mouse_pos.x - prev_mouse_pos.x) < 1) && 
+				!(ABS(mouse_pos.y - prev_mouse_pos.y) < 1))
+			{
+				(*maps)[map_index]->addWall(mouse_pos, prev_mouse_pos - mouse_pos);
+			}
 		}
 		else if (mode == EDIT)
 		{
@@ -727,12 +768,17 @@ void Editor::handleInput(sf::Event event)
 			{
 				mouse_pos = move_mouse_pos;
 
-				(*maps)[map_index]->moveSelect(move_mouse_pos - prev_mouse_pos);
+				(*maps)[map_index]->moveSelect(move_mouse_pos - prev_mouse_pos, snap);
 
 				for (int i = selection.size()-1; i >= 0; i--)
 				{
 					selection[i].top += (move_mouse_pos - prev_mouse_pos).y;
 					selection[i].left += (move_mouse_pos - prev_mouse_pos).x;
+					if (snap)
+					{
+						selection[i].top -= (int)selection[i].top % 32;
+						selection[i].left -= (int)selection[i].left % 32;
+					}
 				}
 			}
 			else
@@ -757,6 +803,12 @@ void Editor::handleInput(sf::Event event)
 		else if (mode == DOOR && !mouse_middle)
 		{
 			door->sp.setPosition(move_mouse_pos + sf::Vector2f(0,16));
+		}
+		else if (mode == SIGN) {
+			((Sign*)active_ent)->place(move_mouse_pos);
+		}
+		else if (mode == ENEMY) {
+			((Test_Enemy*)active_enm)->place(move_mouse_pos);
 		}
 		if (mouse_middle)
 		{

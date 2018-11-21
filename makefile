@@ -1,7 +1,7 @@
 EXEC	=game
 CC		=g++
 FLAGS	=-Wall -Wextra -Wpedantic
-LIB		=-lsfml-graphics -lsfml-window -lsfml-system
+LIB		=-lsfml-graphics -lsfml-window -lsfml-system -pthread
 OBJ		=$(patsubst %.cpp, %.o, $(wildcard *.cpp))
 HDR		=$(wildcard *.h)
 DEPS	=font.h window.h

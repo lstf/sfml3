@@ -2,6 +2,7 @@
 #define BLOOD_O
 
 #include <vector>
+#include <list>
 
 #include <math.h>
 #include <stdlib.h>
@@ -10,6 +11,7 @@
 #include <SFML/Graphics.hpp>
 
 using namespace std;
+
 
 class Blood_drop : public sf::Drawable
 {
@@ -27,20 +29,21 @@ class Blood_drop : public sf::Drawable
 
 		Blood_drop(sf::Vector2f pos, float theta, float var, float vel);
 
-		void update(vector<sf::FloatRect>* geo, float frameTime);
+		void update(vector<sf::FloatRect>* geo, double frameTime);
 };
 
 class Blood : public sf::Drawable
 {
 	private:
-		vector<Blood_drop> bloods;
+		list<Blood_drop> bloods;
+		int maxbloods;
 
 		void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
 	public:
 		Blood();
 
-		void update(vector<sf::FloatRect>* geo, float frameTime);
+		void update(vector<sf::FloatRect>* geo, double frameTime);
 
 		void shoot_blood(int quantity, sf::Vector2f pos, float theta, float var, float vel);
 };

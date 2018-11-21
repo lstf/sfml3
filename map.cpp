@@ -75,6 +75,7 @@ void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const
 {
 	if (deco)
 	{
+		w.draw(*background, states);
 		for (int i = (int)bg.size() - 1; i >= 0; i--)
 		{
 			w.draw(bg[i]->sp, states);
@@ -117,7 +118,7 @@ void Map::handleInput(sf::Event event)
 			{
 				if (player->sp.getGlobalBounds().intersects(doors.at(i)->sp.getGlobalBounds()))
 				{
-					player->pause();
+					pause();
 					doors.at(i)->open();
 					break;
 				}
@@ -282,47 +283,24 @@ bool Map::readVecImg(std::vector<img*> &v, std::ifstream &inp)
 	int length;
 	sf::Vector2f p;
 	sf::Texture t;
+	string name;
 
 	v.clear();
 	tx.clear();
-	tx_names.clear();
 
 	inp.read((char*)&length, sizeof(length));
 	for (int i = 0; i < length; i++)
 	{
 		v.push_back(new img);
 
-		readString(v[i]->name, inp);
-		tx_names.insert(v[i]->name);
-
-		inp.read((char*)&p, sizeof(p));
-		v[v.size()-1]->sp.setPosition(p);
-	}
-
-	for (auto it = tx_names.begin(); it != tx_names.end(); ++it)
-	{
-		tx.push_back(new named_tx);
-
-		if (!tx[tx.size()-1]->texture.loadFromFile(TEX_DIR + *it))
-		{
+		readString(name, inp);
+		v[v.size()-1]->sp.setTexture(*txmap::get_tx(TEX_DIR+name));
+		if (v[v.size()-1]->sp.getTexture() == NULL) {
 			return false;
 		}
 
-		tx[tx.size()-1]->name = *it;
-	}
-
-
-	std::string tx_name;
-	for (int i = 0; i < length; i++)
-	{
-		tx_name = v[i]->name;
-		for (int j = tx.size()-1; j >= 0; j--)
-		{
-			if (tx_name == tx[j]->name)
-			{
-				v[i]->sp.setTexture(tx[j]->texture);
-			}
-		}
+		inp.read((char*)&p, sizeof(p));
+		v[v.size()-1]->sp.setPosition(p);
 	}
 
 	return true;
@@ -514,13 +492,20 @@ void Map::duplicateSelect()
 	}
 }
 
-void Map::moveSelect(const sf::Vector2f &v)
+void Map::moveSelect(const sf::Vector2f &v, bool snap)
 {
 	modified = true;
 	int length = (int)bgSelection.size();
 	for (int i = 0; i < length; i++)
 	{
 		bg[bgSelection[i]]->sp.move(v);
+		if (snap)
+		{
+			sf::Vector2f new_pos = bg[bgSelection[i]]->sp.getPosition();
+			new_pos.x = (int)new_pos.x - (int)new_pos.x % 32;
+			new_pos.y = (int)new_pos.y - (int)new_pos.y % 32;
+			bg[bgSelection[i]]->sp.setPosition(new_pos);
+		}
 	}
 
 	length = (int)geometrySelection.size();
@@ -528,6 +513,13 @@ void Map::moveSelect(const sf::Vector2f &v)
 	{
 		geometry[geometrySelection[i]].left += (int)v.x;
 		geometry[geometrySelection[i]].top += (int)v.y;
+
+		if (snap)
+		{
+			sf::FloatRect r = geometry[geometrySelection[i]];
+			geometry[geometrySelection[i]].left -= (int)r.left % 32;
+			geometry[geometrySelection[i]].top -= (int)r.top % 32;
+		}
 	}
 }
 
@@ -544,6 +536,7 @@ Map::Map(std::string _name)
 	geom = false;
 	name = _name;
 	nextMap = 0;
+	background = new Background(0,1920);
 }
 
 Map::~Map()

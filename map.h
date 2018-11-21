@@ -10,7 +10,9 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "game.h"
 #include "player.h"
+#include "background.h"
 
 #define MAP_DIR "./ats/mps/"
 #define TEX_DIR "./ats/mps/tx/"
@@ -67,7 +69,7 @@ public:
 	Door();
 };
 
-class Map : public sf::Drawable
+class Map : public sf::Drawable, public Game_State
 {
 	friend class Editor;
 
@@ -79,6 +81,7 @@ private:
 	std::vector<sf::FloatRect> geometry;
 	std::vector<named_tx*> tx;
 	std::vector<Door*> doors;
+	Background* background;
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
@@ -131,7 +134,7 @@ private:
 	//Duplicate selected (copy on same coords as selected, while original is deselected
 	void duplicateSelect();
 	//Move selected
-	void moveSelect(const sf::Vector2f &v);
+	void moveSelect(const sf::Vector2f &v, bool snap = false);
 
 	////
 	  // END - Editor members

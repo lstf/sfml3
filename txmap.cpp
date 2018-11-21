@@ -9,7 +9,7 @@ sf::Texture* txmap::get_tx(const string &name)
 	catch (const out_of_range& oor)
 	{
 		sf::Texture* tx = new sf::Texture;
-		if (tx->loadFromFile(name))
+		if (!tx->loadFromFile(name))
 		{
 			cerr << "[TXMAP] " << name << " could not be opened" << endl;
 			return NULL;
