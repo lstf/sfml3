@@ -12,7 +12,7 @@ private:
 public:
 	virtual sf::FloatRect bounds();
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
-	virtual void interact();
+	virtual DBox* interact(Player &player, map<string, int> &lstate, map<string, int> &gstate); 
 	virtual sf::Vector2f size();
 	void place(const sf::Vector2f &p);
 	Sign(string f);

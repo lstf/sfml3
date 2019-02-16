@@ -3,9 +3,6 @@
 vector<Enemy*> Enemy::list;
 
 void Enemy::update(vector<sf::FloatRect>* geo, double frameTime) {
-	if (isPaused()) {
-		return;
-	}
 	updatef(geo, frameTime);
 }
 

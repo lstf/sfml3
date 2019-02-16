@@ -2,8 +2,8 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <map>
 
-#include "game.h"
 #include "window.h"
 #include "map.h"
 #include "editor.h"
@@ -13,13 +13,18 @@
 #include "entity.h"
 #include "enemy.h"
 
+enum State {
+	GAMEPLAY,
+	EDITOR,
+	MENU,
+	DIALOG
+};
+
 int main()
 {
-	Game_State gs;
 	DBox* dbox = NULL;
 
 	Null_Entity ent;
-	ent.setMainDBox(&dbox);
 	
 	Null_Enemy enm;
 
@@ -28,11 +33,9 @@ int main()
 
 	w::init(thintel);
 	//w::window.setFramerateLimit(240);
-	w::window.setVerticalSyncEnabled(true);;
+	w::window.setVerticalSyncEnabled(true);
 	w::window.setKeyRepeatEnabled(false);
 	w::show_fps = true;
-
-	gs.unpause();
 	
 	//bm:
 	sf::Clock frame_clock; //for frame rate calculation
@@ -80,13 +83,20 @@ int main()
 	//	GameLoop: gl:
 	//
 	//
+	State state = EDITOR;
+	map<string, int> level_state;
+	map<string, int> global_state;
     while (w::window.isOpen())
     {
+		if (state == DIALOG && dbox == NULL) {
+			state = GAMEPLAY;
+		}
 		frameus = frame_clock.getElapsedTime().asMicroseconds();
 		w::frame_calc(frameus);
 		frame_clock.restart();
 
         sf::Event event;
+		
         while (w::window.pollEvent(event))
         {
 			//
@@ -99,60 +109,88 @@ int main()
 
 			if (event.type == sf::Event::KeyPressed)
 			{
-				if (event.key.code == sf::Keyboard::P && 
-					!editor.consoleActive())
-				{
-					if (gs.isPaused())
-					{
-						gs.unpause();
-					}
-					else
-					{
-						gs.pause();
+				if (event.key.code == sf::Keyboard::Tab) {
+					if (state == GAMEPLAY) {
+						state = EDITOR;
+					} else if (state == EDITOR) {
+						state = GAMEPLAY;
 					}
 				}
 				else if (event.key.code == sf::Keyboard::M &&
 						 !editor.consoleActive())
 				{
-					if (dbox == NULL)
+					if (state == GAMEPLAY)
 					{
-						dbox = new DBox(&dbox, "ats/text/test");
+						DTree* dtree = new DTree;
+						DNode* root = newDnode(dtree, "Testing!");
+						root->options[0]->text = "1...";
+						DNode* opt1 = newDnode(dtree, "you picked 1");
+						root->options[0]->target = opt1;
+						newDoption(dtree, root, "2...");
+						DNode* opt2 = newDnode(dtree, "you picked 2");
+						root->options[1]->target = opt2;
+						newDoption(dtree, root, "3...");
+						DNode* opt3 = newDnode(dtree, "you picked 3");
+						root->options[2]->target = opt3;
+						newDoption(dtree, root, "repeat");
+						root->options[3]->target = root;
+						dbox = new DBox(dtree, &player, &level_state, &global_state);
+						state = DIALOG;
 					}
 				}
 			}
 
-
 			//Send event to listening classes
-			editor.handleInput(event);
-			player.handleInput(event);
-			maps[editor.map_index]->handleInput(event);
-			if (dbox != NULL)
-			{
+			if (state == EDITOR) {
+				editor.handleInput(event);
+			} else if (state == GAMEPLAY) {
+				player.handleInput(event);
+				// TODO Refactor doors to be static listed
+				maps[editor.map_index]->handleInput(event);
+			} else if (state == DIALOG && dbox != NULL) {
 				dbox->update(event);
+				if (dbox->finished) {
+					delete dbox;
+					dbox = NULL;
+				}
 			}
+
 		}	
 
-		if (player.interacted()) {
-			for (auto it = ent.list.begin(); it != ent.list.end(); ++it) {
-				if ((*it)->bounds().intersects(player.bounds())) {
-					(*it)->interact();
+		if (state == GAMEPLAY) {
+			//entity interactions
+			if (player.interacted()) {
+				for (auto it = ent.list.begin(); it != ent.list.end(); ++it) {
+					if ((*it)->bounds().intersects(player.bounds())) {
+						(*it)->interact(player, level_state, global_state);
+						break;
+					}
 				}
 			}
-		}
-
-		if (player.weaponActive()) {
+	
+			//player weapon
+			if (player.weaponActive()) {
+				for (auto it = enm.list.begin(); it != enm.list.end(); ++it) {
+					if ((*it)->bounds().intersects(player.weaponBounds())) {
+						(*it)->takeDamage();
+					}
+				}
+			}
+		
+			//removal
 			for (auto it = enm.list.begin(); it != enm.list.end(); ++it) {
-				if ((*it)->bounds().intersects(player.weaponBounds())) {
-					(*it)->takeDamage();
+				if ((*it)->remove()) {
+					delete *it;
+					break;
 				}
 			}
-		}
-		
-		//updates
-		player.update(maps[editor.map_index]->getGeom(), w::frame_time);
-		
-		for (auto it = enm.list.begin(); it != enm.list.end(); ++it) {
-			(*it)->update(maps[editor.map_index]->getGeom(), w::frame_time);
+	
+			//updates
+			player.update(maps[editor.map_index]->getGeom(), w::frame_time);
+			for (auto it = enm.list.begin(); it != enm.list.end(); ++it) {
+				(*it)->update(maps[editor.map_index]->getGeom(), w::frame_time);
+			}
+	
 		}
 
 		maps[editor.map_index]->update();
@@ -162,7 +200,6 @@ int main()
 			maps[editor.map_index]->nextMap = 0;
 			player.sp.setPosition(maps[editor.map_index]->nextMap_pos);
 			player.refresh();
-			gs.unpause();
 			editor.map_index = map_i;
 			std::cout << "X: " << player.sp.getPosition().x << "Y: " << player.sp.getPosition().y << std::endl;
 			std::cout << editor.map_index << std::endl;
@@ -171,7 +208,12 @@ int main()
 		//Drawing
         w::window.clear();
 
-		w::window.setView(editor.getView());
+		if (state == GAMEPLAY) {
+			w::window.setView(player.view);
+		} else if (state == EDITOR) {
+			w::window.setView(editor.getView());
+		}
+
 
 		w::window.draw(*(maps[editor.map_index]));
 
@@ -185,9 +227,11 @@ int main()
 
 		w::window.draw(player);
 
-		w::window.draw(editor);
-		if (dbox != NULL)
-		{
+		if (state == EDITOR) {
+			w::window.draw(editor);
+		}
+
+		if (state == DIALOG && dbox != NULL) {
 			w::window.draw(*dbox);
 		}
 		

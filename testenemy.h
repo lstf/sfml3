@@ -22,6 +22,7 @@ public:
 	virtual sf::FloatRect bounds();
 	virtual void takeDamage();
 	virtual void die();
+	virtual bool remove();
 	virtual void updatef(vector<sf::FloatRect>* geo, double frameTime);
 	void place(sf::Vector2f p);
 	Test_Enemy();

@@ -128,11 +128,6 @@ void Player::draw(sf::RenderTarget& w, sf::RenderStates states) const
 
 void Player::handleInput(sf::Event event)
 {
-	if (isPaused())
-	{
-		return;
-	}
-
 	input.left = sf::Keyboard::isKeyPressed(sf::Keyboard::Left);
 	input.right = sf::Keyboard::isKeyPressed(sf::Keyboard::Right);
 	input.down = sf::Keyboard::isKeyPressed(sf::Keyboard::Down);
@@ -294,11 +289,6 @@ bool Player::collisionResolver(sf::Vector2f op, std::vector<sf::FloatRect>* geo)
 
 void Player::update(std::vector<sf::FloatRect>* geo, double frameTime)
 {
-	if (isPaused())
-	{
-		return;
-	}
-
 	if (fresh)
 	{
 		updateCollide(geo);

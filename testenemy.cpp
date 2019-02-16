@@ -30,7 +30,10 @@ void Test_Enemy::die() {
 	Sign* s = new Sign("ats/text/testenemydead");
 	s->place(sp.getPosition() + sf::Vector2f(0,16));
 	dead = true;
-	//delete this;
+}
+
+bool Test_Enemy::remove() {
+	return dead;
 }
 
 void Test_Enemy::updatef(vector<sf::FloatRect>* geo, double frameTime) {

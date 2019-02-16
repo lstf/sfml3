@@ -620,7 +620,6 @@ void Editor::handleInput(sf::Event event)
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
 		{
 			player->setPosition(mouse_pos);
-			setMode(PLAY);
 		}
 		else if (mode == EDIT)
 		{

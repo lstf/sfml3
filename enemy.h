@@ -5,11 +5,10 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "game.h"
 
 using namespace std;
 
-class Enemy : public sf::Drawable, public Game_State {
+class Enemy : public sf::Drawable {
 private:
 	int health;
 	int maxhealth;
@@ -21,6 +20,7 @@ public:
 	virtual sf::FloatRect bounds() = 0;
 	virtual void takeDamage() = 0;
 	virtual void die() = 0;
+	virtual bool remove() = 0;
 	virtual void updatef(vector<sf::FloatRect>* geo, double frameTime) = 0;
 	void update(vector<sf::FloatRect>* geo, double frameTime);
 	Enemy();
@@ -43,6 +43,10 @@ public:
 	}
 
 	virtual void die() {
+	}
+
+	virtual bool remove() {
+		return false;
 	}
 
 	virtual void updatef(vector<sf::FloatRect>* geo, double frameTime) {

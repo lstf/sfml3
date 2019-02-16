@@ -10,7 +10,6 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "game.h"
 #include "player.h"
 #include "background.h"
 
@@ -69,7 +68,7 @@ public:
 	Door();
 };
 
-class Map : public sf::Drawable, public Game_State
+class Map : public sf::Drawable
 {
 	friend class Editor;
 

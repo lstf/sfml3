@@ -6,24 +6,63 @@
 #include <queue>
 #include <sstream>
 #include <string>
+#include <map>
+#include <vector>
 
 
 #include <SFML/Graphics.hpp>
 
-#include "game.h"
 #include "txmap.h"
+#include "player.h"
+
 
 #define ATS_DIR "./ats/"
 
 using namespace std;
 
-class DBox : public sf::Drawable, public Game_State
+struct DOption;
+
+struct DNode;
+
+struct DTree {
+	DNode* root;
+	vector<DNode*> list;
+	vector<DOption*> olist;
+};
+
+struct DNode {
+	string text;
+	vector<DOption*> options;
+};
+
+struct DOption {
+	string text;
+	DNode* target;
+	string lkey;
+	int lval;
+	string gkey;
+	int gval;
+};
+
+DNode* newDnode(DTree* d, string t = "placeholder");
+
+DOption* newDoption(DTree* d, DNode* n, string t = "...", DNode* targ = NULL);
+
+class DBox : public sf::Drawable
 {
 private:
+	map<string, int>* lstate;
+	map<string, int>* gstate;
+	Player* player;
 	sf::Sprite sp;
 	sf::Font font;
 	sf::Text text;
+	sf::Text otext[4];
+	int oindexmax;
+	int oindex;
 	queue<string> lines;
+	DTree* d;
+	DNode* dnode;
 
 	int text_width;
 	int text_height;
@@ -42,11 +81,12 @@ private:
 	void init();
 
 public:
-	DBox** ptr;
-	DBox(DBox** p, string file);
+	bool finished;
+	DBox(DTree* _d, Player* player, map<string, int>* _lstate, map<string, int>* _gstate);
 	void fillBox();
 	void setText(string msg);
 	void update(sf::Event e);
+	~DBox();
 };
 
 #endif

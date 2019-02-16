@@ -8,8 +8,21 @@ void Sign::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	w.draw(sp, states);
 }
 
-void Sign::interact() {
-	dialogBox(file);
+DBox* Sign::interact(Player &player, map<string, int> &lstate, map<string, int> &gstate) {
+	(void)player;
+	(void)lstate;
+	(void)gstate;
+	//dialogBox(file);
+	DTree* dtree = new DTree;
+	dtree->list.push_back(new DNode);
+	dtree->root = dtree->list.back();
+	dtree->root->text = "Testing!";
+	dtree->olist.push_back(new DOption);
+	dtree->root->options.push_back(dtree->olist.back());
+	dtree->root->options.back()->text = "...";
+	dtree->root->options.back()->target = NULL;
+	DBox* ret = new DBox(dtree, &player, &lstate, &gstate);
+	return ret;
 }
 
 sf::Vector2f Sign::size() {

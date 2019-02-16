@@ -118,7 +118,6 @@ void Map::handleInput(sf::Event event)
 			{
 				if (player->sp.getGlobalBounds().intersects(doors.at(i)->sp.getGlobalBounds()))
 				{
-					pause();
 					doors.at(i)->open();
 					break;
 				}

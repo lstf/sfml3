@@ -8,7 +8,6 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "game.h"
 #include "txmap.h"
 
 #define PLAY_DIR "./ats/player/"
@@ -105,7 +104,7 @@ public:
 
 };
 
-class Player : public sf::Drawable , public Game_State 
+class Player : public sf::Drawable
 { 
 private:
 	std::vector<sf::FloatRect>* geometry;

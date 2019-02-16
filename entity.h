@@ -2,22 +2,22 @@
 #define ENTITY_O
 
 #include <vector>
+#include <map>
+#include <string>
 
 #include <SFML/Graphics.hpp>
 
 #include "dbox.h"
+#include "player.h"
 
-class Entity : public sf::Drawable, public Game_State
+class Entity : public sf::Drawable
 {
 private:
-	static DBox** db;
 public:
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const = 0;
 	static vector<Entity*> list;
-	static void setMainDBox(DBox** d);
-	static void dialogBox(string file);
 	virtual sf::FloatRect bounds() = 0;
-	virtual void interact() = 0;
+	virtual DBox* interact(Player &player, map<string, int> &lstate, map<string, int> &gstate) = 0;
 	virtual sf::Vector2f size() = 0;
 	Entity();
 	~Entity();
@@ -34,7 +34,11 @@ public:
 		return sf::FloatRect(0,0,0,0);
 	}
 
-	virtual void interact() {
+	virtual DBox* interact(Player &player, map<string, int> &lstate, map<string, int> &gstate) {
+		(void)player;
+		(void)lstate;
+		(void)gstate;
+		return NULL;
 	}
 
 	virtual sf::Vector2f size() {
