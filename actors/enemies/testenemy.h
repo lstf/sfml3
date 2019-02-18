@@ -4,10 +4,10 @@
 #include <thread>
 #include <unistd.h>
 
-#include "enemy.h"
-#include "sign.h"
-#include "blood.h"
-#include "txmap.h"
+#include "../enemy.h"
+#include "../entities/sign.h"
+#include "../../effects/blood.h"
+#include "../../utils/txmap.h"
 
 class Test_Enemy : public Enemy {
 private:

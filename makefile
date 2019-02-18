@@ -1,16 +1,24 @@
-EXEC	=game
-CC		=g++
-FLAGS	=-Wall -Wextra -Wpedantic
-LIB		=-lsfml-graphics -lsfml-window -lsfml-system -pthread
-OBJ		=$(patsubst %.cpp, %.o, $(wildcard *.cpp))
-HDR		=$(wildcard *.h)
-DEPS	=font.h window.h
+EXEC		=game
+CC			=g++
+FLAGS		=-Wall -Wextra -Wpedantic
+LIB			=-lsfml-graphics -lsfml-window -lsfml-system -pthread
+SRC			=$(wildcard *.cpp) $(wildcard */*.cpp) $(wildcard */*/*.cpp)
+OBJ			=$(patsubst %.cpp, %.o, $(SRC))
+DEP			=$(patsubst %.cpp, %.d, $(SRC))
 
-game:	$(OBJ) $(HDR)
+$(EXEC):	$(OBJ) $(DEP)
 	$(CC) $(OBJ) -o $(EXEC) $(LIB)
 
-%.o:	%.cpp $(HDR)
-	$(CC) -c $(FLAGS) $<
+include		$(DEP)
+
+%.d:		%.cpp
+	@set -e; rm -f $@; \
+	$(CC) -M $< > $@.$$$$; \
+	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
+	rm -f $@.$$$$
+
+%.o:		%.cpp
+	$(CC) -c $(FLAGS) $< -o $@
 
 clean:
-	rm $(EXEC) *.o
+	rm -f $(EXEC) $(OBJ) $(DEP)

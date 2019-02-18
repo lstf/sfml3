@@ -1,8 +1,8 @@
 #ifndef SIGN_O
 #define SIGN_O
 
-#include "entity.h"
-#include "txmap.h"
+#include "../entity.h"
+#include "../../utils/txmap.h"
 
 class Sign : public Entity {
 private:

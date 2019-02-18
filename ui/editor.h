@@ -6,12 +6,10 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "map.h"
-#include "entity.h"
-#include "player.h"
-#include "sign.h"
-#include "enemy.h"
-#include "testenemy.h"
+#include "../actors/player.h"
+#include "../actors/entities/sign.h"
+#include "../actors/enemies/testenemy.h"
+#include "../map/map.h"
 
 #define ABS(x) ((x) < 0 ? (x) * -1 : (x))
 

@@ -12,8 +12,8 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "txmap.h"
-#include "player.h"
+#include "../actors/player.h"
+#include "../utils/txmap.h"
 
 
 #define ATS_DIR "./ats/"

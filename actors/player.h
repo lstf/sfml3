@@ -8,7 +8,7 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "txmap.h"
+#include "../utils/txmap.h"
 
 #define PLAY_DIR "./ats/player/"
 #define PLAY_FPS 12.0

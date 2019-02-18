@@ -10,12 +10,12 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "player.h"
 #include "background.h"
+#include "../actors/player.h"
+#include "../actors/portals/door.h"
 
 #define MAP_DIR "./ats/mps/"
 #define TEX_DIR "./ats/mps/tx/"
-#define DOOR_DIR "./ats/mps/doors/"
 
 struct img
 {
@@ -28,44 +28,6 @@ struct named_tx
 	void* png;
 	sf::Texture texture;
 	std::string name;
-};
-
-struct DSpriteSheet
-{
-	void* 		png = NULL;
-	sf::Texture tx;
-	int 		pngSize = 0;
-	int 		x = 0;
-	int 		y = 0;
-	int 		frameCount = 1;
-	sf::Clock	clock;
-	float		time = 0;
-	float		fps = 1;
-};
-
-
-class Door : public sf::Drawable
-{
-private:
-	DSpriteSheet sp_sheet;
-	sf::Texture tx;
-	bool opening;
-
-	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
-	
-	
-public:
-	sf::Sprite sp;
-	int target;
-	sf::Vector2f target_pos;
-
-
-	bool traversed;
-	void setTargetPos(sf::Vector2f _target_pos);
-	void open();
-	void advanceAnimation();
-	void update();
-	Door();
 };
 
 class Map : public sf::Drawable
@@ -149,8 +111,6 @@ public:
 
 	//Constructor - Creates Map from map file with _name
 	void setPlayer(Player* p);
-	void handleInput(sf::Event event);
-	void update();
 	Map(std::string _name);
 	bool saveMap();
 	bool loadMap();

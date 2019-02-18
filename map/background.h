@@ -5,7 +5,7 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "txmap.h"
+#include "../utils/txmap.h"
 
 using namespace std;
 

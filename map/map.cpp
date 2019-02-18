@@ -1,71 +1,5 @@
 #include "map.h"
 
-Door::Door()
-{
-	opening = false;
-	traversed = false;
-
-	std::ifstream inp(std::string(DOOR_DIR) + "D.PNG", std::ifstream::binary);
-
-	inp.seekg(0, inp.end);
-	sp_sheet.pngSize = inp.tellg();
-	inp.seekg(0, inp.beg);
-
-	sp_sheet.png = (void*)new char[sp_sheet.pngSize];
-	inp.read((char*)sp_sheet.png, sp_sheet.pngSize);
-
-	sp_sheet.tx.loadFromMemory(sp_sheet.png, sp_sheet.pngSize, sf::IntRect(0,0,32,48));
-	sp.setTexture(sp_sheet.tx);
-
-	sp_sheet.clock.restart();
-	sp_sheet.time = 0;
-	sp_sheet.x = 0;
-	sp_sheet.y = 0;
-	sp_sheet.frameCount = 3;
-	sp_sheet.fps = 6;
-}
-
-void Door::draw(sf::RenderTarget& w, sf::RenderStates states) const
-{
-	w.draw(sp, states);
-}
-
-void Door::open()
-{
-	if (!traversed)
-	{
-		opening = true;	
-	}
-}
-
-void Door::advanceAnimation()
-{
-	sp_sheet.time += sp_sheet.clock.getElapsedTime().asSeconds();
-	if (sp_sheet.time > 1/sp_sheet.fps)
-	{
-		sp_sheet.time = 0;
-		sp_sheet.clock.restart();
-		if (opening)
-		{
-			sp_sheet.x++;
-			if (sp_sheet.x >= sp_sheet.frameCount)
-			{
-				opening = false;
-				traversed = true;
-				sp_sheet.x = 0;
-			}
-			sp_sheet.tx.loadFromMemory(sp_sheet.png, sp_sheet.pngSize, sf::IntRect(sp_sheet.x*32,0,32,48));
-			sp.setTexture(sp_sheet.tx);
-		}
-	}
-	
-}
-
-void Door::update()
-{
-	advanceAnimation();	
-}
-
 void Map::setPlayer(Player* p)
 {
 	player = p;
@@ -105,39 +39,6 @@ void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const
 	for (int i = (int)doors.size()-1; i >= 0; i--)
 	{
 		w.draw(*doors.at(i));
-	}
-}
-
-void Map::handleInput(sf::Event event)
-{
-	if (event.type == sf::Event::KeyPressed)
-	{
-		if (event.key.code == sf::Keyboard::Up)
-		{
-			for (int i = (int)doors.size()-1; i >= 0; i--)
-			{
-				if (player->sp.getGlobalBounds().intersects(doors.at(i)->sp.getGlobalBounds()))
-				{
-					doors.at(i)->open();
-					break;
-				}
-			}		
-		}
-	}
-}
-
-void Map::update()
-{
-	for (int i = (int)doors.size()-1; i >= 0; i--)
-	{
-		if (doors.at(i)->traversed)
-		{
-			doors.at(i)->traversed = false;
-			nextMap = doors.at(i)->target;
-			nextMap_pos = doors.at(i)->target_pos;
-			return;
-		}
-		doors.at(i)->update();
 	}
 }
 

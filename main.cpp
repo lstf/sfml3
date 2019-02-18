@@ -5,28 +5,29 @@
 #include <map>
 
 #include "window.h"
-#include "map.h"
-#include "editor.h"
-#include "player.h"
 
-#include "dbox.h"
-#include "entity.h"
-#include "enemy.h"
+#include "actors/player.h"
+#include "map/map.h"
+#include "ui/dbox.h"
+#include "ui/editor.h"
 
 enum State {
 	GAMEPLAY,
 	EDITOR,
 	MENU,
-	DIALOG
+	DIALOG,
+	PORTAL,
+	TRANSITION
 };
 
 int main()
 {
 	DBox* dbox = NULL;
+	MapTrans* map_trans = NULL;
 
 	Null_Entity ent;
-	
 	Null_Enemy enm;
+	Null_Portal por;
 
 	sf::Font thintel;
 	thintel.loadFromFile("./ats/fonts/thintel.ttf");
@@ -145,8 +146,6 @@ int main()
 				editor.handleInput(event);
 			} else if (state == GAMEPLAY) {
 				player.handleInput(event);
-				// TODO Refactor doors to be static listed
-				maps[editor.map_index]->handleInput(event);
 			} else if (state == DIALOG && dbox != NULL) {
 				dbox->update(event);
 				if (dbox->finished) {
@@ -158,11 +157,20 @@ int main()
 		}	
 
 		if (state == GAMEPLAY) {
+
 			//entity interactions
 			if (player.interacted()) {
 				for (auto it = ent.list.begin(); it != ent.list.end(); ++it) {
 					if ((*it)->bounds().intersects(player.bounds())) {
-						(*it)->interact(player, level_state, global_state);
+						dbox = (*it)->interact(player, level_state, global_state);
+						state = DIALOG;
+						break;
+					}
+				}
+				for (auto it = por.list.begin(); it != por.list.end(); ++it) {
+					if ((*it)->bounds().intersects(player.bounds())) {
+						map_trans = (*it)->interact();
+						state = PORTAL;
 						break;
 					}
 				}
@@ -193,7 +201,14 @@ int main()
 	
 		}
 
-		maps[editor.map_index]->update();
+		if (state == PORTAL) {
+			if (map_trans->p->update()) {
+				delete map_trans;
+				map_trans = NULL;
+				state = GAMEPLAY;
+			}
+		}
+
 		if (maps[editor.map_index]->nextMap != 0)
 		{
 			int map_i = maps[editor.map_index]->nextMap;
