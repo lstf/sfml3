@@ -3,9 +3,11 @@
 
 #include <vector>
 #include <string>
+#include <sstream>
 
 #include <SFML/Graphics.hpp>
 
+#include "../game.h"
 #include "../actors/player.h"
 #include "../actors/entities/sign.h"
 #include "../actors/enemies/testenemy.h"
@@ -13,25 +15,28 @@
 
 #define ABS(x) ((x) < 0 ? (x) * -1 : (x))
 
+struct EditorTrans {
+	string name;
+	sf::Vector2f position;
+	bool is_new;
+};
+
 enum Modes
 {
 	EDIT,
+	EDTRANS,
 	GEOM,
 	DECO,
-	PLAY,
 	DOOR,
 	DOOR_TARGET,
 	SIGN,
 	ENEMY
 };
 
-class Editor: public sf::Drawable
-{
+class Editor: public sf::Drawable {
 private:
-	std::vector<Map*>*		maps;			//map list belonging to main
+	Game* game;
 	sf::RenderWindow*		w;				//window belonging to main
-	Player*					player;
-
 	Modes mode;								//Current editor mode
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
@@ -80,8 +85,9 @@ private:
 
 	bool imgView;	//True if img pane active
 
-	//Returns true if unsaved maps exist and lists them in unsaved
-	bool checkUnsaved(std::string &unsaved);
+	EditorTrans* trans;
+
+	vector<string>* maps;
 	//Returns index of mapName if it exists and -1 otherwise
 	int findMap(std::string mapName);
 
@@ -94,12 +100,16 @@ public:
 
 	bool consoleActive();
 
+	EditorTrans* update();
+
 	//Set Mode 
 	void setMode(Modes _mode);
 
+	void resetMode();
+
 	sf::View getView();
 
-	Editor(sf::RenderWindow* _w, Player* _p, std::vector<Map*>* _maps, sf::Font &_font);
+	Editor(sf::RenderWindow* _w, Game* _game);
 
 	void handleInput(sf::Event event);
 };

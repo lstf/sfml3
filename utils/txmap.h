@@ -19,9 +19,11 @@ struct Png
 namespace txmap
 {
 	static map<string, sf::Texture*> txs;
+	static map<string, sf::Font*> fonts;
 	static map<string, Png> pngs;
 
 	sf::Texture* get_tx(const string &name);
+	sf::Font* get_font(const string &name);
 	Png get_png(const string &name);
 }
 

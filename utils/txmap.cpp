@@ -11,12 +11,32 @@ sf::Texture* txmap::get_tx(const string &name)
 		sf::Texture* tx = new sf::Texture;
 		if (!tx->loadFromFile(name))
 		{
-			cerr << "[TXMAP] " << name << " could not be opened" << endl;
+			cerr << "[TXMAP] tx " << name << " could not be opened" << endl;
 			return NULL;
 		}
 	
 		txs.insert(pair<string, sf::Texture*>(name, tx));
 		return tx;
+	}
+}
+
+sf::Font* txmap::get_font(const string &name)
+{
+	try
+	{
+		return fonts.at(name);	
+	}
+	catch (const out_of_range& oor)
+	{
+		sf::Font* font = new sf::Font;
+		if (!font->loadFromFile(name))
+		{
+			cerr << "[TXMAP] font " << name << " could not be opened" << endl;
+			return NULL;
+		}
+	
+		fonts.insert(pair<string, sf::Font*>(name, font));
+		return font;
 	}
 }
 
@@ -31,7 +51,7 @@ Png txmap::get_png(const string &name)
 		ifstream inp(name, std::ifstream::binary);
 		if (!inp.is_open())
 		{
-			cerr << "[TXMAP] " << name << " could not be opened" << endl;
+			cerr << "[TXMAP] png " << name << " could not be opened" << endl;
 			Png ret;
 			ret.length = 0;
 			ret.mem = NULL;

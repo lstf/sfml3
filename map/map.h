@@ -26,7 +26,7 @@ struct img
 struct named_tx
 {
 	void* png;
-	sf::Texture texture;
+	sf::Texture* texture;
 	std::string name;
 };
 

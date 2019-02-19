@@ -19,6 +19,7 @@ include		$(DEP)
 
 %.o:		%.cpp
 	$(CC) -c $(FLAGS) $< -o $@
+	rm -f *.d.* */*.d.* */*/*.d.*
 
 clean:
 	rm -f $(EXEC) $(OBJ) $(DEP)

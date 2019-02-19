@@ -70,13 +70,10 @@ bool Map::addDeco(std::string name, const sf::Vector2f _pos)
 bool Map::loadTexture(std::string img_name)
 {
 	tx.push_back(new named_tx);
-	tx[tx.size()-1]->name = img_name;
-	if(!tx[tx.size()-1]->texture.loadFromFile(TEX_DIR + img_name))
-	{
-		tx.pop_back();
-		return false;
-	}
 
+	tx[tx.size()-1]->name = img_name;
+
+	tx[tx.size()-1]->texture = txmap::get_tx(TEX_DIR + img_name);
 	
 	tx_names.insert(img_name);
 	return true;
@@ -150,13 +147,17 @@ void Map::writeDoors(std::ofstream &o)
 {
 	int length = doors.size();
 	sf::Vector2f sp_pos;
+
 	o.write((char*)&length, sizeof(length));
 	for (int i = 0; i < length; i++)
 	{
 		sp_pos = doors.at(i)->sp.getPosition();
 		o.write((char*)&sp_pos, sizeof(sp_pos));
-		o.write((char*)&doors.at(i)->target, sizeof(doors.at(i)->target));
-		o.write((char*)&doors.at(i)->target_pos, sizeof(doors.at(i)->target_pos));
+
+		writeString(doors.at(i)->target, o);
+
+		sp_pos = doors.at(i)->target_pos;
+		o.write((char*)&sp_pos, sizeof(sp_pos));
 	}
 }
 
@@ -182,7 +183,7 @@ bool Map::readVecImg(std::vector<img*> &v, std::ifstream &inp)
 {
 	int length;
 	sf::Vector2f p;
-	sf::Texture t;
+	sf::Texture* ntx;
 	string name;
 
 	v.clear();
@@ -191,14 +192,16 @@ bool Map::readVecImg(std::vector<img*> &v, std::ifstream &inp)
 	inp.read((char*)&length, sizeof(length));
 	for (int i = 0; i < length; i++)
 	{
-		v.push_back(new img);
-
 		readString(name, inp);
-		v[v.size()-1]->sp.setTexture(*txmap::get_tx(TEX_DIR+name));
-		if (v[v.size()-1]->sp.getTexture() == NULL) {
-			return false;
+		ntx = txmap::get_tx(TEX_DIR+name);
+		if (!ntx) {
+			continue;
 		}
 
+		v.push_back(new img);
+
+		v[v.size()-1]->sp.setTexture(*ntx);
+		v[v.size()-1]->name = name;
 		inp.read((char*)&p, sizeof(p));
 		v[v.size()-1]->sp.setPosition(p);
 	}
@@ -247,7 +250,6 @@ void Map::readString(std::string &s, std::ifstream &inp)
 void Map::readDoors(std::ifstream &inp)
 {
 	int length;
-	int target;
 
 	sf::Vector2f sp_pos;
 
@@ -255,10 +257,12 @@ void Map::readDoors(std::ifstream &inp)
 	for (int i = 0; i < length; i++)
 	{
 		doors.push_back(new Door);
+
 		inp.read((char*)&sp_pos, sizeof(sp_pos));
 		doors.at(i)->sp.setPosition(sp_pos);
-		inp.read((char*)&target, sizeof(target));
-		doors.at(i)->target = target;
+
+		readString(doors.at(i)->target, inp);
+
 		inp.read((char*)&sp_pos, sizeof(sp_pos));
 		doors.at(i)->target_pos = sp_pos;
 	}
@@ -270,7 +274,7 @@ sf::Texture* Map::getTexture(std::string img_name)
 	{
 		if (tx[i]->name == img_name)
 		{
-			return &(tx[i]->texture);
+			return tx[i]->texture;
 		}
 	}
 	return NULL;
@@ -361,11 +365,12 @@ void Map::deleteSelect()
 	}
 	geometrySelection.clear();
 
-	auto itd = doorSelection.begin();
+	auto itd = doors.begin();
 	length = (int)doorSelection.size();
 	for (int i = 0; i < length; i++)
 	{
-		doorSelection.erase(itd + doorSelection[i]);
+		delete doors.at(doorSelection[i]);
+		doors.erase(itd + doorSelection[i]);
 	}
 	doorSelection.clear();
 }

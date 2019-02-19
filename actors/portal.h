@@ -11,6 +11,7 @@ class Portal;
 struct MapTrans {
 	Portal* p;
 	std::string map_name;
+	sf::Vector2f position;
 };
 
 class Portal : public sf::Drawable {

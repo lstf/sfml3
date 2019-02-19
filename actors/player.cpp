@@ -96,6 +96,7 @@ void Player::setAnimation(Animation a)
 
 void Player::setPosition(sf::Vector2f _pos)
 {
+	state = STANDING;
 	sp.setPosition(_pos);
 }
 

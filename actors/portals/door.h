@@ -6,8 +6,11 @@
 #include <SFML/Graphics.hpp>
 
 #include "../portal.h"
+#include "../../utils/txmap.h"
 
 #define DOOR_DIR "./ats/mps/doors/"
+
+using namespace std;
 
 struct DSpriteSheet
 {
@@ -34,7 +37,7 @@ private:
 	
 public:
 	sf::Sprite sp;
-	int target;
+	string target;
 	sf::Vector2f target_pos;
 
 	bool traversed;

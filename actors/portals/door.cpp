@@ -4,15 +4,11 @@ Door::Door()
 {
 	opening = false;
 	traversed = false;
+	
+	Png png = txmap::get_png(DOOR_DIR + string("D.PNG"));
 
-	std::ifstream inp(std::string(DOOR_DIR) + "D.PNG", std::ifstream::binary);
-
-	inp.seekg(0, inp.end);
-	sp_sheet.pngSize = inp.tellg();
-	inp.seekg(0, inp.beg);
-
-	sp_sheet.png = (void*)new char[sp_sheet.pngSize];
-	inp.read((char*)sp_sheet.png, sp_sheet.pngSize);
+	sp_sheet.png = png.mem;
+	sp_sheet.pngSize = png.length;
 
 	sp_sheet.tx.loadFromMemory(sp_sheet.png, sp_sheet.pngSize, sf::IntRect(0,0,32,48));
 	sp.setTexture(sp_sheet.tx);
@@ -54,6 +50,8 @@ sf::FloatRect Door::bounds() {
 MapTrans* Door::interact() {
 	MapTrans* ret = new MapTrans;
 	ret->p = (Portal*)this;
+	ret->map_name = target;
+	ret->position = target_pos;
 	return ret;
 }
 sf::Vector2f Door::size() {
