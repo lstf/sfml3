@@ -60,7 +60,7 @@ bool Map::addDeco(std::string name, const sf::Vector2f _pos)
 	img* im = new img;
 	im->sp.setPosition(_pos);
 	im->name = name;
-	im->sp.setTexture(*(getTexture(name)));
+	im->sp.setTexture(*txmap::get_tx(name));
 	bg.push_back(im);
 
 	modified = true;

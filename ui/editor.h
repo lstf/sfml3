@@ -7,6 +7,9 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "button.h"
+#include "decopanel.h"
+#include "textbox.h"
 #include "../game.h"
 #include "../actors/player.h"
 #include "../actors/entities/sign.h"
@@ -28,13 +31,27 @@ enum Modes
 	GEOM,
 	DECO,
 	DOOR,
-	DOOR_TARGET,
 	SIGN,
-	ENEMY
+	ENEMY,
+	TEMP
+};
+
+enum RootButtons {
+	DECO_BUTTON,
+	GEOM_BUTTON,
+	DOOR_BUTTON,
+	TEMP_BUTTON
 };
 
 class Editor: public sf::Drawable {
 private:
+	Decopanel* decopanel;
+
+	Textbox* textbox;
+	bool textbox_input;
+	string* textbox_target;
+	Button* buttons[15];
+
 	Game* game;
 	sf::RenderWindow*		w;				//window belonging to main
 	Modes mode;								//Current editor mode
@@ -112,6 +129,7 @@ public:
 	Editor(sf::RenderWindow* _w, Game* _game);
 
 	void handleInput(sf::Event event);
+
 };
 
 #endif

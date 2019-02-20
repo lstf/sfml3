@@ -97,6 +97,17 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 		r.setSize(sf::Vector2f((float)4*32,(float)(((length/4)+1)*32)));
 		w.draw(r, states);
 	}
+	
+	for (int i = 0; i < 15; i++ ) {
+		w.draw(*buttons[i], states);
+	}
+	if (textbox_input) {
+		w.draw(*textbox, states);
+	}
+	if (mode == TEMP) {
+		w.draw(*decopanel, states);
+	}
+
 	w.setView(temp);	//Restore view
 }
 
@@ -179,6 +190,34 @@ void Editor::orient(sf::Vector2f &u, sf::Vector2f &v) {
 	}
 }
 
+Button* gen_button(int i) {
+	string name;
+	switch (i) {
+	case DECO_BUTTON: 
+		name = "decoration";
+		break;
+	case GEOM_BUTTON: 
+		name = "geometry";
+		break;
+	case DOOR_BUTTON: 
+		name = "doors";
+		break;
+	case TEMP_BUTTON:
+		name = "decopanel";
+		break;
+	default:
+		name = "test button " + to_string(i + 1);
+	};
+
+	return new Button(
+			sf::Color::Black,
+			sf::Color::White,
+			name,
+			sf::FloatRect(i*64,0,64,16)
+	);
+
+}
+
 Editor::Editor(sf::RenderWindow* _w, Game* _game) {
 	game							= _game;
 	w								= _w;
@@ -206,6 +245,14 @@ Editor::Editor(sf::RenderWindow* _w, Game* _game) {
 	imgView							= false;
 	setMode							(EDIT);
 	selectClicked 					= false;
+
+	textbox_input = false;
+
+	for (int i = 0; i < 15; i++) {
+		buttons[i] = gen_button(i);
+	}
+
+	decopanel = new Decopanel(w, game->map_current);
 }
 
 void Editor::setMode(Modes _mode) {
@@ -219,8 +266,6 @@ void Editor::setMode(Modes _mode) {
 	else if (_mode == DECO) {
 	}
 	else if (_mode == DOOR) {
-	}
-	else if (_mode == DOOR_TARGET) {
 	}
 	else if (_mode == SIGN) {
 	}
@@ -425,6 +470,43 @@ void Editor::unknownCommand() {
 }
 
 void Editor::handleInput(sf::Event event) {
+	sf::Vector2i m_pos = sf::Mouse::getPosition(*w);
+	//textbox
+	if (textbox_input) {
+		string* str = textbox->handle_input(event);
+		if (str) {
+			*textbox_target = *str;
+			cout << *textbox_target << endl;
+			textbox_input = false;
+			delete textbox;
+			delete str;
+		}
+		return;
+	}
+	if (mode == TEMP) {
+		decopanel->handle_input(event);
+	}
+	//buttons
+	for (int i = 0; i < 15; i++) {
+		BState bs = buttons[i]->handle_input(event, m_pos);
+		if (bs == BCLICK) {
+			switch (i) {
+			case DECO_BUTTON:
+				setMode(DECO);
+				break;
+			case GEOM_BUTTON:
+				setMode(GEOM);
+				break;
+			case DOOR_BUTTON:
+				break;
+			case TEMP_BUTTON:
+				mode = TEMP;
+				break;
+			}
+			return;
+		}
+	}
+
 	//
 	//	Key Pressed
 	//
