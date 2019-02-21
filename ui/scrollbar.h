@@ -10,7 +10,6 @@ using namespace std;
 
 class Scrollbar : public sf::Drawable {
 private:
-	sf::RenderWindow* window;
 	sf::RectangleShape bg;
 	sf::RectangleShape fg;
 	bool clicked;
@@ -19,9 +18,9 @@ private:
 	sf::Vector2f p_mouse_pos;
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 public:
-	float handle_input(sf::Event &event);
+	float handle_input(sf::Event &event, sf::Vector2i m_pos);
 
-	Scrollbar(sf::RenderWindow* _w, int h1, int h2, int x, int y, int w, int h);
+	Scrollbar(int h1, int h2, int x, int y, int w, int h);
 };
 
 #endif 

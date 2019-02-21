@@ -2,30 +2,123 @@
 
 void Decopanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	sf::View temp = w.getView();
-	w.setView(w.getDefaultView());
+	sf::RectangleShape selected_rect(sf::Vector2f(0,0));
+	selected_rect.setFillColor(sf::Color(0,0,0,0));
+	selected_rect.setOutlineColor(sf::Color(255,255,255));
+	selected_rect.setOutlineThickness(-1.0);
+	for (int i = selected.size() - 1; i >= 0; i--) {
+		selected_rect.setPosition(map->bg[selected[i]]->sp.getPosition());
+		sf::FloatRect bgb = map->bg[selected[i]]->sp.getGlobalBounds();
+		selected_rect.setSize(sf::Vector2f(bgb.width, bgb.height));
+		w.draw(selected_rect);
+	}
 
+	w.setView(w.getDefaultView());
 	w.draw(preview_bg, states);
 	w.draw(preview_sp, states);
 	w.draw(file_bg, states);
 	w.draw(menu_bg, states);
 
 	w.setView(scrollview);
-
 	for (unsigned int i = 0; i < button_count; i++) {
 		w.draw(*(buttons[i].btn), states);
 	}
 
 	w.setView(w.getDefaultView());
-
 	w.draw(*scroll, states);
 
 	w.setView(temp);
+	if (state == DECO_ADD) {
+		w.draw(active_sp, states);
+	} else if (state == DECO_EDIT && select_click) {
+		w.draw(select_r, states);
+	}
+
 }
 
-void Decopanel::handle_input(sf::Event &event) {
-	sf::Vector2i m_pos = sf::Mouse::getPosition(*window);
+	
+bool gen_geom_over(sf::FloatRect u, sf::FloatRect v) {
+	return 
+	u.left == v.left && 
+	u.width == v.width &&
+	u.top + u.height + 1 > v.top;
+}
+bool gen_geom_next_to(sf::FloatRect u, sf::FloatRect v) {
+	return 
+	u.top == v.top &&
+	u.height == v.height &&
+	u.left + u.width + 1 > v.left;
+}
+bool gen_geom_comp(
+const sf::FloatRect &u, const sf::FloatRect &v) {
+	if (u.top == v.top) {
+		if (u.left < v.left) {
+			return true;
+		}
+		return false;
+	} else if (u.top < v.top) {
+		return true;
+	} 
+	return false;
+}
+vector<sf::FloatRect> Decopanel::gen_geom() {
+	vector<sf::FloatRect> rects;
+	vector<sf::FloatRect> rects2;
+	cout << "reading rects" << endl;
+	for (auto it = selected.begin(); it != selected.end(); ++it) {
+		rects.push_back(map->bg[*it]->sp.getGlobalBounds());
+	}
+	cout << "sorting rects" << endl;
+	sort(rects.begin(),rects.end(),gen_geom_comp);
+
+	cout << "h pass" << endl;
+	auto iti = rects.begin();
+	sf::FloatRect r = *iti;
+	for (auto it = iti + 1; it != rects.end(); ++it) {
+		if (gen_geom_next_to(*(it - 1), *it)) {
+			r.width = it->left + it->width - r.left;
+			cout << "width " << r.width << endl;
+		} else {
+			cout << "pushing" << endl;
+			rects2.push_back(r);
+			r = *it;
+		}
+	}
+	cout << "pushing" << endl;
+	rects2.push_back(r);
+	cout << "h pass done" << endl;
+	rects.clear();
+	iti = rects2.begin();
+	r = *iti;
+	cout << "v pass" << endl;
+	for (auto it = iti + 1; it != rects2.end(); ++it) {
+		if (gen_geom_over(*(it - 1), *it)) {
+			r.height = it->top + it->height - r.top;
+			cout << "height " << r.height << endl;
+		} else {
+			cout << "pushing" << endl;
+			rects.push_back(r);
+			r = *it;
+		}
+	}
+	cout << "pushing" << endl;
+	rects.push_back(r);
+	cout << "done" << endl;
+
+	return rects;
+}
+
+void Decopanel::handle_input(
+sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos, int snap_val) {
+	sf::Vector2f w_pos_snap = snap(w_pos, snap_val);
+	bool shift = 
+	sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || 
+	sf::Keyboard::isKeyPressed(sf::Keyboard::RShift);
+
+	//buttons
 	for (unsigned int i = 0; i < button_count; i++) {
 		BState bs = buttons[i].btn->handle_input(event, m_pos);	
+		//hover to show preview
 		if (bs == BHOVER) {
 			sf::Texture* tx = txmap::get_tx(buttons[i].file);
 			preview_sp.setTexture(*tx, true);
@@ -48,9 +141,18 @@ void Decopanel::handle_input(sf::Event &event) {
 				(DECO_P_SIZE - bounds.width) / 2,
 				(DECO_P_SIZE - bounds.height) / 2 + DECO_BASE_H
 			);
+		//click to set add state
+		} else if (bs == BCLICK) {
+			sf::Texture* tx = txmap::get_tx(buttons[i].file);
+			active_sp.setPosition(w_pos_snap);
+			active_sp.setTexture(*tx, true);
+			active_name = buttons[i].file;
+			state = DECO_ADD;
 		}
 	}
-	float scroll_val = scroll->handle_input(event);
+
+	//scroll bar
+	float scroll_val = scroll->handle_input(event, m_pos);
 	for (unsigned int i = 0; i < button_count; i++) {
 		sf::Vector2f b_pos = buttons[i].btn->getPosition();
 		b_pos.y = 
@@ -58,13 +160,117 @@ void Decopanel::handle_input(sf::Event &event) {
 		b_pos.x = (i%2)*DECO_B_SIZE;
 		buttons[i].btn->setPosition(b_pos);
 	}
+
+	//ui click filter
+	if (event.type == sf::Event::MouseButtonPressed &&
+	event.mouseButton.button == sf::Mouse::Left && bounds.contains(m_pos)) {
+		return;
+	}
+
+	//add state
+	if (state == DECO_ADD) {
+		active_sp.setPosition(w_pos_snap);
+		//Left click to add to map
+		if (event.type == sf::Event::MouseButtonPressed &&
+		event.mouseButton.button == sf::Mouse::Left) {
+			map->addDeco(active_name, w_pos_snap);
+		}
+	}
+
+	//edit state
+	if (state == DECO_EDIT) {
+		//Left click
+		if (event.type == sf::Event::MouseButtonPressed &&
+		event.mouseButton.button == sf::Mouse::Left) {
+			for (auto it = selected.begin(); it != selected.end(); ++it) {
+				if (
+				map->bg[*it]->sp.getGlobalBounds().contains(w_pos_snap)) {
+					selected_click = true;
+					return;	
+				}
+			}
+			select_click = true;
+
+			if (!shift) {
+				selected.clear();
+			}
+			select_r.setPosition(w_pos_snap);
+			select_r.setSize(sf::Vector2f(1, 1));
+		//Left release
+		} else if (event.type == sf::Event::MouseButtonReleased &&
+		event.mouseButton.button == sf::Mouse::Left) {
+			if (select_click) {
+				select_click = false;
+				sf::FloatRect sb = select_r.getGlobalBounds();
+				for (int i = map->bg.size() - 1; i >= 0; i--) {
+					sf::FloatRect bgb = map->bg[i]->sp.getGlobalBounds();
+					if (sb.intersects(bgb)) {
+						selected.push_back(i);
+					}
+					sort(selected.begin(), selected.end(), greater<int>());
+					auto se = unique(selected.begin(), selected.end());
+					selected.erase(se, selected.end());
+				}
+			} else if (selected_click) {
+				selected_click = false;
+			}
+		//Mouse moved
+		} else if (event.type == sf::Event::MouseMoved) {
+			if (select_click) {
+				select_r.setSize(w_pos_snap - select_r.getPosition());
+			} else if (selected_click) {
+				for (auto it = selected.begin(); it != selected.end(); ++it) {
+					map->bg[*it]->sp.move(w_pos_snap - select_p_mouse);
+				}
+			}
+			select_p_mouse = w_pos_snap;
+		//Key pressed
+		} else if (event.type == sf::Event::KeyPressed) {
+			//Delete key
+			if (event.key.code == sf::Keyboard::Delete) {
+				auto mb = map->bg.begin();
+				for (auto it = selected.begin(); it != selected.end(); ++it) {
+					map->bg.erase(mb + *it);
+				}
+				selected.clear();
+			//Shift d, duplicate
+			} else if (event.key.code == sf::Keyboard::D && shift) {
+				for (auto it = selected.begin(); it != selected.end(); ++it) {
+					img* im = map->bg[*it];
+					map->addDeco(im->name, im->sp.getPosition());
+				}
+			//Shifd b, auto geom
+			} else if (event.key.code == sf::Keyboard::B && shift) {
+				vector<sf::FloatRect> sb = gen_geom();
+				for (auto it = sb.begin(); it != sb.end(); ++it) {
+					map->geometry.push_back(*it);
+				}
+			}
+
+		}
+	}
+
+	//escape
+	if (event.type == sf::Event::KeyPressed &&
+	event.key.code == sf::Keyboard::Escape) {
+		state = DECO_EDIT;
+	}
 }
 
-Decopanel::Decopanel(sf::RenderWindow* _w, Map* _map) {
+Decopanel::Decopanel(Map* _map) {
 	map = _map;
 
-	window = _w;
+	bg_setup();
+	button_setup();
+	scroll_setup();
+	select_setup();
 
+	state = DECO_EDIT;
+
+	bounds = sf::IntRect(0,0,DECO_P_SIZE+16,480);
+}
+
+void Decopanel::bg_setup() {
 	preview_bg = 
 	sf::RectangleShape(sf::Vector2f(DECO_P_SIZE, DECO_P_SIZE));
 	preview_bg.setPosition(0, DECO_BASE_H);
@@ -85,7 +291,9 @@ Decopanel::Decopanel(sf::RenderWindow* _w, Map* _map) {
 	menu_bg.setFillColor(DECO_BG);
 	menu_bg.setOutlineColor(DECO_FG);
 	menu_bg.setOutlineThickness(-1.0);
+}
 
+void Decopanel::button_setup() {
 	ifstream inp("./ats/mps/tx/tx.list");
 	if (!inp.is_open()) {
 		cout << "[DECOPANEL] cant open tx.list" << endl;
@@ -109,15 +317,13 @@ Decopanel::Decopanel(sf::RenderWindow* _w, Map* _map) {
 				(i/2)*DECO_B_SIZE/4+DECO_BASE_H+DECO_P_SIZE,
 				DECO_B_SIZE,
 				DECO_B_SIZE/4
-				//0,
-				//i*DECO_B_SIZE/4+DECO_BASE_H+DECO_P_SIZE,
-				//DECO_B_SIZE,
-				//DECO_B_SIZE/4
 			)
 		);
 		buttons[i].file = "./ats/mps/tx/" + files[i];
 	}
+}
 
+void Decopanel::scroll_setup() {
 	sf::IntRect bt = buttons[0].btn->bounds;
 	sf::IntRect bb = buttons[button_count - 1].btn->bounds;
 	
@@ -133,7 +339,7 @@ Decopanel::Decopanel(sf::RenderWindow* _w, Map* _map) {
 	));
 	int scroll_content_height = bb.top + bb.height - bt.top;
 	scroll_max = 480 - DECO_P_SIZE - scroll_content_height;
-	scroll = new Scrollbar(_w,
+	scroll = new Scrollbar(
 		480 - DECO_P_SIZE,
 		scroll_content_height,
 		DECO_P_SIZE,
@@ -141,4 +347,14 @@ Decopanel::Decopanel(sf::RenderWindow* _w, Map* _map) {
 		16,
 		480 - DECO_P_SIZE
 	);
+}
+
+void Decopanel::select_setup() {
+	select_r = sf::RectangleShape(sf::Vector2f(0,0));
+	select_r.setFillColor(sf::Color(0,0,0,0));
+	select_r.setOutlineColor(sf::Color(255,255,255));
+	select_r.setOutlineThickness(-1.0);
+
+	select_click = false;
+	selected_click = false;
 }

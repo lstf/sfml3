@@ -40,7 +40,8 @@ enum RootButtons {
 	DECO_BUTTON,
 	GEOM_BUTTON,
 	DOOR_BUTTON,
-	TEMP_BUTTON
+	TEMP_BUTTON,
+	SNAP_BUTTON
 };
 
 class Editor: public sf::Drawable {

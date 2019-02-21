@@ -30,9 +30,9 @@ struct named_tx
 	std::string name;
 };
 
-class Map : public sf::Drawable
-{
+class Map : public sf::Drawable {
 	friend class Editor;
+	friend class Decopanel;
 
 private:
 	std::vector<int> bgSelection;

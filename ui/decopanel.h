@@ -8,7 +8,7 @@
 
 #include "button.h"
 #include "scrollbar.h"
-
+#include "uiutils.h"
 #include "../map/map.h"
 
 #define DECO_BASE_H 16
@@ -18,6 +18,13 @@
 #define DECO_BG sf::Color(127,127,127)
 #define DECO_FG sf::Color(0,0,0)
 
+enum DECO_STATE {
+	DECO_EDIT,
+	DECO_ADD,
+	DECO_REMOVE,
+	DECO_SWAP
+};
+
 struct Decobutton {
 	Button* btn;
 	string file;
@@ -25,25 +32,45 @@ struct Decobutton {
 
 class Decopanel : public sf::Drawable {
 private:
-	sf::RenderWindow* window;
-	sf::RectangleShape preview_bg;
-	sf::Sprite preview_sp;
 	sf::RectangleShape file_bg;
 	sf::RectangleShape menu_bg;
-	Decobutton* buttons;
-	Scrollbar* scroll;
+	sf::RectangleShape preview_bg;
+	sf::Sprite preview_sp;
+
 	sf::View scrollview;
+	Scrollbar* scroll;
 	int scroll_max;
+	Decobutton* buttons;
 	unsigned int button_count;
+
+	sf::Sprite active_sp;
+	string active_name;
+
+	sf::RectangleShape select_r;
+	bool select_click;
+	bool selected_click;
+	sf::Vector2f select_p_mouse;
+	vector<int> selected;
+
+	DECO_STATE state;
+
+	sf::IntRect bounds;
+
 	Map* map;
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
-public:
-	void handle_input(sf::Event &event);
+	void bg_setup();
+	void button_setup();
+	void scroll_setup();
+	void select_setup();
+	vector<sf::FloatRect> gen_geom();
 
-	Decopanel(sf::RenderWindow* _w, Map* _map);
-	
+public:
+	void handle_input(
+	sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos, int snap_val);
+
+	Decopanel(Map* _map);
 };
 
 #endif

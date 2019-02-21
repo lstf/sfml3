@@ -5,7 +5,7 @@ void Scrollbar::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	w.draw(fg, states);
 }
 
-float Scrollbar::handle_input(sf::Event &event) {
+float Scrollbar::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 	if (max_y == 0.0) {
 		return 0.0;
 	}
@@ -13,8 +13,7 @@ float Scrollbar::handle_input(sf::Event &event) {
 	if (event.type == sf::Event::MouseButtonPressed &&
 	event.mouseButton.button == sf::Mouse::Left) {
 		//on scrollbar fg
-		sf::Vector2i mouse_pos_i = sf::Mouse::getPosition(*window);
-		sf::Vector2f mouse_pos(mouse_pos_i.x, mouse_pos_i.y);
+		sf::Vector2f mouse_pos(m_pos.x, m_pos.y);
 		if (fg.getGlobalBounds().contains(mouse_pos)) {
 			clicked = true;
 		}
@@ -24,8 +23,7 @@ float Scrollbar::handle_input(sf::Event &event) {
 		clicked = false;
 	//Mouse move
 	} else if (event.type == sf::Event::MouseMoved) {
-		sf::Vector2i mouse_pos_i = sf::Mouse::getPosition(*window);
-		sf::Vector2f mouse_pos(mouse_pos_i.x, mouse_pos_i.y);
+		sf::Vector2f mouse_pos(m_pos.x, m_pos.y);
 		if (clicked) {
 			float d_y = (mouse_pos - p_mouse_pos).y;
 			float x = fg.getGlobalBounds().left;
@@ -45,10 +43,7 @@ float Scrollbar::handle_input(sf::Event &event) {
 	return y / max_y;
 }
 
-Scrollbar::Scrollbar(
-sf::RenderWindow* _w, int h1, int h2, int x, int y, int w, int h) {
-	window = _w;
-
+Scrollbar::Scrollbar(int h1, int h2, int x, int y, int w, int h) {
 	bg = sf::RectangleShape(sf::Vector2f((float)w, (float)h));
 	bg.setPosition((float)x,(float)y);
 	bg.setFillColor(SCROLL_BG);

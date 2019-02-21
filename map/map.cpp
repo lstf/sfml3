@@ -20,7 +20,7 @@ void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const
 		sf::RectangleShape gRect;
 		sf::Vector2f gV;
 
-		gRect.setOutlineThickness(2.0);
+		gRect.setOutlineThickness(-1.0);
 		gRect.setOutlineColor(sf::Color::Blue);
 		gRect.setFillColor(sf::Color::Transparent);
 

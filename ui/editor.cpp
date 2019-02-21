@@ -104,11 +104,11 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	if (textbox_input) {
 		w.draw(*textbox, states);
 	}
+	w.setView(temp);	//Restore view
 	if (mode == TEMP) {
 		w.draw(*decopanel, states);
 	}
 
-	w.setView(temp);	//Restore view
 }
 
 bool Editor::getConsoleInput(const sf::Event &event, std::string &str) {
@@ -205,6 +205,9 @@ Button* gen_button(int i) {
 	case TEMP_BUTTON:
 		name = "decopanel";
 		break;
+	case SNAP_BUTTON:
+		name = "snap";
+		break;
 	default:
 		name = "test button " + to_string(i + 1);
 	};
@@ -252,7 +255,7 @@ Editor::Editor(sf::RenderWindow* _w, Game* _game) {
 		buttons[i] = gen_button(i);
 	}
 
-	decopanel = new Decopanel(w, game->map_current);
+	decopanel = new Decopanel(game->map_current);
 }
 
 void Editor::setMode(Modes _mode) {
@@ -471,6 +474,8 @@ void Editor::unknownCommand() {
 
 void Editor::handleInput(sf::Event event) {
 	sf::Vector2i m_pos = sf::Mouse::getPosition(*w);
+	sf::Vector2f w_pos = w->mapPixelToCoords(m_pos);
+
 	//textbox
 	if (textbox_input) {
 		string* str = textbox->handle_input(event);
@@ -483,9 +488,6 @@ void Editor::handleInput(sf::Event event) {
 		}
 		return;
 	}
-	if (mode == TEMP) {
-		decopanel->handle_input(event);
-	}
 	//buttons
 	for (int i = 0; i < 15; i++) {
 		BState bs = buttons[i]->handle_input(event, m_pos);
@@ -495,16 +497,23 @@ void Editor::handleInput(sf::Event event) {
 				setMode(DECO);
 				break;
 			case GEOM_BUTTON:
-				setMode(GEOM);
+				game->map_current->geom = !game->map_current->geom;
 				break;
 			case DOOR_BUTTON:
 				break;
 			case TEMP_BUTTON:
 				mode = TEMP;
 				break;
+			case SNAP_BUTTON:
+				snap = !snap;
+				break;
 			}
 			return;
 		}
+	}
+
+	if (mode == TEMP) {
+		decopanel->handle_input(event, m_pos, w_pos, snap ? 32 : 1);
 	}
 
 	//
@@ -512,9 +521,7 @@ void Editor::handleInput(sf::Event event) {
 	//
 	if (event.type == sf::Event::KeyPressed &&
 		!mouse_left && !mouse_middle) {
-		if (event.key.code == sf::Keyboard::Escape) {
-			setMode(EDIT);
-		} else if (event.key.code == sf::Keyboard::G && !console) {
+		if (event.key.code == sf::Keyboard::G && !console) {
 			setMode(GEOM);
 		} else if (event.key.code == sf::Keyboard::Space && !console) {
 			sf::Vector2f mouse_p = getMouseCoordinates();
