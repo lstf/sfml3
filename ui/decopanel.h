@@ -1,5 +1,5 @@
-#ifndef _DECO_PANEL
-#define _DECO_PANEL
+#ifndef _DECOPANEL_O
+#define _DECOPANEL_O
 
 #include <iostream>
 #include <string>
@@ -9,6 +9,7 @@
 #include "button.h"
 #include "scrollbar.h"
 #include "uiutils.h"
+#include "../game.h"
 #include "../map/map.h"
 
 #define DECO_BASE_H 16
@@ -56,6 +57,7 @@ private:
 
 	sf::IntRect bounds;
 
+	Game* game;
 	Map* map;
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
@@ -70,7 +72,9 @@ public:
 	void handle_input(
 	sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos, int snap_val);
 
-	Decopanel(Map* _map);
+	void reset();
+
+	Decopanel(Game* _game);
 };
 
 #endif

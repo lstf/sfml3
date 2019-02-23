@@ -10,7 +10,7 @@ void Decopanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 		selected_rect.setPosition(map->bg[selected[i]]->sp.getPosition());
 		sf::FloatRect bgb = map->bg[selected[i]]->sp.getGlobalBounds();
 		selected_rect.setSize(sf::Vector2f(bgb.width, bgb.height));
-		w.draw(selected_rect);
+		w.draw(selected_rect, states);
 	}
 
 	w.setView(w.getDefaultView());
@@ -33,7 +33,6 @@ void Decopanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	} else if (state == DECO_EDIT && select_click) {
 		w.draw(select_r, states);
 	}
-
 }
 
 	
@@ -64,46 +63,34 @@ const sf::FloatRect &u, const sf::FloatRect &v) {
 vector<sf::FloatRect> Decopanel::gen_geom() {
 	vector<sf::FloatRect> rects;
 	vector<sf::FloatRect> rects2;
-	cout << "reading rects" << endl;
 	for (auto it = selected.begin(); it != selected.end(); ++it) {
 		rects.push_back(map->bg[*it]->sp.getGlobalBounds());
 	}
-	cout << "sorting rects" << endl;
 	sort(rects.begin(),rects.end(),gen_geom_comp);
 
-	cout << "h pass" << endl;
 	auto iti = rects.begin();
 	sf::FloatRect r = *iti;
 	for (auto it = iti + 1; it != rects.end(); ++it) {
 		if (gen_geom_next_to(*(it - 1), *it)) {
 			r.width = it->left + it->width - r.left;
-			cout << "width " << r.width << endl;
 		} else {
-			cout << "pushing" << endl;
 			rects2.push_back(r);
 			r = *it;
 		}
 	}
-	cout << "pushing" << endl;
 	rects2.push_back(r);
-	cout << "h pass done" << endl;
 	rects.clear();
 	iti = rects2.begin();
 	r = *iti;
-	cout << "v pass" << endl;
 	for (auto it = iti + 1; it != rects2.end(); ++it) {
 		if (gen_geom_over(*(it - 1), *it)) {
 			r.height = it->top + it->height - r.top;
-			cout << "height " << r.height << endl;
 		} else {
-			cout << "pushing" << endl;
 			rects.push_back(r);
 			r = *it;
 		}
 	}
-	cout << "pushing" << endl;
 	rects.push_back(r);
-	cout << "done" << endl;
 
 	return rects;
 }
@@ -143,11 +130,24 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos, int snap_val) {
 			);
 		//click to set add state
 		} else if (bs == BCLICK) {
-			sf::Texture* tx = txmap::get_tx(buttons[i].file);
-			active_sp.setPosition(w_pos_snap);
-			active_sp.setTexture(*tx, true);
-			active_name = buttons[i].file;
-			state = DECO_ADD;
+			if (selected.size() > 0) {
+				vector<img> ims;
+				auto mb = map->bg.begin();
+				for (auto it = selected.begin(); it != selected.end(); ++it) {
+					ims.push_back(*map->bg.at(*it));
+					map->bg.erase(mb + *it);
+				}
+				for (auto it = ims.begin(); it != ims.end(); ++it) {
+					map->addDeco(buttons[i].file, it->sp.getPosition());
+				}
+				selected.clear();
+			} else {
+				sf::Texture* tx = txmap::get_tx(buttons[i].file);
+				active_sp.setPosition(w_pos_snap);
+				active_sp.setTexture(*tx, true);
+				active_name = buttons[i].file;
+				state = DECO_ADD;
+			}
 		}
 	}
 
@@ -257,8 +257,17 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos, int snap_val) {
 	}
 }
 
-Decopanel::Decopanel(Map* _map) {
-	map = _map;
+void Decopanel::reset() {
+	select_click = false;
+	selected_click = false;
+	selected.clear();
+	state = DECO_EDIT;
+	map = game->map_current;
+}
+
+Decopanel::Decopanel(Game* _game) {
+	game = _game;
+	map = game->map_current;
 
 	bg_setup();
 	button_setup();
@@ -328,24 +337,26 @@ void Decopanel::scroll_setup() {
 	sf::IntRect bb = buttons[button_count - 1].btn->bounds;
 	
 	scrollview = sf::View(
-		sf::Vector2f(DECO_P_SIZE/2,(480-DECO_P_SIZE)/2+DECO_P_SIZE+DECO_BASE_H),
-		sf::Vector2f(DECO_P_SIZE, 480 - DECO_P_SIZE)
+		sf::Vector2f(
+		DECO_P_SIZE / 2, (480 - DECO_P_SIZE - DECO_BASE_H) / 2 + 
+		DECO_P_SIZE + DECO_BASE_H),
+		sf::Vector2f(DECO_P_SIZE, 480 - DECO_P_SIZE - DECO_BASE_H)
 	);
 	scrollview.setViewport(sf::FloatRect(
 		0,
 		(DECO_P_SIZE+DECO_BASE_H)/480.0,
 		DECO_P_SIZE/960.0,
-		(480 - DECO_P_SIZE)/480.0
+		(480 - DECO_P_SIZE - DECO_BASE_H)/480.0
 	));
 	int scroll_content_height = bb.top + bb.height - bt.top;
 	scroll_max = 480 - DECO_P_SIZE - scroll_content_height;
 	scroll = new Scrollbar(
-		480 - DECO_P_SIZE,
+		480 - DECO_P_SIZE - DECO_BASE_H,
 		scroll_content_height,
 		DECO_P_SIZE,
 		DECO_BASE_H + DECO_P_SIZE,
 		16,
-		480 - DECO_P_SIZE
+		480 - DECO_P_SIZE - DECO_BASE_H
 	);
 }
 

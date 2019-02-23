@@ -33,6 +33,7 @@ struct named_tx
 class Map : public sf::Drawable {
 	friend class Editor;
 	friend class Decopanel;
+	friend class Geompanel;
 
 private:
 	std::vector<int> bgSelection;

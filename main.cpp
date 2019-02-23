@@ -83,7 +83,7 @@ int main() {
 				} else {
 					load_map(game, et->name, et->position);
 				}
-				editor.resetMode();
+				editor.reset();
 				delete et;
 			}
 		} else if (state == GAME) {

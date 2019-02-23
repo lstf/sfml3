@@ -4,11 +4,18 @@ void Textbox::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	w.draw(body, states);
 	w.draw(text, states);
 }
-
+void Textbox::update() {
+	blink_frame++;
+	if (blink_frame > TEXTBOX_BLINK_FRAMES) {
+		blink_frame = 0;	
+		cursor = cursor == "|" ? "." : "|";
+		text.setString(left + cursor + right);
+	}
+}
 string* Textbox::handle_input(sf::Event &event) {
 	if (event.type == sf::Event::KeyPressed) {
 		const int code = event.key.code;
-		if (code >=0 && code <= 25) {
+		if (code >=0 && code <= 25 && !digits) {
 			if (sf::Keyboard::isKeyPressed(
 			sf::Keyboard::LShift) ||
 			sf::Keyboard::isKeyPressed(
@@ -23,9 +30,9 @@ string* Textbox::handle_input(sf::Event &event) {
 			if (left != "") {
 				left.pop_back();
 			}
-		} else if (code == sf::Keyboard::Space) {
+		} else if (code == sf::Keyboard::Space && !digits) {
 			left += ' ';
-		} else if (code == sf::Keyboard::Period) {
+		} else if (code == sf::Keyboard::Period && !digits) {
 			left += '.';
 		} else if (code == sf::Keyboard::Left) {
 			if (left != "") {
@@ -42,12 +49,14 @@ string* Textbox::handle_input(sf::Event &event) {
 			*ret = left + right;
 			return ret;
 		}
-		text.setString(left + "|" + right);
+		text.setString(left + cursor + right);
 	}
 	return NULL;
 }
 
-Textbox::Textbox(sf::FloatRect r, string t) {
+Textbox::Textbox(sf::FloatRect r, bool dig, string t) {
+	cursor = "|";
+	digits = dig;
 	body = sf::RectangleShape(sf::Vector2f(r.width, r.height));
 	body.setPosition(r.left, r.top);
 	body.setFillColor(sf::Color::White);
@@ -58,7 +67,8 @@ Textbox::Textbox(sf::FloatRect r, string t) {
 	sf::FloatRect text_bounds = text.getGlobalBounds();
 	int text_y = r.top - (r.height - text_bounds.height) / 2;
 	left = t;
-	text.setString(t);
-	text.setPosition(r.left, (float)text_y);
+	text.setString(t + cursor);
+	text.setPosition(r.left + 2, (float)text_y);
 	text.setFillColor(sf::Color::Black);
+	blink_frame = 0;
 }

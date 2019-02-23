@@ -27,6 +27,9 @@ enum State {
 
 class Game : public sf::Drawable {
 	friend class Editor;
+	friend class Decopanel;
+	friend class Geompanel;
+	friend class Mappanel;
 private:
 	sf::Clock	frame_clock;
 	double		frame_time;

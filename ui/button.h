@@ -12,7 +12,8 @@ using namespace std;
 enum BState {
 	BNONE,
 	BHOVER,
-	BCLICK
+	BCLICK,
+	BCLICKR
 };
 
 class Button : public sf::Drawable {

@@ -9,6 +9,8 @@
 
 #include "button.h"
 #include "decopanel.h"
+#include "mappanel.h"
+#include "geompanel.h"
 #include "textbox.h"
 #include "../game.h"
 #include "../actors/player.h"
@@ -33,25 +35,34 @@ enum Modes
 	DOOR,
 	SIGN,
 	ENEMY,
-	TEMP
+	TEMP,
+	TEMP2,
+	EDIT_DECO,
+	EDIT_GEOM,
+	EDIT_MAP
 };
 
 enum RootButtons {
+	MAP_BUTTON,
+	SNAP_BUTTON,
 	DECO_BUTTON,
 	GEOM_BUTTON,
-	DOOR_BUTTON,
-	TEMP_BUTTON,
-	SNAP_BUTTON
+	POR_BUTTON,
+	ENT_BUTTON,
+	ENM_BUTTON
 };
 
 class Editor: public sf::Drawable {
 private:
 	Decopanel* decopanel;
+	Mappanel* mappanel;
+	Geompanel* geompanel;
 
 	Textbox* textbox;
 	bool textbox_input;
 	string* textbox_target;
 	Button* buttons[15];
+	sf::RectangleShape selected_pan_r;
 
 	Game* game;
 	sf::RenderWindow*		w;				//window belonging to main
@@ -123,7 +134,7 @@ public:
 	//Set Mode 
 	void setMode(Modes _mode);
 
-	void resetMode();
+	void reset();
 
 	sf::View getView();
 

@@ -14,10 +14,13 @@ BState Button::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 			text.setFillColor(hover);
 			body.setFillColor(normal);
 		}
-	} else if (event.type == sf::Event::MouseButtonPressed &&
-	event.mouseButton.button == sf::Mouse::Left) {
-		if (bounds.contains(m_pos)) {
+	} else if (event.type == sf::Event::MouseButtonPressed) {
+		if (event.mouseButton.button == sf::Mouse::Left &&
+		bounds.contains(m_pos)) {
 			return BCLICK;
+		} else if (event.mouseButton.button == sf::Mouse::Right &&
+		bounds.contains(m_pos)) {
+			return BCLICKR;
 		}
 	}
 	return BNONE;

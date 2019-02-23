@@ -139,6 +139,8 @@ void Game::new_map(string name) {
 	clear();
 	delete map_current;
 	map_current = new Map(name);
+	map_current->saveMap();
+	map_names.push_back(name);
 }
 
 void Game::save_maplist() {
