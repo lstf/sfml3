@@ -1,5 +1,5 @@
-#ifndef PLAYER_O
-#define PLAYER_O
+#ifndef _PLAYER_H
+#define _PLAYER_H
 #include <vector>
 #include <string>
 #include <iostream>
@@ -104,9 +104,18 @@ public:
 
 };
 
+struct ColDirs {
+	bool up;
+	bool down;
+	bool left;
+	bool right;
+};
+
 class Player : public sf::Drawable
 { 
 private:
+	ColDirs coldirs;
+
 	std::vector<sf::FloatRect>* geometry;
 	Png png;
 	sf::Clock animationClock;

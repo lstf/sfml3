@@ -1,5 +1,5 @@
-#ifndef _GAME_O
-#define _GAME_O
+#ifndef _GAME_H
+#define _GAME_H
 
 using namespace std;
 

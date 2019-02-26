@@ -1,14 +1,14 @@
 #include "uiutils.h"
 
-sf::Vector2i snap(sf::Vector2i v, int s) {
-	int x = v.x - v.x % s;
-	int y = v.y - v.y % s;
+sf::Vector2i snap(sf::Vector2i v, SnapVals sv) {
+	int x = v.x - v.x % sv.x + sv.xo;
+	int y = v.y - v.y % sv.y + sv.yo;
 	return sf::Vector2i(x,y);
 }
 
-sf::Vector2f snap(sf::Vector2f v, int s) {
-	int x = v.x - int(v.x) % s;
-	int y = v.y - int(v.y) % s;
+sf::Vector2f snap(sf::Vector2f v, SnapVals sv) {
+	int x = int(v.x) - int(v.x) % sv.x + sv.xo;
+	int y = int(v.y) - int(v.y) % sv.y + sv.yo;
 	return sf::Vector2f(x,y);
 }
 

@@ -16,8 +16,7 @@ DNode* newDnode(DTree* d, string t) {
 }
 
 
-void DBox::init()
-{
+void DBox::init() {
 	sp.setTexture(*txmap::get_tx("ats/dbg.png"));
 	font.loadFromFile(ATS_DIR + string("fonts/thintel.ttf"));
 	text.setFont(font);
@@ -53,8 +52,8 @@ void DBox::init()
 	text.setPosition(text_x, text_y);
 }
 
-DBox::DBox(DTree* _d, Player* _player, map<string, int>* _lstate, map<string, int>* _gstate)
-{
+DBox::DBox(DTree* _d, Player* _player, map<string, int>* _lstate, map<string,
+int>* _gstate) {
 	init();
 
 	lstate = _lstate;
@@ -68,8 +67,7 @@ DBox::DBox(DTree* _d, Player* _player, map<string, int>* _lstate, map<string, in
 	fillBox();
 }
 
-void DBox::draw(sf::RenderTarget& w, sf::RenderStates states) const
-{
+void DBox::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	sf::View temp = w.getView();
 	w.setView(w.getDefaultView());
 	w.draw(sp, states);
@@ -80,8 +78,7 @@ void DBox::draw(sf::RenderTarget& w, sf::RenderStates states) const
 	w.setView(temp);
 }
 
-void DBox::fillBox()
-{
+void DBox::fillBox() {
 	text.setString(dnode->text);
 	int len = dnode->options.size();
 	len = len > 4 ? 4 : len;
@@ -94,17 +91,14 @@ void DBox::fillBox()
 	otext[oindex].setFillColor(sf::Color::White);
 }
 
-void DBox::setText(string msg)
-{
+void DBox::setText(string msg) {
 	lines = queue<string>();
 	lines.push(msg);
 	fillBox();
 }
 
-void DBox::update(sf::Event e)
-{
-	if (e.type == sf::Event::KeyPressed)
-	{
+void DBox::update(sf::Event e) {
+	if (e.type == sf::Event::KeyPressed) {
 		if (e.key.code == sf::Keyboard::Right) {
 			switch (oindex) {
 			case 0:
@@ -150,8 +144,7 @@ void DBox::update(sf::Event e)
 				break;
 			};
 		} else if (e.key.code == sf::Keyboard::X ||
-			e.key.code == sf::Keyboard::Z)
-		{
+		e.key.code == sf::Keyboard::Z) {
 			if (dnode->options[oindex]->target) {
 				dnode = dnode->options[oindex]->target;
 				fillBox();

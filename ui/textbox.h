@@ -1,5 +1,5 @@
-#ifndef _TEXTBOX_O
-#define _TEXTBOX_O
+#ifndef _TEXTBOX_H
+#define _TEXTBOX_H
 
 #include <iostream>
 #include <string>
@@ -15,17 +15,24 @@ using namespace std;
 class Textbox : public sf::Drawable {
 private:
 	string left;
+	string cursor;
 	string right;
-	sf::Text text;
+
 	sf::RectangleShape body;
-	sf::String cursor;
+
+	sf::Text text;
+
 	bool digits;
+
 	int blink_frame;
+
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
 public:
-	void update();
 	string* handle_input(sf::Event &event);
-	Textbox(sf::FloatRect r, bool dig = false, string t = "");
+
+	void update();
+
+	Textbox(sf::FloatRect r, bool _digits = false, string t = "");
 };
 #endif

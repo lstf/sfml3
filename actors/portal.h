@@ -1,5 +1,5 @@
-#ifndef PORTAL_O
-#define PORTAL_O
+#ifndef _PORTAL_H
+#define _PORTAL_H
 
 #include <vector>
 #include <string>

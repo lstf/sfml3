@@ -1,5 +1,5 @@
-#ifndef _MAPPANEL_O
-#define _MAPPANEL_O
+#ifndef _MAPPANEL_H
+#define _MAPPANEL_H
 
 #include <iostream>
 #include <string>
@@ -42,27 +42,30 @@ struct Mapbutton {
 
 class Mappanel : public sf::Drawable {
 private:
+	Game* game;
+
 	sf::RectangleShape top_bg;
 	sf::RectangleShape bottom_bg;
 
-	Button* top_buttons[7];
-	int selected;
-	sf::Text selected_text;
-	bool confirm;
-	Textbox* name_tb;
-	bool naming;
-	MAP_NAMING_STATE nstate;
-	bool load_level;
-	bool new_level;
-	string new_level_name;
+	sf::Text	selected_text;
+	int			selected;
 
-	sf::View scrollview;
-	Scrollbar* scroll;
-	int scroll_max;
-	Mapbutton* buttons;
-	unsigned int button_count;
+	Button*	top_buttons[7];
+	bool	confirm;
+	bool	load_level;
+	bool	new_level;
+	string	new_level_name;
+	bool	delete_level;
 
-	Game* game;
+	Textbox*			name_tb;
+	bool				naming;
+	MAP_NAMING_STATE	nstate;
+
+	sf::View		scrollview;
+	Scrollbar*		scroll;
+	int				scroll_max;
+	Mapbutton*		buttons;
+	unsigned int	button_count;
 
 	void bg_setup();
 	void button_setup();
@@ -71,9 +74,9 @@ private:
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
 public:
-	MappanelTrans* update();
-
 	void handle_input(sf::Event &event, sf::Vector2i m_pos);
+	
+	MappanelTrans* update();
 
 	void reset();
 

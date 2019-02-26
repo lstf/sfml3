@@ -1,5 +1,5 @@
-#ifndef BACKGROUND_O
-#define BACKGROUND_O
+#ifndef _BACKGROUND_H
+#define _BACKGROUND_H
 
 #include <vector>
 

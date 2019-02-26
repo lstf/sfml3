@@ -1,5 +1,5 @@
-#ifndef SIGN_O
-#define SIGN_O
+#ifndef _SIGN_H
+#define _SIGN_H
 
 #include "../entity.h"
 #include "../../utils/txmap.h"

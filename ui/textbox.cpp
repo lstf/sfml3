@@ -4,6 +4,7 @@ void Textbox::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	w.draw(body, states);
 	w.draw(text, states);
 }
+
 void Textbox::update() {
 	blink_frame++;
 	if (blink_frame > TEXTBOX_BLINK_FRAMES) {
@@ -12,6 +13,7 @@ void Textbox::update() {
 		text.setString(left + cursor + right);
 	}
 }
+
 string* Textbox::handle_input(sf::Event &event) {
 	if (event.type == sf::Event::KeyPressed) {
 		const int code = event.key.code;
@@ -54,9 +56,10 @@ string* Textbox::handle_input(sf::Event &event) {
 	return NULL;
 }
 
-Textbox::Textbox(sf::FloatRect r, bool dig, string t) {
-	cursor = "|";
-	digits = dig;
+Textbox::Textbox(sf::FloatRect r, bool _digits, string t) {
+	left	= t;
+	cursor	= "|";
+
 	body = sf::RectangleShape(sf::Vector2f(r.width, r.height));
 	body.setPosition(r.left, r.top);
 	body.setFillColor(sf::Color::White);
@@ -66,9 +69,11 @@ Textbox::Textbox(sf::FloatRect r, bool dig, string t) {
 	text.setString("gl");
 	sf::FloatRect text_bounds = text.getGlobalBounds();
 	int text_y = r.top - (r.height - text_bounds.height) / 2;
-	left = t;
 	text.setString(t + cursor);
-	text.setPosition(r.left + 2, (float)text_y);
+	text.setPosition(r.left + 2, text_y);
 	text.setFillColor(sf::Color::Black);
+
+	digits = _digits;
+
 	blink_frame = 0;
 }

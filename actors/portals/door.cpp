@@ -1,7 +1,6 @@
 #include "door.h"
 
-Door::Door()
-{
+Door::Door() {
 	opening = false;
 	traversed = false;
 	
@@ -21,21 +20,17 @@ Door::Door()
 	sp_sheet.fps = 6;
 }
 
-void Door::draw(sf::RenderTarget& w, sf::RenderStates states) const
-{
+void Door::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	w.draw(sp, states);
 }
 
-bool Door::advanceAnimation()
-{
+bool Door::advanceAnimation() {
 	sp_sheet.time += sp_sheet.clock.getElapsedTime().asSeconds();
-	if (sp_sheet.time > 1/sp_sheet.fps)
-	{
+	if (sp_sheet.time > 1/sp_sheet.fps) {
 		sp_sheet.time = 0;
 		sp_sheet.clock.restart();
 		sp_sheet.x++;
-		if (sp_sheet.x >= sp_sheet.frameCount)
-		{
+		if (sp_sheet.x >= sp_sheet.frameCount) {
 			sp_sheet.x = 0;
 			return true;
 		}
@@ -59,8 +54,7 @@ sf::Vector2f Door::size() {
 	return sf::Vector2f(r.width, r.height);
 }
 
-bool Door::update()
-{
+bool Door::update() {
 	return advanceAnimation();	
 }
 

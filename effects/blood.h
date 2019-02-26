@@ -1,5 +1,5 @@
-#ifndef BLOOD_O
-#define BLOOD_O
+#ifndef _BLOOD_H
+#define _BLOOD_H
 
 #include <vector>
 #include <list>

@@ -1,5 +1,5 @@
-#ifndef ENEMY_O
-#define ENEMY_O
+#ifndef _ENEMY_H
+#define _ENEMY_H
 
 #include <vector>
 

@@ -1,5 +1,5 @@
-#ifndef TXMAP_O
-#define TXMAP_O
+#ifndef _TXMAP_H
+#define _TXMAP_H
 
 #include <fstream>
 #include <iostream>

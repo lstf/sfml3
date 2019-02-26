@@ -125,6 +125,13 @@ void Game::clear() {
 }
 
 bool Game::load_map(string name) {
+	if (name == "null_map") {
+		delete map_current;
+		map_current = new Map("null map");
+		return true;
+	} else if (name == "") {
+		return true;
+	}
 	Map* next_map = new Map(name);
 	if (!next_map->loadMap()) {
 		cout << "[GAME] failed to load map " << name;

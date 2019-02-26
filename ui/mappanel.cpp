@@ -7,7 +7,6 @@ void Mappanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	w.draw(top_bg, states);
 	w.draw(bottom_bg, states);
 	w.draw(selected_text, states);
-
 	for (unsigned int i = 1; i < 7; i++) {
 		w.draw(*top_buttons[i], states);
 	}
@@ -30,30 +29,48 @@ void Mappanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 }
 
 MappanelTrans* Mappanel::update() {
-	MappanelTrans* ret = NULL;
-
 	if (naming) {
 		name_tb->update();
 	}
 
+	MappanelTrans* ret = new MappanelTrans;
 	if (load_level) {
-		ret = new MappanelTrans;
 		load_level = false;
 		if (selected < 0) {
 			ret->name = game->map_current->name;
 		} else {
 			ret->name = game->map_names[selected];
 		}
+		ret->is_new = false;
 		if (ret && ret->name == "null map") {
 			delete ret;
 			ret = NULL;
 		}
-		ret->is_new = false;
 	} else if (new_level) {
-		ret = new MappanelTrans;
 		new_level = false;
 		ret->name = new_level_name;
 		ret->is_new = true;
+	} else if (delete_level) {
+		delete_level = false;
+		string s_name;
+		if (selected < 0) {
+			ret->name = "null map";
+			s_name = game->map_current->name;
+		} else {
+			ret->name = "";
+			s_name = game->map_names[selected];
+		}
+		ret->is_new = false;
+		for (int i = game->map_names.size()-1; i >= 0; i++) {
+			if (game->map_names[i] == s_name) {
+				auto bn = game->map_names.begin();
+				game->map_names.erase(bn + i);
+				break;
+			}
+		}
+	} else {
+		delete ret;
+		ret = NULL;
 	}
 
 	return ret;
@@ -77,8 +94,10 @@ void Mappanel::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 				new_level_name = *ts;
 				break;
 			case MAP_NAME_DUP:
+				//TODO implement duplicate
 				break;
 			case MAP_NAME_REN:
+				//TODO implement rename
 				break;
 			}
 			naming = false;
@@ -95,6 +114,7 @@ void Mappanel::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 		BState bs = top_buttons[0]->handle_input(event, m_pos);
 		if (bs == BCLICK) {
 			confirm = false;
+			delete_level = true;
 		}
 		if (event.type == sf::Event::KeyPressed &&
 		event.key.code == sf::Keyboard::Escape) {
@@ -205,6 +225,7 @@ void Mappanel::reset() {
 	naming = false;
 	load_level = false;
 	new_level = false;
+	delete_level = false;
 
 	for (unsigned int i = 0; i < button_count; i++) {
 		delete buttons[i].btn;
@@ -294,6 +315,7 @@ void Mappanel::button_setup() {
 	naming = false;
 	load_level = false;
 	new_level = false;
+	delete_level = false;
 	selected_text.setFont(*txmap::get_font("./ats/fonts/thintel.ttf"));
 	selected_text.setCharacterSize(32);
 	selected_text.setString(game->map_current->name);

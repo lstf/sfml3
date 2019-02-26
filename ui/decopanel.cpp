@@ -2,6 +2,7 @@
 
 void Decopanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	sf::View temp = w.getView();
+
 	sf::RectangleShape selected_rect(sf::Vector2f(0,0));
 	selected_rect.setFillColor(sf::Color(0,0,0,0));
 	selected_rect.setOutlineColor(sf::Color(255,255,255));
@@ -35,69 +36,9 @@ void Decopanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	}
 }
 
-	
-bool gen_geom_over(sf::FloatRect u, sf::FloatRect v) {
-	return 
-	u.left == v.left && 
-	u.width == v.width &&
-	u.top + u.height + 1 > v.top;
-}
-bool gen_geom_next_to(sf::FloatRect u, sf::FloatRect v) {
-	return 
-	u.top == v.top &&
-	u.height == v.height &&
-	u.left + u.width + 1 > v.left;
-}
-bool gen_geom_comp(
-const sf::FloatRect &u, const sf::FloatRect &v) {
-	if (u.top == v.top) {
-		if (u.left < v.left) {
-			return true;
-		}
-		return false;
-	} else if (u.top < v.top) {
-		return true;
-	} 
-	return false;
-}
-vector<sf::FloatRect> Decopanel::gen_geom() {
-	vector<sf::FloatRect> rects;
-	vector<sf::FloatRect> rects2;
-	for (auto it = selected.begin(); it != selected.end(); ++it) {
-		rects.push_back(map->bg[*it]->sp.getGlobalBounds());
-	}
-	sort(rects.begin(),rects.end(),gen_geom_comp);
-
-	auto iti = rects.begin();
-	sf::FloatRect r = *iti;
-	for (auto it = iti + 1; it != rects.end(); ++it) {
-		if (gen_geom_next_to(*(it - 1), *it)) {
-			r.width = it->left + it->width - r.left;
-		} else {
-			rects2.push_back(r);
-			r = *it;
-		}
-	}
-	rects2.push_back(r);
-	rects.clear();
-	iti = rects2.begin();
-	r = *iti;
-	for (auto it = iti + 1; it != rects2.end(); ++it) {
-		if (gen_geom_over(*(it - 1), *it)) {
-			r.height = it->top + it->height - r.top;
-		} else {
-			rects.push_back(r);
-			r = *it;
-		}
-	}
-	rects.push_back(r);
-
-	return rects;
-}
-
 void Decopanel::handle_input(
-sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos, int snap_val) {
-	sf::Vector2f w_pos_snap = snap(w_pos, snap_val);
+sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
+	sf::Vector2f w_pos_snap = snap(w_pos, *sv);
 	bool shift = 
 	sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || 
 	sf::Keyboard::isKeyPressed(sf::Keyboard::RShift);
@@ -190,7 +131,6 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos, int snap_val) {
 				}
 			}
 			select_click = true;
-
 			if (!shift) {
 				selected.clear();
 			}
@@ -265,9 +205,10 @@ void Decopanel::reset() {
 	map = game->map_current;
 }
 
-Decopanel::Decopanel(Game* _game) {
-	game = _game;
-	map = game->map_current;
+Decopanel::Decopanel(Game* _game, SnapVals* _sv) {
+	game	= _game;
+	map		= game->map_current;
+	sv		= _sv;
 
 	bg_setup();
 	button_setup();
@@ -368,4 +309,66 @@ void Decopanel::select_setup() {
 
 	select_click = false;
 	selected_click = false;
+}
+
+bool gen_geom_over(sf::FloatRect u, sf::FloatRect v) {
+	return 
+	u.left == v.left && 
+	u.width == v.width &&
+	u.top + u.height + 1 > v.top;
+}
+
+bool gen_geom_next_to(sf::FloatRect u, sf::FloatRect v) {
+	return 
+	u.top == v.top &&
+	u.height == v.height &&
+	u.left + u.width + 1 > v.left;
+}
+
+bool gen_geom_comp(
+const sf::FloatRect &u, const sf::FloatRect &v) {
+	if (u.top == v.top) {
+		if (u.left < v.left) {
+			return true;
+		}
+		return false;
+	} else if (u.top < v.top) {
+		return true;
+	} 
+	return false;
+}
+
+vector<sf::FloatRect> Decopanel::gen_geom() {
+	vector<sf::FloatRect> rects;
+	vector<sf::FloatRect> rects2;
+	for (auto it = selected.begin(); it != selected.end(); ++it) {
+		rects.push_back(map->bg[*it]->sp.getGlobalBounds());
+	}
+	sort(rects.begin(),rects.end(),gen_geom_comp);
+
+	auto iti = rects.begin();
+	sf::FloatRect r = *iti;
+	for (auto it = iti + 1; it != rects.end(); ++it) {
+		if (gen_geom_next_to(*(it - 1), *it)) {
+			r.width = it->left + it->width - r.left;
+		} else {
+			rects2.push_back(r);
+			r = *it;
+		}
+	}
+	rects2.push_back(r);
+	rects.clear();
+	iti = rects2.begin();
+	r = *iti;
+	for (auto it = iti + 1; it != rects2.end(); ++it) {
+		if (gen_geom_over(*(it - 1), *it)) {
+			r.height = it->top + it->height - r.top;
+		} else {
+			rects.push_back(r);
+			r = *it;
+		}
+	}
+	rects.push_back(r);
+
+	return rects;
 }

@@ -1,5 +1,5 @@
-#ifndef _SFUTILS_O
-#define _SFUTILS_O
+#ifndef _SFUTILS_H
+#define _SFUTILS_H
 
 #include <SFML/Graphics.hpp>
 

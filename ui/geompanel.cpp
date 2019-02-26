@@ -1,7 +1,6 @@
 #include "geompanel.h"
 
 void Geompanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
-	//Selected geometry elements
 	sf::RectangleShape selected_rect(sf::Vector2f(0,0));
 	selected_rect.setFillColor(sf::Color(0,0,0,0));
 	selected_rect.setOutlineColor(sf::Color(255,255,255));
@@ -13,15 +12,14 @@ void Geompanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 		selected_rect.setSize(sf::Vector2f(bgb.width, bgb.height));
 		w.draw(selected_rect, states);
 	}
-	//Selection / Addition rectangle
 	if (select_click || right_click) {
 		w.draw(select_r, states);
 	}
 }
 
 void Geompanel::handle_input(
-sf::Event &event, sf::Vector2f w_pos, int snap_val) {
-	sf::Vector2f w_pos_snap = snap(w_pos, snap_val);
+sf::Event &event, sf::Vector2f w_pos) {
+	sf::Vector2f w_pos_snap = snap(w_pos, *sv);
 	bool shift = 
 	sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || 
 	sf::Keyboard::isKeyPressed(sf::Keyboard::RShift);
@@ -37,7 +35,6 @@ sf::Event &event, sf::Vector2f w_pos, int snap_val) {
 				}
 			}
 			select_click = true;
-
 			if (!shift) {
 				selected.clear();
 			}
@@ -106,22 +103,25 @@ sf::Event &event, sf::Vector2f w_pos, int snap_val) {
 
 void Geompanel::reset() {
 	selected.clear();
-	select_click = false;
-	selected_click = false;
-	right_click = false;
+	select_click	= false;
+	selected_click	= false;
+	right_click		= false;
 	map = game->map_current;
 }
 
-Geompanel::Geompanel(Game* _game) {
-	game = _game;
-	map = game->map_current;
+Geompanel::Geompanel(Game* _game, SnapVals* _sv) {
+	game	= _game;
+	map		= game->map_current;
+	sv		= _sv;
 
 	select_r = sf::RectangleShape(sf::Vector2f(0,0));
 	select_r.setFillColor(sf::Color(0,0,0,0));
 	select_r.setOutlineColor(sf::Color(255,255,255));
 	select_r.setOutlineThickness(-1.0);
 
-	select_click = false;
-	selected_click = false;
-	right_click = false;
+	select_click	= false;
+	selected_click	= false;
+	select_p_mouse	= sf::Vector2f(0,0);
+
+	right_click	= false;
 }

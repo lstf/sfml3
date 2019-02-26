@@ -1,5 +1,5 @@
-#ifndef _DECOPANEL_O
-#define _DECOPANEL_O
+#ifndef _DECOPANEL_H
+#define _DECOPANEL_H
 
 #include <iostream>
 #include <string>
@@ -33,32 +33,34 @@ struct Decobutton {
 
 class Decopanel : public sf::Drawable {
 private:
+	Game* game;
+	Map* map;
+	SnapVals* sv;
+
 	sf::RectangleShape file_bg;
 	sf::RectangleShape menu_bg;
 	sf::RectangleShape preview_bg;
+
 	sf::Sprite preview_sp;
 
-	sf::View scrollview;
-	Scrollbar* scroll;
-	int scroll_max;
-	Decobutton* buttons;
-	unsigned int button_count;
+	sf::View		scrollview;
+	Scrollbar*		scroll;
+	int				scroll_max;
+	Decobutton*		buttons;
+	unsigned int	button_count;
 
-	sf::Sprite active_sp;
-	string active_name;
+	sf::Sprite	active_sp;
+	string		active_name;
 
-	sf::RectangleShape select_r;
-	bool select_click;
-	bool selected_click;
-	sf::Vector2f select_p_mouse;
-	vector<int> selected;
+	sf::RectangleShape	select_r;
+	bool				select_click;
+	bool				selected_click;
+	sf::Vector2f		select_p_mouse;
+	vector<int>			selected;
 
 	DECO_STATE state;
 
 	sf::IntRect bounds;
-
-	Game* game;
-	Map* map;
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
@@ -70,11 +72,11 @@ private:
 
 public:
 	void handle_input(
-	sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos, int snap_val);
+	sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos);
 
 	void reset();
 
-	Decopanel(Game* _game);
+	Decopanel(Game* _game, SnapVals* _sv);
 };
 
 #endif

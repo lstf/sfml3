@@ -1,5 +1,5 @@
-#ifndef _BUTTON_O
-#define _BUTTON_O
+#ifndef _BUTTON_H
+#define _BUTTON_H
 
 #include <string>
 
@@ -20,7 +20,9 @@ class Button : public sf::Drawable {
 private:
 	sf::Color normal;
 	sf::Color hover;
+
 	sf::RectangleShape body;
+
 	sf::Text text;
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;

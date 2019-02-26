@@ -1,5 +1,5 @@
-#ifndef _MAP_O
-#define _MAP_O
+#ifndef _MAP_H
+#define _MAP_H
 #include <vector>
 #include <iterator>
 #include <string>

@@ -1,5 +1,5 @@
-#ifndef _DOOR_O
-#define _DOOR_O
+#ifndef _DOOR_H
+#define _DOOR_H
 #include <fstream>
 #include <vector>
 

@@ -1,5 +1,5 @@
-#ifndef TESTENEMY_O
-#define TESTENEMY_O
+#ifndef _TESTENEMY_H
+#define _TESTENEMY_H
 
 #include <thread>
 #include <unistd.h>

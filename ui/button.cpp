@@ -46,8 +46,14 @@ sf::Vector2f Button::getPosition() {
 
 Button::Button(
 sf::Color n, sf::Color h, string t, sf::FloatRect r) {
-	normal = n;
-	hover = h;
+	normal	= n;
+	hover	= h;
+
+	body = sf::RectangleShape(sf::Vector2f(r.width, r.height));
+	body.setPosition(r.left, r.top);
+	body.setFillColor(normal);
+	body.setOutlineColor(hover);
+	body.setOutlineThickness(-1.0);
 
 	text.setFont(*txmap::get_font("./ats/fonts/thintel.ttf"));
 	text.setCharacterSize(r.height);
@@ -59,15 +65,9 @@ sf::Color n, sf::Color h, string t, sf::FloatRect r) {
 	int text_x = r.left + (r.width - text_bounds.width) / 2;
 	text.setPosition((float)text_x, text_y - 2.0);
 	text.setFillColor(hover);
-	
-	body = sf::RectangleShape(sf::Vector2f(r.width, r.height));
-	body.setPosition(r.left, r.top);
-	body.setFillColor(normal);
-	body.setOutlineColor(hover);
-	body.setOutlineThickness(-1.0);
 
-	bounds.left = r.left;
-	bounds.top = r.top;
-	bounds.width = r.width;
-	bounds.height = r.height;
+	bounds.left		= r.left;
+	bounds.top		= r.top;
+	bounds.width	= r.width;
+	bounds.height	= r.height;
 }

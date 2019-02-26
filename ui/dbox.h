@@ -1,5 +1,5 @@
-#ifndef DBOX_O
-#define DBOX_O
+#ifndef _DBOX_H
+#define _DBOX_H
 
 #include <fstream>
 #include <iostream>
@@ -8,7 +8,6 @@
 #include <string>
 #include <map>
 #include <vector>
-
 
 #include <SFML/Graphics.hpp>
 
@@ -48,8 +47,7 @@ DNode* newDnode(DTree* d, string t = "placeholder");
 
 DOption* newDoption(DTree* d, DNode* n, string t = "...", DNode* targ = NULL);
 
-class DBox : public sf::Drawable
-{
+class DBox : public sf::Drawable {
 private:
 	map<string, int>* lstate;
 	map<string, int>* gstate;
@@ -82,10 +80,16 @@ private:
 
 public:
 	bool finished;
-	DBox(DTree* _d, Player* player, map<string, int>* _lstate, map<string, int>* _gstate);
+
+	DBox(DTree* _d, Player* player, map<string, int>* _lstate, map<string,
+	int>* _gstate);
+
 	void fillBox();
+
 	void setText(string msg);
+
 	void update(sf::Event e);
+
 	~DBox();
 };
 

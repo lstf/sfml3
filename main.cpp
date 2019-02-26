@@ -65,7 +65,7 @@ int main() {
 			}
 
 			if (state == EDITOR) {
-				editor.handleInput(event);
+				editor.handle_input(event);
 			} else if (state == GAME) {
 				game.handle_input(event);
 			}
@@ -92,6 +92,7 @@ int main() {
 				load_map(game, gt->name, gt->position);
 				delete gt;
 				state = LOADING;
+				editor.reset();
 				continue;
 			}
 		}
