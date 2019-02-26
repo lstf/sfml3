@@ -148,12 +148,23 @@ void Player::updateCollide(std::vector<sf::FloatRect>* geo) {
 
 	d.height = 1;
 	d.top = u.top + u.height;
+	//d.width *=  3 / 4; 
+	//d.left += d.width / 3 / 2;
+
 	u.height = 1;
 	u.top -= 1;
+	//u.width *= 3 / 4;
+	//u.left += u.width / 3 / 2;
+
 	r.width = 1;
 	r.left = l.left + l.width;
+	//r.height *= 3 / 4;
+	//r.top += r.height / 3 / 2;
+
 	l.width = 1;
 	l.left -= 1;
+	//l.height *= 3 / 4;
+	//l.top += l.height / 3 / 2;
 
 	for (int i = geo->size()-1; i >= 0; i--) {
 		if ((*geo)[i].intersects(u)) {
@@ -171,8 +182,8 @@ void Player::updateCollide(std::vector<sf::FloatRect>* geo) {
 	}
 }
 
-bool Player::collisionResolver(
-sf::Vector2f op, std::vector<sf::FloatRect>* geo) {
+bool Player::collisionResolver(sf::Vector2f op,
+std::vector<sf::FloatRect>* geo) {
 	sf::Vector2f diff = sp.getPosition() - op;
 
 	int n = 0;
@@ -221,6 +232,10 @@ void Player::update(std::vector<sf::FloatRect>* geo, double frameTime) {
 	if (velocity.y < 0 && oldirs.up) {
 		velocity.y = 0;
 	}
+	//TODO something weird going on with jump height
+	//if (velocity.y > 0 && !oldirs.down) {
+	//	cout << sp.getPosition().y << endl;
+	//}
 	if (stateModified) {
 		stateModified = false;
 		if (state == WALKING_LEFT) {
@@ -243,13 +258,14 @@ void Player::update(std::vector<sf::FloatRect>* geo, double frameTime) {
 
 	sp.move(velocity);
 
+	bool moved = collisionResolver(old_position, geo);
+
 	updateCollide(geo);
 
-	if (collisionResolver(old_position, geo)) {
-		if (coldirs.up || coldirs.down || coldirs.right || coldirs.left) {
-			velocity = sf::Vector2f(velocity.x, 0);
-			sp.move(velocity + sf::Vector2f(0, -1));
-		}
+	if (moved && !coldirs.up && !coldirs.down && !coldirs.right && 
+	!coldirs.left) {
+		velocity = sf::Vector2f(velocity.x, 0);
+		sp.move(velocity + sf::Vector2f(0, -1));
 	}
 
 	refresh();

@@ -32,8 +32,8 @@ int main() {
 	sf::RenderWindow window(sf::VideoMode(960,480), "Game");
 	window.setVerticalSyncEnabled(true);
 	window.setKeyRepeatEnabled(false);
-	
-    sf::Event event;
+
+	sf::Event event;
 
 	cout << "[MAIN] game init" << endl;
 	Game game;
@@ -46,11 +46,11 @@ int main() {
 	MainState state = EDITOR;
 
 	cout << "[MAIN] main while" << endl;
-    while (window.isOpen()) {
+	while (window.isOpen()) {
 		game.frame_calc();		
 
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
+		while (window.pollEvent(event)) {
+			if (event.type == sf::Event::Closed) {
 				window.close();
 			}
 
@@ -97,7 +97,7 @@ int main() {
 			}
 		}
 
-        window.clear();
+		window.clear();
 
 		if (state == EDITOR) {
 			window.setView(editor.view);
@@ -112,11 +112,11 @@ int main() {
 		}
 
 		window.display();
-    }
+	}
 
 	cout << "[MAIN] storing map list" << endl;
 
 	game.save_maplist();
 
-    return 0;
+	return 0;
 }

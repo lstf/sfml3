@@ -10,12 +10,12 @@
 
 using namespace std;
 
-struct Png
-{
+struct Png {
 	unsigned int length;
 	void* mem;
 };
 
+//TODO make this a class
 namespace txmap
 {
 	static map<string, sf::Texture*> txs;

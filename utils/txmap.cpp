@@ -1,16 +1,11 @@
 #include "txmap.h"
 
-sf::Texture* txmap::get_tx(const string &name)
-{
-	try
-	{
+sf::Texture* txmap::get_tx(const string &name) {
+	try {
 		return txs.at(name);	
-	}
-	catch (const out_of_range& oor)
-	{
+	} catch (const out_of_range& oor) {
 		sf::Texture* tx = new sf::Texture;
-		if (!tx->loadFromFile(name))
-		{
+		if (!tx->loadFromFile(name)) {
 			cerr << "[TXMAP] tx " << name << " could not be opened" << endl;
 			return NULL;
 		}
@@ -20,17 +15,12 @@ sf::Texture* txmap::get_tx(const string &name)
 	}
 }
 
-sf::Font* txmap::get_font(const string &name)
-{
-	try
-	{
+sf::Font* txmap::get_font(const string &name) {
+	try {
 		return fonts.at(name);	
-	}
-	catch (const out_of_range& oor)
-	{
+	} catch (const out_of_range& oor) {
 		sf::Font* font = new sf::Font;
-		if (!font->loadFromFile(name))
-		{
+		if (!font->loadFromFile(name)) {
 			cerr << "[TXMAP] font " << name << " could not be opened" << endl;
 			return NULL;
 		}
@@ -40,17 +30,12 @@ sf::Font* txmap::get_font(const string &name)
 	}
 }
 
-Png txmap::get_png(const string &name)
-{
-	try
-	{
+Png txmap::get_png(const string &name) {
+	try {
 		return pngs.at(name);	
-	}
-	catch (const out_of_range& oor)
-	{
+	} catch (const out_of_range& oor) {
 		ifstream inp(name, std::ifstream::binary);
-		if (!inp.is_open())
-		{
+		if (!inp.is_open()) {
 			cerr << "[TXMAP] png " << name << " could not be opened" << endl;
 			Png ret;
 			ret.length = 0;
@@ -71,4 +56,3 @@ Png txmap::get_png(const string &name)
 		return png;
 	}
 }
-

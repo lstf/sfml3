@@ -122,6 +122,7 @@ void Editor::handle_input(sf::Event &event) {
 					mode = EDIT_GEOM;
 					selected_pan_r.setPosition(buttons[i]->getPosition());
 					selected_pan_r.move(3,3);
+					game->map_current->geom = true;
 				} else if (bs == BCLICKR) {
 					game->map_current->geom = !game->map_current->geom;
 				}

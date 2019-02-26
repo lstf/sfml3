@@ -13,8 +13,7 @@
 using namespace std;
 
 
-class Blood_drop : public sf::Drawable
-{
+class Blood_drop : public sf::Drawable {
 	private:
 		sf::RectangleShape r;
 		sf::Vector2f velocity;
@@ -32,8 +31,7 @@ class Blood_drop : public sf::Drawable
 		void update(vector<sf::FloatRect>* geo, double frameTime);
 };
 
-class Blood : public sf::Drawable
-{
+class Blood : public sf::Drawable {
 	private:
 		list<Blood_drop> bloods;
 		int maxbloods;
@@ -45,7 +43,8 @@ class Blood : public sf::Drawable
 
 		void update(vector<sf::FloatRect>* geo, double frameTime);
 
-		void shoot_blood(int quantity, sf::Vector2f pos, float theta, float var, float vel);
+		void shoot_blood(int quantity, sf::Vector2f pos, float theta,
+		float var, float vel);
 };
 
 #endif
