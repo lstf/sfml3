@@ -290,7 +290,7 @@ void Decopanel::scroll_setup() {
 		(480 - DECO_P_SIZE - DECO_BASE_H)/480.0
 	));
 	int scroll_content_height = bb.top + bb.height - bt.top;
-	scroll_max = 480 - DECO_P_SIZE - scroll_content_height;
+	scroll_max = 480 - DECO_P_SIZE - DECO_BASE_H - scroll_content_height;
 	scroll = new Scrollbar(
 		480 - DECO_P_SIZE - DECO_BASE_H,
 		scroll_content_height,

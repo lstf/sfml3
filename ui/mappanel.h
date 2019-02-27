@@ -12,8 +12,6 @@
 #include "../game.h"
 #include "../utils/sfutils.h"
 
-using namespace std;
-
 #define MAP_BASE_H 16
 #define MAP_F_WIDTH 128
 #define MAP_B_WIDTH 64
@@ -23,6 +21,8 @@ using namespace std;
 
 #define MAP_BG sf::Color(127,127,127)
 #define MAP_FG sf::Color(0,0,0)
+
+using namespace std;
 
 struct MappanelTrans {
 	string name;

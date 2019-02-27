@@ -360,7 +360,7 @@ void Mappanel::scroll_setup() {
 		(480 - MAP_T_HEIGHT - MAP_BASE_H)/480.0
 	));
 	int scroll_content_height = bb.top + bb.height - bt.top;
-	scroll_max = 480 - MAP_T_HEIGHT - scroll_content_height;
+	scroll_max = 480 - MAP_T_HEIGHT - MAP_BASE_H - scroll_content_height;
 	scroll = new Scrollbar(
 		480 - MAP_T_HEIGHT - MAP_BASE_H,
 		scroll_content_height,

@@ -18,3 +18,15 @@ sf::Vector2f centerIn(const sf::FloatRect &r1, const sf::FloatRect &r2) {
 		r2.top + (r2.height - r1.height) / 2
 	);
 }
+
+sf::FloatRect orient(sf::FloatRect r) {
+	if (r.width < 0) {
+		r.left += r.width;
+		r.width *= -1;
+	} 
+	if (r.height < 0) {
+		r.top += r.height;
+		r.height *= -1;
+	}
+	return r;
+}

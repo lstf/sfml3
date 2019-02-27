@@ -53,8 +53,13 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 		w.draw(*geompanel, states);
 	} else if (mode == EDIT_MAP) {
 		w.draw(*mappanel, states);
+	} else if (mode == EDIT_RECT) {
+		w.draw(*rectpanel, states);
 	} else if (mode == EDIT_SNAP) {
 		w.draw(*snappanel, states);
+	}
+	if (rectpanel_rects) {
+		rectpanel->drawRects(w, states);
 	}
 }
 
@@ -133,6 +138,20 @@ void Editor::handle_input(sf::Event &event) {
 				break;
 			case ENM_BUTTON:
 				break;
+			case RECT_BUTTON:
+				if (bs == BCLICK) {
+					rectpanel_rects = false;
+					mode = EDIT_RECT;
+					selected_pan_r.setPosition(buttons[i]->getPosition());
+					selected_pan_r.move(3,3);
+				} else if (bs == BCLICKR) {
+					if (rectpanel_rects) {
+						rectpanel_rects = false;
+					} else if (mode != EDIT_RECT) {
+						rectpanel_rects = true;
+					}
+				}
+				break;
 			}
 			return;
 		}
@@ -144,6 +163,8 @@ void Editor::handle_input(sf::Event &event) {
 		geompanel->handle_input(event, w_pos);
 	} else if (mode == EDIT_MAP) {
 		mappanel->handle_input(event, m_pos);
+	} else if (mode == EDIT_RECT) {
+		rectpanel->handle_input(event, m_pos, w_pos);
 	} else if (mode == EDIT_SNAP) {
 		snappanel->handle_input(event, m_pos);
 	}
@@ -185,6 +206,13 @@ EditorTrans* Editor::update() {
 			delete m_t;
 		}
 	}
+	if (mode == EDIT_RECT) {
+		sf::View* r_view = rectpanel->update();
+		if (r_view) {
+			view = *r_view;
+			delete r_view;
+		}
+	}
 	return ret;
 }
 
@@ -193,6 +221,7 @@ void Editor::reset() {
 	decopanel->reset();
 	geompanel->reset();
 	mappanel->reset();
+	rectpanel->reset();
 }
 
 Editor::Editor(sf::RenderWindow* _w, Game* _game) {
@@ -213,6 +242,9 @@ Editor::Editor(sf::RenderWindow* _w, Game* _game) {
 	mappanel	= new Mappanel(game);
 	geompanel	= new Geompanel(game, &sv);
 
+	rectpanel		= new Rectpanel(&sv);
+	rectpanel_rects	= false;
+
 	snappanel	= new Snappanel(&sv);
 	snap		= false;
 	sv.x		= 1;
@@ -227,8 +259,8 @@ Editor::Editor(sf::RenderWindow* _w, Game* _game) {
 	p_m_pos			= sf::Vector2i(0,0);
 	mouse_middle	= false;
 
-	view.setSize					(960,480);
-	view.setCenter					(480,240);
+	view.setSize(960,480);
+	view.setCenter(480,240);
 }
 
 Button* Editor::gen_button(int i) {

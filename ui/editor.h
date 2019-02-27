@@ -11,6 +11,7 @@
 #include "decopanel.h"
 #include "mappanel.h"
 #include "geompanel.h"
+#include "rectpanel.h"
 #include "snappanel.h"
 #include "../game.h"
 #include "../actors/player.h"
@@ -30,7 +31,8 @@ enum Modes
 	EDIT_DECO,
 	EDIT_GEOM,
 	EDIT_MAP,
-	EDIT_SNAP
+	EDIT_SNAP,
+	EDIT_RECT
 };
 
 enum RootButtons {
@@ -57,6 +59,9 @@ private:
 	Decopanel*	decopanel;
 	Mappanel*	mappanel;
 	Geompanel*	geompanel;
+
+	Rectpanel*	rectpanel;
+	bool		rectpanel_rects;
 
 	Snappanel*	snappanel;
 	bool 		snap;
