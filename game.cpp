@@ -125,6 +125,7 @@ void Game::clear() {
 }
 
 bool Game::load_map(string name) {
+	cout << "[GAME] loading map " << name << endl;
 	if (name == "null_map") {
 		delete map_current;
 		map_current = new Map("null map");

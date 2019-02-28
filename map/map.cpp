@@ -1,5 +1,16 @@
 #include "map.h"
 
+void Map::deleteDoor(Portal* d) {
+	for (auto it = doors.begin(); it != doors.end(); ++it) {
+		if (*it == d) {
+			doors.erase(it);
+			delete d;
+			return;
+		}
+	}
+	cout << "[MAP] request for delete on non existing door" << endl;
+}
+
 void Map::setPlayer(Player* p)
 {
 	player = p;
@@ -42,10 +53,15 @@ void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const
 	}
 }
 
-Door* Map::addDoor()
-{
-	doors.push_back(new Door);
-	return doors.at(doors.size()-1);
+Portal* Map::addDoor(string name) {
+	if (name == "door") {
+		doors.push_back((Portal*)new Door);
+		doors.at(doors.size()-1)->name = "door";
+		return doors.at(doors.size()-1);
+	} else {
+		cout << "[MAP] invalid portal name " << name << endl;
+		return NULL;
+	}
 }
 
 bool Map::addWall(const sf::Vector2f &_pos, const sf::Vector2f &_size)
@@ -143,20 +159,20 @@ void Map::writeString(std::string s, std::ofstream &o)
 	}
 }
 
-void Map::writeDoors(std::ofstream &o)
-{
+void Map::writeDoors(std::ofstream &o) {
 	int length = doors.size();
 	sf::Vector2f sp_pos;
 
 	o.write((char*)&length, sizeof(length));
-	for (int i = 0; i < length; i++)
-	{
-		sp_pos = doors.at(i)->sp.getPosition();
-		o.write((char*)&sp_pos, sizeof(sp_pos));
+	for (int i = 0; i < length; i++) {
+		writeString(doors.at(i)->name, o);
 
 		writeString(doors.at(i)->target, o);
 
 		sp_pos = doors.at(i)->target_pos;
+		o.write((char*)&sp_pos, sizeof(sp_pos));
+
+		sp_pos = doors.at(i)->getPosition();
 		o.write((char*)&sp_pos, sizeof(sp_pos));
 	}
 }
@@ -193,7 +209,7 @@ bool Map::readVecImg(std::vector<img*> &v, std::ifstream &inp)
 	for (int i = 0; i < length; i++)
 	{
 		readString(name, inp);
-		ntx = txmap::get_tx(TEX_DIR+name);
+		ntx = txmap::get_tx(name);
 		if (!ntx) {
 			continue;
 		}
@@ -247,24 +263,34 @@ void Map::readString(std::string &s, std::ifstream &inp)
 	}
 }
 
-void Map::readDoors(std::ifstream &inp)
-{
+void Map::readDoors(std::ifstream &inp) {
 	int length;
-
 	sf::Vector2f sp_pos;
+	string str;
 
 	inp.read((char*)&length, sizeof(length));
-	for (int i = 0; i < length; i++)
-	{
-		doors.push_back(new Door);
-
-		inp.read((char*)&sp_pos, sizeof(sp_pos));
-		doors.at(i)->sp.setPosition(sp_pos);
+	int skip = 0;
+	for (int i = 0; i < length; i++) {
+		readString(str, inp);
+		if (str == "door") {
+			doors.push_back(new Door);
+			doors.at(i - skip)->name = "door";
+		} else {
+			skip++;
+			cout << "[MAP] Garbage portal detected" << endl;
+			readString(str, inp);
+			inp.read((char*)&sp_pos, sizeof(sp_pos));
+			inp.read((char*)&sp_pos, sizeof(sp_pos));
+			continue;
+		}
 
 		readString(doors.at(i)->target, inp);
 
 		inp.read((char*)&sp_pos, sizeof(sp_pos));
 		doors.at(i)->target_pos = sp_pos;
+
+		inp.read((char*)&sp_pos, sizeof(sp_pos));
+		doors.at(i)->setPosition(sp_pos);
 	}
 }
 
@@ -291,141 +317,6 @@ int Map::findRect(const sf::FloatRect &r, const std::vector<sf::FloatRect> &v)
 		}
 	}
 	return i;
-}
-
-
-
-void Map::select(sf::FloatRect &s, std::vector<sf::FloatRect> &v)
-{
-	if (deco)
-	{
-		sf::FloatRect r;
-
-		for (int i = (int)bg.size()-1; i >= 0; i--)
-		{
-			r = bg[i]->sp.getGlobalBounds();
-
-			if (s.intersects(r))
-			{
-				if (findRect(r,v) < 0)
-				{
-					v.push_back(r);
-					bgSelection.push_back(i);
-				}
-			}
-		}
-	}
-	if (geom)
-	{
-		for (int i = (int)geometry.size()-1; i >= 0; i--)
-		{
-			if (s.intersects(geometry[i]))
-			{
-				if (findRect(geometry[i], v) < 0)
-				{
-					v.push_back(geometry[i]);
-					geometrySelection.push_back(i);
-				}
-			}
-		}
-	}
-	for (int i = (int)doors.size()-1; i >= 0; i--)
-	{
-		if (s.intersects(doors.at(i)->sp.getGlobalBounds()))
-		{
-			v.push_back(doors.at(i)->sp.getGlobalBounds());
-			doorSelection.push_back(i);
-		}
-	}
-}
-
-void Map::clearSelect()
-{
-	bgSelection.clear();
-	geometrySelection.clear();
-	doorSelection.clear();
-}
-
-void Map::deleteSelect()
-{
-	modified = true;
-	auto iti = bg.begin();
-	int length = (int)bgSelection.size();
-	for (int i = 0; i < length; i++)
-	{
-		bg.erase(iti + bgSelection[i]);
-	}
-	bgSelection.clear();
-
-	auto itg = geometry.begin();
-	length = (int)geometrySelection.size();
-	for (int i = 0; i < length; i++)
-	{
-		geometry.erase(itg + geometrySelection[i]);
-	}
-	geometrySelection.clear();
-
-	auto itd = doors.begin();
-	length = (int)doorSelection.size();
-	for (int i = 0; i < length; i++)
-	{
-		delete doors.at(doorSelection[i]);
-		doors.erase(itd + doorSelection[i]);
-	}
-	doorSelection.clear();
-}
-
-void Map::duplicateSelect()
-{
-	modified = true;
-
-	int length = (int)bgSelection.size();
-	for (int i = 0; i < length; i++)
-	{
-		bg.push_back(new img);
-		bg[bg.size()-1]->name = bg[bgSelection[i]]->name;
-		bg[bg.size()-1]->sp.setTexture(*bg[bgSelection[i]]->sp.getTexture());
-		bg[bg.size()-1]->sp.setPosition(bg[bgSelection[i]]->sp.getPosition());
-		bgSelection[i] = bg.size()-1;
-	}
-
-	length = (int)geometrySelection.size();
-	for (int i = 0; i < length; i++)
-	{
-		geometry.push_back(geometry[geometrySelection[i]]);
-		geometrySelection[i] = geometry.size()-1;
-	}
-}
-
-void Map::moveSelect(const sf::Vector2f &v, bool snap)
-{
-	modified = true;
-	int length = (int)bgSelection.size();
-	for (int i = 0; i < length; i++)
-	{
-		bg[bgSelection[i]]->sp.move(v);
-		if (snap)
-		{
-			sf::Vector2f new_pos = bg[bgSelection[i]]->sp.getPosition();
-			new_pos.x = (int)new_pos.x - (int)new_pos.x % 32;
-			new_pos.y = (int)new_pos.y - (int)new_pos.y % 32;
-			bg[bgSelection[i]]->sp.setPosition(new_pos);
-		}
-	}
-
-	length = (int)geometrySelection.size();
-	for (int i = 0; i < length; i++)
-	{
-		geometry[geometrySelection[i]].left += (int)v.x;
-		geometry[geometrySelection[i]].top += (int)v.y;
-
-		if (snap)
-		{
-			sf::FloatRect r = geometry[geometrySelection[i]];
-			geometry[geometrySelection[i]].left -= (int)r.left % 32;
-			geometry[geometrySelection[i]].top -= (int)r.top % 32;
-		}
-	}
 }
 
 

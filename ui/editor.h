@@ -11,6 +11,7 @@
 #include "decopanel.h"
 #include "mappanel.h"
 #include "geompanel.h"
+#include "portpanel.h"
 #include "rectpanel.h"
 #include "snappanel.h"
 #include "../game.h"
@@ -32,6 +33,7 @@ enum Modes
 	EDIT_GEOM,
 	EDIT_MAP,
 	EDIT_SNAP,
+	EDIT_PORT,
 	EDIT_RECT
 };
 
@@ -59,6 +61,7 @@ private:
 	Decopanel*	decopanel;
 	Mappanel*	mappanel;
 	Geompanel*	geompanel;
+	Portpanel*	portpanel;
 
 	Rectpanel*	rectpanel;
 	bool		rectpanel_rects;

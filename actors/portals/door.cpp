@@ -39,19 +39,31 @@ bool Door::advanceAnimation() {
 	}
 	return false;
 }
+
 sf::FloatRect Door::bounds() {
 	return sp.getGlobalBounds();
 }
+
 MapTrans* Door::interact() {
 	MapTrans* ret = new MapTrans;
 	ret->p = (Portal*)this;
+	cout << target << endl;
 	ret->map_name = target;
+	cout << target_pos.x << " " << target_pos.y << endl;
 	ret->position = target_pos;
 	return ret;
 }
 sf::Vector2f Door::size() {
 	sf::FloatRect r = sp.getGlobalBounds();
 	return sf::Vector2f(r.width, r.height);
+}
+
+void Door::setPosition(sf::Vector2f pos) {
+	sp.setPosition(pos);
+}
+
+sf::Vector2f Door::getPosition() {
+	return sp.getPosition();
 }
 
 bool Door::update() {

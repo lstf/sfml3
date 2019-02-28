@@ -51,6 +51,8 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 		w.draw(*decopanel, states);
 	} else if (mode == EDIT_GEOM) {
 		w.draw(*geompanel, states);
+	} else if (mode == EDIT_PORT) {
+		w.draw(*portpanel, states);
 	} else if (mode == EDIT_MAP) {
 		w.draw(*mappanel, states);
 	} else if (mode == EDIT_RECT) {
@@ -133,6 +135,12 @@ void Editor::handle_input(sf::Event &event) {
 				}
 				break;
 			case POR_BUTTON:
+				if (bs == BCLICK) {
+					mode = EDIT_PORT;
+					selected_pan_r.setPosition(buttons[i]->getPosition());
+					selected_pan_r.move(3,3);
+				} else if (bs == BCLICKR) {
+				}
 				break;
 			case ENT_BUTTON:
 				break;
@@ -161,6 +169,8 @@ void Editor::handle_input(sf::Event &event) {
 		decopanel->handle_input(event, m_pos, w_pos);
 	} else if (mode == EDIT_GEOM) {
 		geompanel->handle_input(event, w_pos);
+	} else if (mode == EDIT_PORT) {
+		portpanel->handle_input(event, m_pos, w_pos);
 	} else if (mode == EDIT_MAP) {
 		mappanel->handle_input(event, m_pos);
 	} else if (mode == EDIT_RECT) {
@@ -220,6 +230,7 @@ void Editor::reset() {
 	mode = EDIT_MAP;
 	decopanel->reset();
 	geompanel->reset();
+	portpanel->reset();
 	mappanel->reset();
 	rectpanel->reset();
 }
@@ -241,6 +252,7 @@ Editor::Editor(sf::RenderWindow* _w, Game* _game) {
 	decopanel	= new Decopanel(game, &sv);
 	mappanel	= new Mappanel(game);
 	geompanel	= new Geompanel(game, &sv);
+	portpanel	= new Portpanel(game, &sv);
 
 	rectpanel		= new Rectpanel(&sv);
 	rectpanel_rects	= false;

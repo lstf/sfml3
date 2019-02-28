@@ -344,8 +344,14 @@ void Mappanel::button_setup() {
 }
 
 void Mappanel::scroll_setup() {
-	sf::IntRect bt = buttons[0].btn->bounds;
-	sf::IntRect bb = buttons[button_count - 1].btn->bounds;
+	int scroll_content_height;
+	if (button_count != 0) {
+		sf::IntRect bt = buttons[0].btn->bounds;
+		sf::IntRect bb = buttons[button_count - 1].btn->bounds;
+		scroll_content_height = bb.top + bb.height - bt.top;
+	} else {
+		scroll_content_height = 480 - MAP_T_HEIGHT - MAP_BASE_H;
+	}
 	
 	scrollview = sf::View(
 		sf::Vector2f(
@@ -359,7 +365,6 @@ void Mappanel::scroll_setup() {
 		MAP_F_WIDTH/960.0,
 		(480 - MAP_T_HEIGHT - MAP_BASE_H)/480.0
 	));
-	int scroll_content_height = bb.top + bb.height - bt.top;
 	scroll_max = 480 - MAP_T_HEIGHT - MAP_BASE_H - scroll_content_height;
 	scroll = new Scrollbar(
 		480 - MAP_T_HEIGHT - MAP_BASE_H,

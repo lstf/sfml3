@@ -6,6 +6,8 @@
 
 #include <SFML/Graphics.hpp>
 
+using namespace std;
+
 class Portal;
 
 struct MapTrans {
@@ -17,11 +19,16 @@ struct MapTrans {
 class Portal : public sf::Drawable {
 private:
 public:
+	string name;
+	string target;
+	sf::Vector2f target_pos;
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const = 0;
 	static std::vector<Portal*> list;
 	virtual sf::FloatRect bounds() = 0;
 	virtual MapTrans* interact() = 0;
 	virtual sf::Vector2f size() = 0;
+	virtual void setPosition(sf::Vector2f pos) = 0;
+	virtual sf::Vector2f getPosition() = 0;
 	virtual bool update() = 0;
 	Portal();
 	~Portal();
@@ -44,6 +51,14 @@ public:
 	}
 
 	virtual sf::Vector2f size() {
+		return sf::Vector2f(0,0);
+	}
+
+	virtual void setPosition(sf::Vector2f pos) {
+		(void)pos;
+	}
+
+	virtual sf::Vector2f getPosition() {
 		return sf::Vector2f(0,0);
 	}
 

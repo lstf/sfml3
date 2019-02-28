@@ -19,9 +19,8 @@ enum MainState {
 void load_map(Game &game, string name, sf::Vector2f pos) {
 	cout << "[MAIN] clearing things" << endl;
 	game.clear();
-	cout << "[MAIN] setting position" << endl;
+	cout << "[MAIN] setting position " << pos.x << " " << pos.y << endl;
 	game.player.setPosition(pos);
-	cout << "[MAIN] loading map" << endl;
 	if (!game.load_map(name)) {
 		cout << "[MAIN] failed to load map " << name << endl;
 	}

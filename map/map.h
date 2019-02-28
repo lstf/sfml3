@@ -12,6 +12,7 @@
 
 #include "background.h"
 #include "../actors/player.h"
+#include "../actors/portal.h"
 #include "../actors/portals/door.h"
 
 #define MAP_DIR "./ats/mps/"
@@ -34,15 +35,13 @@ class Map : public sf::Drawable {
 	friend class Editor;
 	friend class Decopanel;
 	friend class Geompanel;
+	friend class Portpanel;
 
 private:
-	std::vector<int> bgSelection;
-	std::vector<int> geometrySelection;
-	std::vector<int> doorSelection;
 	std::vector<img*> bg;
 	std::vector<sf::FloatRect> geometry;
 	std::vector<named_tx*> tx;
-	std::vector<Door*> doors;
+	std::vector<Portal*> doors;
 	Background* background;
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
@@ -55,7 +54,7 @@ private:
 	bool geom; 		//Draw geometry
 
 	//Adds Door
-	Door* addDoor();
+	Portal* addDoor(string name);
 	//Adds geometry
 	bool addWall(const sf::Vector2f &_pos, const sf::Vector2f &_size);
 	//Adds decoration
@@ -87,16 +86,7 @@ private:
 	//Returns index of rectange in vector (-1 if not found)
 	int findRect(const sf::FloatRect &r, const std::vector<sf::FloatRect> &v);
 
-	//Select visible decoration and geometry inside rectangle s
-	void select(sf::FloatRect &s, std::vector<sf::FloatRect> &v);
-	//Deselect all
-	void clearSelect();
-	//Delete selected
-	void deleteSelect();
-	//Duplicate selected (copy on same coords as selected, while original is deselected
-	void duplicateSelect();
-	//Move selected
-	void moveSelect(const sf::Vector2f &v, bool snap = false);
+	void deleteDoor(Portal* d);
 
 	////
 	  // END - Editor members

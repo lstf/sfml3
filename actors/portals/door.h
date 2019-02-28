@@ -37,8 +37,6 @@ private:
 	
 public:
 	sf::Sprite sp;
-	string target;
-	sf::Vector2f target_pos;
 
 	bool traversed;
 	void setTargetPos(sf::Vector2f _target_pos);
@@ -46,6 +44,8 @@ public:
 	virtual sf::FloatRect bounds();
 	virtual MapTrans* interact();
 	virtual sf::Vector2f size();
+	virtual void setPosition(sf::Vector2f pos);
+	virtual sf::Vector2f getPosition();
 	virtual bool update();
 	Door();
 };
