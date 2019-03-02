@@ -27,8 +27,8 @@ void Test_Enemy::die() {
 	if (dead) {
 		return;
 	}
-	Sign* s = new Sign("ats/text/testenemydead");
-	s->place(sp.getPosition() + sf::Vector2f(0,16));
+	Sign* s = new Sign();
+	s->set_pos(sp.getPosition() + sf::Vector2f(0,16));
 	dead = true;
 }
 

@@ -30,13 +30,16 @@ void Button::setPosition(sf::Vector2f pos) {
 	body.setPosition(pos);
 	bounds.left = pos.x;
 	bounds.top = pos.y;
-	string t = text.getString();
+	setString(text.getString());
+}
+
+void Button::setString(string str) {
 	text.setString("gl");
 	sf::FloatRect text_bounds = text.getGlobalBounds();
-	int text_y = pos.y - (bounds.height - text_bounds.height) / 2;
-	text.setString(t);
+	int text_y = bounds.top - (bounds.height - text_bounds.height) / 2;
+	text.setString(str);
 	text_bounds = text.getGlobalBounds();
-	int text_x = pos.x + (bounds.width - text_bounds.width) / 2;
+	int text_x = bounds.left + (bounds.width - text_bounds.width) / 2;
 	text.setPosition((float)text_x, text_y - 2.0);
 }
 

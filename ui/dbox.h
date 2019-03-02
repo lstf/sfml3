@@ -12,6 +12,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "../actors/player.h"
+#include "../inventory/inventory.h"
 #include "../utils/txmap.h"
 
 
@@ -23,6 +24,16 @@ struct DOption;
 
 struct DNode;
 
+struct DItem {
+	Item* item;
+	int count;
+};
+
+struct DEvent {
+	string key;
+	int val;
+};
+
 struct DTree {
 	DNode* root;
 	vector<DNode*> list;
@@ -32,15 +43,14 @@ struct DTree {
 struct DNode {
 	string text;
 	vector<DOption*> options;
+	DItem* item;
+	DEvent* levent;
+	DEvent* gevent;
 };
 
 struct DOption {
 	string text;
 	DNode* target;
-	string lkey;
-	int lval;
-	string gkey;
-	int gval;
 };
 
 DNode* newDnode(DTree* d, string t = "placeholder");

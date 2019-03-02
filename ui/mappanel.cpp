@@ -190,12 +190,16 @@ void Mappanel::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 		BState bs = buttons[i].btn->handle_input(event, m_pos);	
 		//hover to show preview
 		if (bs == BCLICK) {
+			if (game->map_current->name == game->map_names[i]) {
+				return;
+			}
 			selected = i;
 			selected_text.setString("[" +game->map_names[i] + "]");
 			selected_text.setPosition(
 				(MAP_T_WIDTH - selected_text.getGlobalBounds().width) / 2,
 				(MAP_T_HEIGHT - selected_text.getGlobalBounds().height) / 2 - 48
 			);
+			return;
 		}
 	}
 

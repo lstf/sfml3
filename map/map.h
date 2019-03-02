@@ -18,14 +18,14 @@
 #define MAP_DIR "./ats/mps/"
 #define TEX_DIR "./ats/mps/tx/"
 
-struct img
-{
+#define MAP_SP_LAYERS 5
+
+struct img {
 	std::string name;
 	sf::Sprite sp;
 };
 
-struct named_tx
-{
+struct named_tx {
 	void* png;
 	sf::Texture* texture;
 	std::string name;
@@ -38,7 +38,7 @@ class Map : public sf::Drawable {
 	friend class Portpanel;
 
 private:
-	std::vector<img*> bg;
+	std::vector<img*> sp[MAP_SP_LAYERS];
 	std::vector<sf::FloatRect> geometry;
 	std::vector<named_tx*> tx;
 	std::vector<Portal*> doors;
@@ -58,7 +58,7 @@ private:
 	//Adds geometry
 	bool addWall(const sf::Vector2f &_pos, const sf::Vector2f &_size);
 	//Adds decoration
-	bool addDeco(std::string name, const sf::Vector2f _pos);
+	bool addDeco(std::string name, const sf::Vector2f _pos, int l);
 	//Loads new texture
 	bool loadTexture(std::string img_name);
 

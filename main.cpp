@@ -6,6 +6,7 @@
 
 #include "game.h"
 #include "ui/editor.h"
+#include "ui/inventoryscreen.h"
 
 using namespace std;
 
@@ -13,6 +14,7 @@ enum MainState {
 	GAME,
 	MENU,
 	EDITOR,
+	INVENTORY,
 	LOADING
 };
 
@@ -42,6 +44,10 @@ int main() {
 	Editor editor(&window, &game);
 	window.setView(editor.view);
 
+	cout << "[MAIN] inventory init" << endl;
+	InventoryScreen inventory(&game.player);
+
+
 	MainState state = EDITOR;
 
 	cout << "[MAIN] main while" << endl;
@@ -60,6 +66,13 @@ int main() {
 					} else if (state == GAME) {
 						state = EDITOR;
 					}
+				} else if (event.key.code == sf::Keyboard::Enter) {
+					if (state == INVENTORY) {
+						state = GAME;
+					} else if (state == GAME) {
+						inventory.reload_inventory();
+						state = INVENTORY;
+					}
 				}
 			}
 
@@ -67,6 +80,8 @@ int main() {
 				editor.handle_input(event);
 			} else if (state == GAME) {
 				game.handle_input(event);
+			} else if (state == INVENTORY) {
+				inventory.handle_input(event);
 			}
 		}	
 		if (state == LOADING) {
@@ -104,7 +119,11 @@ int main() {
 			window.setView(game.player.view);
 		}
 
-		window.draw(game);
+		if (state == GAME || state == EDITOR) {
+			window.draw(game);
+		} else if (state == INVENTORY) {
+			window.draw(inventory);
+		}
 
 		if (state == EDITOR) {
 			window.draw(editor);

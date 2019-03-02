@@ -11,23 +11,20 @@ void Map::deleteDoor(Portal* d) {
 	cout << "[MAP] request for delete on non existing door" << endl;
 }
 
-void Map::setPlayer(Player* p)
-{
+void Map::setPlayer(Player* p) {
 	player = p;
 }
 
-void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const
-{
-	if (deco)
-	{
+void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const {
+	if (deco) {
 		w.draw(*background, states);
-		for (int i = (int)bg.size() - 1; i >= 0; i--)
-		{
-			w.draw(bg[i]->sp, states);
+		for (int j = 0; j < MAP_SP_LAYERS; j++) {
+			for (int i = (int)sp[j].size() - 1; i >= 0; i--) {
+				w.draw(sp[j][i]->sp, states);
+			}
 		}
 	}
-	if (geom)
-	{
+	if (geom) {
 		sf::RectangleShape gRect;
 		sf::Vector2f gV;
 
@@ -35,8 +32,7 @@ void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const
 		gRect.setOutlineColor(sf::Color::Blue);
 		gRect.setFillColor(sf::Color::Transparent);
 
-		for (int i = (int)geometry.size() - 1; i >= 0; i--)
-		{
+		for (int i = (int)geometry.size() - 1; i >= 0; i--) {
 			gV.x = geometry[i].left;
 			gV.y = geometry[i].top;
 			gRect.setPosition(gV);
@@ -47,8 +43,7 @@ void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const
 			w.draw(gRect, states);
 		}
 	}
-	for (int i = (int)doors.size()-1; i >= 0; i--)
-	{
+	for (int i = (int)doors.size()-1; i >= 0; i--) {
 		w.draw(*doors.at(i));
 	}
 }
@@ -64,27 +59,24 @@ Portal* Map::addDoor(string name) {
 	}
 }
 
-bool Map::addWall(const sf::Vector2f &_pos, const sf::Vector2f &_size)
-{
+bool Map::addWall(const sf::Vector2f &_pos, const sf::Vector2f &_size) {
 	modified = true;
 	geometry.push_back(sf::FloatRect(_pos, _size));
 	return true;
 }
 
-bool Map::addDeco(std::string name, const sf::Vector2f _pos)
-{
+bool Map::addDeco(std::string name, const sf::Vector2f _pos, int l) {
 	img* im = new img;
 	im->sp.setPosition(_pos);
 	im->name = name;
 	im->sp.setTexture(*txmap::get_tx(name));
-	bg.push_back(im);
+	sp[l].push_back(im);
 
 	modified = true;
 	return true;
 }
 
-bool Map::loadTexture(std::string img_name)
-{
+bool Map::loadTexture(std::string img_name) {
 	tx.push_back(new named_tx);
 
 	tx[tx.size()-1]->name = img_name;
@@ -97,8 +89,7 @@ bool Map::loadTexture(std::string img_name)
 
 
 
-bool Map::saveMap()
-{
+bool Map::saveMap() {
 	std::ofstream map_file((MAP_DIR + name).c_str(), std::ios::out|std::ios::binary);
 
 	if (!map_file.is_open()) return false;
@@ -106,7 +97,9 @@ bool Map::saveMap()
 	modified = false;
 
 	writeString	(name, map_file);
-	writeVecImg	(bg, map_file);
+	for (int i = 0; i < MAP_SP_LAYERS; i++) {
+		writeVecImg(sp[i], map_file);
+	}
 	writeVecGeo	(geometry, map_file);
 	writeDoors	(map_file);
 
@@ -115,46 +108,39 @@ bool Map::saveMap()
 	return true;
 }
 
-void Map::writeVecImg(std::vector<img*> v, std::ofstream &o)
-{
+void Map::writeVecImg(std::vector<img*> v, std::ofstream &o) {
 	int length = v.size();
 	sf::Vector2f pos;
 
 	o.write((char*)&length, sizeof(length));
-	for (int i = 0; i < (int)v.size(); i++)
-	{
+	for (int i = 0; i < (int)v.size(); i++) {
 		writeString(v[i]->name, o);
 		pos = v[i]->sp.getPosition();
 		o.write((char*)&pos, sizeof(pos));
 	}
 }
 
-void Map::writeRect(sf::FloatRect r, std::ofstream &o)
-{
+void Map::writeRect(sf::FloatRect r, std::ofstream &o) {
 	o.write((char*)&r.left, sizeof(r.left));
 	o.write((char*)&r.top, sizeof(r.top));
 	o.write((char*)&r.width, sizeof(r.width));
 	o.write((char*)&r.height, sizeof(r.height));
 }
 
-void Map::writeVecGeo(std::vector<sf::FloatRect> v, std::ofstream &o)
-{
+void Map::writeVecGeo(std::vector<sf::FloatRect> v, std::ofstream &o) {
 	int length = v.size();
 
 	o.write((char*)&length, sizeof(length));
-	for (int i = 0; i < length; i++)
-	{
+	for (int i = 0; i < length; i++) {
 		writeRect(v[i], o);
 	}
 }
 
-void Map::writeString(std::string s, std::ofstream &o)
-{
+void Map::writeString(std::string s, std::ofstream &o) {
 	int length = s.length();
 
 	o.write((char*)&length, sizeof(length));
-	for (int i = 0; i < length; i++)
-	{
+	for (int i = 0; i < length; i++) {
 		o.write((char*)&s[i], sizeof(s[i]));
 	}
 }
@@ -177,8 +163,7 @@ void Map::writeDoors(std::ofstream &o) {
 	}
 }
 
-bool Map::loadMap()
-{
+bool Map::loadMap() {
 	std::ifstream map_file((MAP_DIR + name).c_str(), std::ios::in|std::ios::binary);
 
 	if (!map_file.is_open()) return false;
@@ -186,7 +171,9 @@ bool Map::loadMap()
 	modified = false;
 
 	readString	(name, map_file);
-	if (!readVecImg(bg, map_file)) return false;
+	for (int i = 0; i < MAP_SP_LAYERS; i++) {
+		if (!readVecImg(sp[i], map_file)) return false;
+	}
 	readVecGeo	(geometry, map_file);
 	readDoors	(map_file);
 
@@ -195,8 +182,7 @@ bool Map::loadMap()
 	return true;
 }
 
-bool Map::readVecImg(std::vector<img*> &v, std::ifstream &inp)
-{
+bool Map::readVecImg(std::vector<img*> &v, std::ifstream &inp) {
 	int length;
 	sf::Vector2f p;
 	sf::Texture* ntx;
@@ -206,8 +192,7 @@ bool Map::readVecImg(std::vector<img*> &v, std::ifstream &inp)
 	tx.clear();
 
 	inp.read((char*)&length, sizeof(length));
-	for (int i = 0; i < length; i++)
-	{
+	for (int i = 0; i < length; i++) {
 		readString(name, inp);
 		ntx = txmap::get_tx(name);
 		if (!ntx) {
@@ -225,39 +210,34 @@ bool Map::readVecImg(std::vector<img*> &v, std::ifstream &inp)
 	return true;
 }
 
-void Map::readRect(sf::FloatRect &r, std::ifstream &inp)
-{
+void Map::readRect(sf::FloatRect &r, std::ifstream &inp) {
 	inp.read((char*)&r.left, sizeof(r.left));
 	inp.read((char*)&r.top, sizeof(r.top));
 	inp.read((char*)&r.width, sizeof(r.width));
 	inp.read((char*)&r.height, sizeof(r.height));
 }
 
-void Map::readVecGeo(std::vector<sf::FloatRect> &v, std::ifstream &inp)
-{
+void Map::readVecGeo(std::vector<sf::FloatRect> &v, std::ifstream &inp) {
 	int length;
 	sf::FloatRect t;
 
 	v.clear();
 
 	inp.read((char*)&length, sizeof(length));
-	for (int i = 0; i < length; i++)
-	{
+	for (int i = 0; i < length; i++) {
 		readRect(t, inp);
 		v.push_back(t);
 	}
 }
 
-void Map::readString(std::string &s, std::ifstream &inp)
-{
+void Map::readString(std::string &s, std::ifstream &inp) {
 	int length;
 	char c;
 
 	s = "";
 
 	inp.read((char*)&length, sizeof(length));
-	for (int i = 0; i < length; i++)
-	{
+	for (int i = 0; i < length; i++) {
 		inp.read((char*)&c, sizeof(c));
 		s += c;
 	}
@@ -294,25 +274,19 @@ void Map::readDoors(std::ifstream &inp) {
 	}
 }
 
-sf::Texture* Map::getTexture(std::string img_name)
-{
-	for (int i = 0; i < (int)tx.size(); i++)
-	{
-		if (tx[i]->name == img_name)
-		{
+sf::Texture* Map::getTexture(std::string img_name) {
+	for (int i = 0; i < (int)tx.size(); i++) {
+		if (tx[i]->name == img_name) {
 			return tx[i]->texture;
 		}
 	}
 	return NULL;
 }
 
-int Map::findRect(const sf::FloatRect &r, const std::vector<sf::FloatRect> &v)
-{
+int Map::findRect(const sf::FloatRect &r, const std::vector<sf::FloatRect> &v) {
 	int i;
-	for (i = v.size()-1; i >= 0; i--)
-	{
-		if (v[i] == r)
-		{
+	for (i = v.size()-1; i >= 0; i--) {
+		if (v[i] == r) {
 			break;
 		}
 	}
@@ -320,13 +294,11 @@ int Map::findRect(const sf::FloatRect &r, const std::vector<sf::FloatRect> &v)
 }
 
 
-std::vector<sf::FloatRect>* Map::getGeom()
-{
+std::vector<sf::FloatRect>* Map::getGeom() {
 	return &geometry;
 }
 
-Map::Map(std::string _name)
-{
+Map::Map(std::string _name) {
 	modified = false;
 	deco = true;
 	geom = false;
@@ -335,7 +307,6 @@ Map::Map(std::string _name)
 	background = new Background(0,1920);
 }
 
-Map::~Map()
-{
+Map::~Map() {
 	
 }

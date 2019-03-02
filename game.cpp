@@ -61,42 +61,47 @@ GameTrans* Game::update() {
 			for (auto it = ent.list.begin(); it != ent.list.end(); ++it) {
 				if ((*it)->bounds().intersects(player.bounds())) {
 					dbox = (*it)->interact(player, level_state, global_state);
-					state = DIALOG;
+					if (dbox) {
+						state = DIALOG;
+					}
 					break;
 				}
 			}
-			for (auto it = por.list.begin(); it != por.list.end(); ++it) {
-				if ((*it)->bounds().intersects(player.bounds())) {
-					map_trans = (*it)->interact();
-					state = PORTAL;
-					break;
+			if (state == GAMEPLAY) {
+				for (auto it = por.list.begin(); it != por.list.end(); ++it) {
+					if ((*it)->bounds().intersects(player.bounds())) {
+						map_trans = (*it)->interact();
+						state = PORTAL;
+						break;
+					}
 				}
 			}
 		}
 	
-		//player weapon
-		if (player.weaponActive()) {
+		if (state == GAMEPLAY) {
+			//player weapon
+			if (player.weaponActive()) {
+				for (auto it = enm.list.begin(); it != enm.list.end(); ++it) {
+					if ((*it)->bounds().intersects(player.weaponBounds())) {
+						(*it)->takeDamage();
+					}
+				}
+			}
+	
+			//removal
 			for (auto it = enm.list.begin(); it != enm.list.end(); ++it) {
-				if ((*it)->bounds().intersects(player.weaponBounds())) {
-					(*it)->takeDamage();
+				if ((*it)->remove()) {
+					delete *it;
+					break;
 				}
 			}
-		}
 	
-		//removal
-		for (auto it = enm.list.begin(); it != enm.list.end(); ++it) {
-			if ((*it)->remove()) {
-				delete *it;
-				break;
+			//updates
+			player.update(map_current->getGeom(), frame_time);
+			for (auto it = enm.list.begin(); it != enm.list.end(); ++it) {
+				(*it)->update(map_current->getGeom(), frame_time);
 			}
-		}
-	
-		//updates
-		player.update(map_current->getGeom(), frame_time);
-		for (auto it = enm.list.begin(); it != enm.list.end(); ++it) {
-			(*it)->update(map_current->getGeom(), frame_time);
-		}
-	
+		}	
 	}
 
 	if (state == PORTAL) {
@@ -126,7 +131,7 @@ void Game::clear() {
 
 bool Game::load_map(string name) {
 	cout << "[GAME] loading map " << name << endl;
-	if (name == "null_map") {
+	if (name == "null map") {
 		delete map_current;
 		map_current = new Map("null map");
 		return true;

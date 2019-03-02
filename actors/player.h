@@ -8,6 +8,7 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "../inventory/inventory.h"
 #include "../utils/txmap.h"
 
 #define PLAY_DIR "./ats/player/"
@@ -83,8 +84,6 @@ private:
 	sf::Sprite sp;
 	sf::Texture tx;
 
-	
-
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 	
 public:
@@ -148,6 +147,7 @@ private:
 	bool collisionResolver(sf::Vector2f op, std::vector<sf::FloatRect>* geo);
 
 public:
+	Inventory inv;
 	sf::Sprite sp;
 
 	sf::View view;

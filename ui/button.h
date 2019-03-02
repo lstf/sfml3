@@ -34,6 +34,8 @@ public:
 
 	void setPosition(sf::Vector2f pos);
 
+	void setString(string str);
+
 	sf::Vector2f getPosition();
 
 	Button(sf::Color n, sf::Color h, string t, sf::FloatRect r);

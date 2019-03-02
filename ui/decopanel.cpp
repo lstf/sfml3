@@ -8,8 +8,10 @@ void Decopanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	selected_rect.setOutlineColor(sf::Color(255,255,255));
 	selected_rect.setOutlineThickness(-1.0);
 	for (int i = selected.size() - 1; i >= 0; i--) {
-		selected_rect.setPosition(map->bg[selected[i]]->sp.getPosition());
-		sf::FloatRect bgb = map->bg[selected[i]]->sp.getGlobalBounds();
+		selected_rect.setPosition(
+		map->sp[active_layer][selected[i]]->sp.getPosition());
+		sf::FloatRect bgb = 
+		map->sp[active_layer][selected[i]]->sp.getGlobalBounds();
 		selected_rect.setSize(sf::Vector2f(bgb.width, bgb.height));
 		w.draw(selected_rect, states);
 	}
@@ -19,6 +21,9 @@ void Decopanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	w.draw(preview_sp, states);
 	w.draw(file_bg, states);
 	w.draw(menu_bg, states);
+	w.draw(*layer_up, states);
+	w.draw(*layer_toggle, states);
+	w.draw(*layer_down, states);
 
 	w.setView(scrollview);
 	for (unsigned int i = 0; i < button_count; i++) {
@@ -44,8 +49,30 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 	sf::Keyboard::isKeyPressed(sf::Keyboard::RShift);
 
 	//buttons
+	BState bs = layer_up->handle_input(event, m_pos);
+	if (bs == BCLICK) {
+		if (active_layer < MAP_SP_LAYERS - 1) {
+			active_layer++;
+			layer_toggle->setString(to_string(active_layer));
+			selected.clear();
+		}
+		return;
+	}
+	bs = layer_toggle->handle_input(event, m_pos);
+	if (bs == BCLICK) {
+		return;
+	}
+	bs = layer_down->handle_input(event, m_pos);
+	if (bs == BCLICK) {
+		if (active_layer > 0) {
+			active_layer--;
+			layer_toggle->setString(to_string(active_layer));
+			selected.clear();
+		}
+		return;
+	}
 	for (unsigned int i = 0; i < button_count; i++) {
-		BState bs = buttons[i].btn->handle_input(event, m_pos);	
+		bs = buttons[i].btn->handle_input(event, m_pos);	
 		//hover to show preview
 		if (bs == BHOVER) {
 			sf::Texture* tx = txmap::get_tx(buttons[i].file);
@@ -73,13 +100,13 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 		} else if (bs == BCLICK) {
 			if (selected.size() > 0) {
 				vector<img> ims;
-				auto mb = map->bg.begin();
+				auto mb = map->sp[active_layer].begin();
 				for (auto it = selected.begin(); it != selected.end(); ++it) {
-					ims.push_back(*map->bg.at(*it));
-					map->bg.erase(mb + *it);
+					ims.push_back(*map->sp[active_layer].at(*it));
+					map->sp[active_layer].erase(mb + *it);
 				}
 				for (auto it = ims.begin(); it != ims.end(); ++it) {
-					map->addDeco(buttons[i].file, it->sp.getPosition());
+					map->addDeco(buttons[i].file, it->sp.getPosition(), active_layer);
 				}
 				selected.clear();
 			} else {
@@ -114,7 +141,7 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 		//Left click to add to map
 		if (event.type == sf::Event::MouseButtonPressed &&
 		event.mouseButton.button == sf::Mouse::Left) {
-			map->addDeco(active_name, w_pos_snap);
+			map->addDeco(active_name, w_pos_snap, active_layer);
 		}
 	}
 
@@ -125,7 +152,7 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 		event.mouseButton.button == sf::Mouse::Left) {
 			for (auto it = selected.begin(); it != selected.end(); ++it) {
 				if (
-				map->bg[*it]->sp.getGlobalBounds().contains(w_pos_snap)) {
+				map->sp[active_layer][*it]->sp.getGlobalBounds().contains(w_pos_snap)) {
 					selected_click = true;
 					return;	
 				}
@@ -142,8 +169,8 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 			if (select_click) {
 				select_click = false;
 				sf::FloatRect sb = select_r.getGlobalBounds();
-				for (int i = map->bg.size() - 1; i >= 0; i--) {
-					sf::FloatRect bgb = map->bg[i]->sp.getGlobalBounds();
+				for (int i = map->sp[active_layer].size() - 1; i >= 0; i--) {
+					sf::FloatRect bgb = map->sp[active_layer][i]->sp.getGlobalBounds();
 					if (sb.intersects(bgb)) {
 						selected.push_back(i);
 					}
@@ -160,7 +187,7 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 				select_r.setSize(w_pos_snap - select_r.getPosition());
 			} else if (selected_click) {
 				for (auto it = selected.begin(); it != selected.end(); ++it) {
-					map->bg[*it]->sp.move(w_pos_snap - select_p_mouse);
+					map->sp[active_layer][*it]->sp.move(w_pos_snap - select_p_mouse);
 				}
 			}
 			select_p_mouse = w_pos_snap;
@@ -168,16 +195,16 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 		} else if (event.type == sf::Event::KeyPressed) {
 			//Delete key
 			if (event.key.code == sf::Keyboard::Delete) {
-				auto mb = map->bg.begin();
+				auto mb = map->sp[active_layer].begin();
 				for (auto it = selected.begin(); it != selected.end(); ++it) {
-					map->bg.erase(mb + *it);
+					map->sp[active_layer].erase(mb + *it);
 				}
 				selected.clear();
 			//Shift d, duplicate
 			} else if (event.key.code == sf::Keyboard::D && shift) {
 				for (auto it = selected.begin(); it != selected.end(); ++it) {
-					img* im = map->bg[*it];
-					map->addDeco(im->name, im->sp.getPosition());
+					img* im = map->sp[active_layer][*it];
+					map->addDeco(im->name, im->sp.getPosition(), active_layer);
 				}
 			//Shifd b, auto geom
 			} else if (event.key.code == sf::Keyboard::B && shift) {
@@ -229,7 +256,8 @@ void Decopanel::bg_setup() {
 	preview_bg.setOutlineThickness(-1.0);
 
 	file_bg = 
-	sf::RectangleShape(sf::Vector2f(DECO_P_SIZE, 480 - DECO_P_SIZE));
+	sf::RectangleShape(sf::Vector2f(DECO_P_SIZE, 480 - DECO_P_SIZE -
+	DECO_BASE_H));
 	file_bg.setPosition(0, DECO_BASE_H+DECO_P_SIZE);
 	file_bg.setFillColor(DECO_BG);
 	file_bg.setOutlineColor(DECO_FG);
@@ -271,6 +299,38 @@ void Decopanel::button_setup() {
 		);
 		buttons[i].file = "./ats/mps/tx/" + files[i];
 	}
+
+	active_layer = 2;
+	layer_up = new Button(
+		DECO_BG, DECO_FG,
+		"+",
+		sf::FloatRect(
+			DECO_P_SIZE,
+			DECO_BASE_H,
+			16,
+			16
+		)
+	);
+	layer_toggle = new Button(
+		DECO_BG, DECO_FG,
+		to_string(active_layer),
+		sf::FloatRect(
+			DECO_P_SIZE,
+			DECO_BASE_H + 16,
+			16,
+			16
+		)
+	);
+	layer_down = new Button(
+		DECO_BG, DECO_FG,
+		"-",
+		sf::FloatRect(
+			DECO_P_SIZE,
+			DECO_BASE_H + 32,
+			16,
+			16
+		)
+	);
 }
 
 void Decopanel::scroll_setup() {
@@ -342,7 +402,7 @@ vector<sf::FloatRect> Decopanel::gen_geom() {
 	vector<sf::FloatRect> rects;
 	vector<sf::FloatRect> rects2;
 	for (auto it = selected.begin(); it != selected.end(); ++it) {
-		rects.push_back(map->bg[*it]->sp.getGlobalBounds());
+		rects.push_back(map->sp[active_layer][*it]->sp.getGlobalBounds());
 	}
 	sort(rects.begin(),rects.end(),gen_geom_comp);
 

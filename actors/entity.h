@@ -13,23 +13,28 @@
 class Entity : public sf::Drawable
 {
 private:
-public:
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const = 0;
+
+public:
+	string name;
 	static vector<Entity*> list;
 	virtual sf::FloatRect bounds() = 0;
 	virtual DBox* interact(Player &player, map<string, int> &lstate, map<string, int> &gstate) = 0;
 	virtual sf::Vector2f size() = 0;
+	virtual void update(Player &player, map<string, int> &lstate, map<string, int> &gstate) = 0;
+	virtual void set_pos(sf::Vector2f pos) = 0;
 	Entity();
 	~Entity();
 };
 
 class Null_Entity : public Entity {
 private:
-public:
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const {
 		(void)w;
 		(void)states;
 	}
+
+public:
 	virtual sf::FloatRect bounds() {
 		return sf::FloatRect(0,0,0,0);
 	}
@@ -39,6 +44,16 @@ public:
 		(void)lstate;
 		(void)gstate;
 		return NULL;
+	}
+
+	virtual void update(Player &player, map<string, int> &lstate, map<string, int> &gstate) {
+		(void)player;
+		(void)lstate;
+		(void)gstate;
+	}
+
+	virtual void set_pos(sf::Vector2f pos) {
+		(void)pos;
 	}
 
 	virtual sf::Vector2f size() {

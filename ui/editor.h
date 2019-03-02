@@ -14,6 +14,7 @@
 #include "portpanel.h"
 #include "rectpanel.h"
 #include "snappanel.h"
+#include "entpanel.h"
 #include "../game.h"
 #include "../actors/player.h"
 #include "../actors/entities/sign.h"
@@ -34,7 +35,8 @@ enum Modes
 	EDIT_MAP,
 	EDIT_SNAP,
 	EDIT_PORT,
-	EDIT_RECT
+	EDIT_RECT,
+	EDIT_ENT
 };
 
 enum RootButtons {
@@ -59,6 +61,7 @@ private:
 	sf::RectangleShape	selected_pan_r;
 
 	Decopanel*	decopanel;
+	Entpanel*	entpanel;
 	Mappanel*	mappanel;
 	Geompanel*	geompanel;
 	Portpanel*	portpanel;

@@ -51,6 +51,10 @@ private:
 
 	sf::Sprite	active_sp;
 	string		active_name;
+	int			active_layer;
+	Button*		layer_toggle;
+	Button*		layer_up;
+	Button*		layer_down;
 
 	sf::RectangleShape	select_r;
 	bool				select_click;

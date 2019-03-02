@@ -28,6 +28,7 @@ enum State {
 class Game : public sf::Drawable {
 	friend class Editor;
 	friend class Decopanel;
+	friend class Entpanel;
 	friend class Geompanel;
 	friend class Portpanel;
 	friend class Mappanel;

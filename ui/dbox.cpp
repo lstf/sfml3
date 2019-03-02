@@ -11,10 +11,12 @@ DOption* newDoption(DTree* d, DNode* n, string t, DNode* targ) {
 DNode* newDnode(DTree* d, string t) {
 	d->list.push_back(new DNode);
 	d->list.back()->text = t;
+	d->list.back()->item = NULL;
+	d->list.back()->levent = NULL;
+	d->list.back()->gevent = NULL;
 	newDoption(d, d->list.back());
 	return d->list.back();
 }
-
 
 void DBox::init() {
 	sp.setTexture(*txmap::get_tx("ats/dbg.png"));
@@ -147,6 +149,16 @@ void DBox::update(sf::Event e) {
 		e.key.code == sf::Keyboard::Z) {
 			if (dnode->options[oindex]->target) {
 				dnode = dnode->options[oindex]->target;
+				if (dnode->item) {
+					player->inv.addItem(dnode->item->item, dnode->item->count);
+					dnode->item = NULL;
+				}
+				if (dnode->levent) {
+					(*lstate)[dnode->levent->key] = dnode->levent->val;
+				}
+				if (dnode->gevent) {
+					(*gstate)[dnode->gevent->key] = dnode->gevent->val;
+				}
 				fillBox();
 			} else {
 				finished = true;
@@ -161,6 +173,16 @@ void DBox::update(sf::Event e) {
 
 DBox::~DBox() {
 	for (auto it = d->list.begin(); it != d->list.end(); ++it) {
+		if ((*it)->item) {
+			delete (*it)->item->item;
+			delete (*it)->item;
+		}
+		if ((*it)->levent) {
+			delete (*it)->levent;
+		}
+		if ((*it)->gevent) {
+			delete (*it)->gevent;
+		}
 		delete *it;
 	}
 	for (auto it = d->olist.begin(); it != d->olist.end(); ++it) {
