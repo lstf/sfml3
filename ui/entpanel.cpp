@@ -13,18 +13,22 @@ void Entpanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	}
 	if (selected) {
 		if (et == ENTT_KEY) {
-			draw_key(w, states);
+			w.draw(*kui, states);
+		} else if (et == ENTT_KEYLOCK) {
+			w.draw(*klui, states);
 		}
 	}
 
 	w.setView(temp);
-}
-
-void Entpanel::draw_key(sf::RenderTarget& w, sf::RenderStates states) const {
-	w.draw(*kui.name_b, states);
-	w.draw(*kui.levent_b, states);
-	if (kui.typing) {
-		w.draw(*kui.tb, states);
+	sf::RectangleShape r;
+	r.setFillColor(sf::Color::Transparent);
+	r.setOutlineColor(sf::Color::Green);
+	r.setOutlineThickness(1.0);
+	for (auto it = game->ent.list.begin(); it != game->ent.list.end(); ++it) {
+		sf::FloatRect eb = (*it)->bounds();
+		r.setSize(sf::Vector2f(eb.width, eb.height));
+		r.setPosition(eb.left, eb.top);
+		w.draw(r, states);
 	}
 }
 
@@ -34,7 +38,11 @@ sf::Vector2f w_pos) {
 	
 	if (selected) {
 		if (et == ENTT_KEY) {
-			if (handle_key_input(event, m_pos)) {
+			if (kui->handle_input(event, m_pos)) {
+				return;
+			}
+		} else if (et == ENTT_KEYLOCK) {
+			if (klui->handle_input(event, m_pos)) {
 				return;
 			}
 		}
@@ -44,6 +52,15 @@ sf::Vector2f w_pos) {
 	if (bs) {
 		if (bs == BCLICK && !selected) {
 			active_ent = (Entity*)new KeyItemEnt;
+			selected = true;
+			reset(true);
+			return;
+		}
+	}
+	bs = buttons[ENT_B_KEYLOCK].btn->handle_input(event, m_pos);
+	if (bs) {
+		if (bs == BCLICK && !selected) {
+			active_ent = (Entity*)new KeyLock;
 			selected = true;
 			reset(true);
 			return;
@@ -78,73 +95,9 @@ sf::Vector2f w_pos) {
 	}
 }
 
-bool Entpanel::handle_key_input(sf::Event &event, sf::Vector2i m_pos) {
-	if (kui.typing) {
-		if (kui.field == 0) {
-			string* sp = kui.tb->handle_input(event);
-			if (sp) {
-				kui.typing = false;
-				((KeyItemEnt*)active_ent)->key_name = *sp;
-				delete sp;
-			}
-		} else if (kui.field == 1) {
-			string* sp = kui.tb->handle_input(event);
-			if (sp) {
-				kui.typing = false;
-				((KeyItemEnt*)active_ent)->levent = *sp;
-				delete sp;
-			}
-		}
-		if (event.type == sf::Event::KeyPressed &&
-		event.key.code == sf::Keyboard::Escape) {
-			kui.typing = false;
-		}
-		if (kui.typing == false) {
-			delete kui.tb;
-			kui.tb = NULL;
-		}
-		return true;
-	}
-
-	BState bs = kui.name_b->handle_input(event, m_pos);
-	if (bs) {
-		if (bs == BCLICK) {
-			kui.field = 0;
-			string en = ((KeyItemEnt*)active_ent)->key_name;
-			kui.typing = true;
-			kui.tb = new Textbox(
-				irfr(kui.name_b->bounds),
-				false, en
-			);
-			return true;
-		}
-	} 
-	bs = kui.levent_b->handle_input(event, m_pos);
-	if (bs) {
-		if (bs == BCLICK) {
-			kui.field = 1;
-			string en = ((KeyItemEnt*)active_ent)->levent;
-			kui.typing = true;
-			kui.tb = new Textbox(
-				irfr(kui.levent_b->bounds),
-				false, en
-			);
-			return true;
-		}
-	}
-
-	return false;
-}
-
 void Entpanel::reset(bool retain_sel) {
 	if (!retain_sel) {
 		selected = false;
-	}
-
-	if (kui.typing) {
-		kui.typing = false;
-		delete kui.tb;
-		kui.tb = NULL;
 	}
 
 	if (selected) {
@@ -156,6 +109,10 @@ void Entpanel::reset(bool retain_sel) {
 		);
 		if (active_ent->name == "key") {
 			et = ENTT_KEY;
+			kui->reset((KeyItemEnt*)active_ent);
+		} else if (active_ent->name == "keylock") {
+			et = ENTT_KEYLOCK;
+			klui->reset((KeyLock*)active_ent);
 		}
 	} else {
 		text.setString("");
@@ -184,12 +141,12 @@ Entpanel::Entpanel(Game* _game, SnapVals* _sv) {
 	text.setCharacterSize(ENT_B_H);
 	text.setFillColor(ENT_FG);
 
-	kui.typing = false;
 
 	reset();
 
 	button_setup();
-	key_setup();
+	kui = new KeyItemEntUI(8, ENT_BASE_H + 16, ENT_B_W, ENT_B_H);
+	klui = new KeyLockUI(8, ENT_BASE_H + 16, ENT_B_W, ENT_B_H);
 }
 
 void Entpanel::button_setup() {
@@ -203,25 +160,13 @@ void Entpanel::button_setup() {
 		)
 	);
 	buttons[ENT_B_KEY].name = "key";
-}
-
-void Entpanel::key_setup() {
-	kui.name_b = new Button(
-		ENT_BG, ENT_FG, "name", sf::FloatRect(
-			8,
-			ENT_BASE_H + 16,
+	buttons[ENT_B_KEYLOCK].btn = new Button(
+		ENT_BG, ENT_FG, "key lock", sf::FloatRect(
+			ENT_B_W,
+			ENT_TOP_H + ENT_BASE_H,
 			ENT_B_W,
 			ENT_B_H
 		)
 	);
-	kui.levent_b = new Button(
-		ENT_BG, ENT_FG, "levent", sf::FloatRect(
-			8 + ENT_B_W,
-			ENT_BASE_H + 16,
-			ENT_B_W,
-			ENT_B_H
-		)
-	);
-	kui.typing = false;
-	kui.tb = NULL;
+	buttons[ENT_B_KEYLOCK].name = "key lock";
 }

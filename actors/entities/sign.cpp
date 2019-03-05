@@ -20,10 +20,11 @@ DBox* Sign::interact(Player &player, map<string, int> &lstate, map<string, int> 
 	DBox* ret = new DBox(dtree, &player, &lstate, &gstate);
 	return ret;
 }
-void Sign::update(Player &player, map<string, int> &lstate, map<string, int> &gstate) {
+bool Sign::update(Player &player, map<string, int> &lstate, map<string, int> &gstate) {
 	(void)player;
 	(void)lstate;
 	(void)gstate;
+	return false;
 }
 
 sf::Vector2f Sign::size() {

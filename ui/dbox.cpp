@@ -14,6 +14,7 @@ DNode* newDnode(DTree* d, string t) {
 	d->list.back()->item = NULL;
 	d->list.back()->levent = NULL;
 	d->list.back()->gevent = NULL;
+	d->list.back()->delete_ent = false;
 	newDoption(d, d->list.back());
 	return d->list.back();
 }
@@ -49,6 +50,7 @@ void DBox::init() {
 	box_x = 64;
 
 	finished = false;
+	destroy_ent = false;
 
 	sp.setPosition(box_x, box_y);
 	text.setPosition(text_x, text_y);
@@ -158,6 +160,10 @@ void DBox::update(sf::Event e) {
 				}
 				if (dnode->gevent) {
 					(*gstate)[dnode->gevent->key] = dnode->gevent->val;
+				}
+				if (dnode->delete_ent) {
+					destroy_ent = true;
+					destroy_ent_ptr = dnode->delete_ent_ptr;
 				}
 				fillBox();
 			} else {

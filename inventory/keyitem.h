@@ -7,7 +7,10 @@
 
 #include "inventory.h"
 #include "../actors/entity.h"
+#include "../ui/button.h"
+#include "../ui/textbox.h"
 #include "../utils/txmap.h"
+#include "../utils/sfutils.h"
 
 class KeyItem : public Item {
 private:
@@ -30,12 +33,13 @@ public:
 	string key_name;
 	string key_desc;
 
+
 	virtual sf::FloatRect bounds();
 
 	virtual DBox* interact(Player &player, map<string, int> &lstate,
 	map<string, int> &gstate);
 
-	void update(Player &player, map<string, int> &lstate,
+	virtual bool update(Player &player, map<string, int> &lstate,
 	map<string, int> &gstate);
 
 	virtual void set_pos(sf::Vector2f pos);
@@ -43,6 +47,26 @@ public:
 	virtual sf::Vector2f size();
 
 	KeyItemEnt();
+};
+
+#define KEYENT_BG sf::Color(127,127,127)
+#define KEYENT_FG sf::Color(0,0,0)
+
+class KeyItemEntUI : public sf::Drawable {
+private:
+	KeyItemEnt* active_ent;
+
+	Textbox* tb;
+	Button* name_b;
+	Button* levent_b;
+	bool typing;
+	int field;
+
+	void draw(sf::RenderTarget& w, sf::RenderStates states) const;
+public:
+	bool handle_input(sf::Event &event, sf::Vector2i m_pos);
+	void reset(KeyItemEnt* ent);
+	KeyItemEntUI(int x, int y, int w, int h);
 };
 
 #endif

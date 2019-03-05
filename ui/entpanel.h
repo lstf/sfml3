@@ -10,6 +10,7 @@
 #include "uiutils.h"
 #include "../game.h"
 #include "../actors/entity.h"
+#include "../actors/entities/keylock.h"
 #include "../inventory/keyitem.h"
 #include "../utils/txmap.h"
 #include "../utils/sfutils.h"
@@ -25,8 +26,9 @@
 #define ENT_BG sf::Color(127,127,127)
 #define ENT_FG sf::Color(0,0,0)
 
-#define ENT_B_COUNT 1
+#define ENT_B_COUNT 2
 #define ENT_B_KEY 0
+#define ENT_B_KEYLOCK 1
 
 struct EntButton {
 	Button* btn;
@@ -34,15 +36,8 @@ struct EntButton {
 };
 
 enum ENT_TYPE {
-	ENTT_KEY
-};
-
-struct KeyUI {
-	Textbox* tb;
-	Button* name_b;
-	Button* levent_b;
-	bool typing;
-	int field;
+	ENTT_KEY,
+	ENTT_KEYLOCK
 };
 
 class Entpanel : public sf::Drawable {
@@ -51,12 +46,13 @@ private:
 	Map* map;
 	SnapVals* sv;
 
+	KeyItemEntUI* kui;
+	KeyLockUI* klui;
+
 	sf::RectangleShape top_bg;
 	sf::RectangleShape bottom_bg;
 	
 	ENT_TYPE et;
-
-	KeyUI kui;
 
 	sf::Text text;
 	EntButton* buttons;

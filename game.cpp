@@ -42,12 +42,27 @@ void Game::frame_calc() {
 	frame_clock.restart();
 }
 
+void delete_ent(Entity* ent) {
+	if (ent->name == "key") {
+		KeyItemEnt* kd = (KeyItemEnt*)ent;
+		delete kd;
+	} else if (ent->name == "keylock") {
+		KeyLock* kld = (KeyLock*)ent;
+		delete kld;
+	} else {
+		cout << "[GAME] Unnamed entity detected" << endl;
+	}
+}
+
 void Game::handle_input(sf::Event &event) {
 	if (state == GAMEPLAY) {
 		player.handleInput(event);
 	} else if (state == DIALOG && dbox != NULL) {
 		dbox->update(event);
 		if (dbox->finished) {
+			if (dbox->destroy_ent) {
+				delete_ent((Entity*)dbox->destroy_ent_ptr);
+			}
 			delete dbox;
 			dbox = NULL;
 		}
@@ -56,6 +71,14 @@ void Game::handle_input(sf::Event &event) {
 
 GameTrans* Game::update() {
 	if (state == GAMEPLAY) {
+		//entity updates 
+
+		//for (int i = ent.list.size() - 1; i > 0; i--) {
+		//	if(ent.list[i]->update(player, level_state, global_state)) {
+		//		delete_ent(*it);
+		//	}
+		//}
+
 		//entity interactions
 		if (player.interacted()) {
 			for (auto it = ent.list.begin(); it != ent.list.end(); ++it) {
@@ -89,6 +112,7 @@ GameTrans* Game::update() {
 			}
 	
 			//removal
+			//TODO this is buggy
 			for (auto it = enm.list.begin(); it != enm.list.end(); ++it) {
 				if ((*it)->remove()) {
 					delete *it;

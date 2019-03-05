@@ -46,6 +46,8 @@ struct DNode {
 	DItem* item;
 	DEvent* levent;
 	DEvent* gevent;
+	bool delete_ent;
+	void* delete_ent_ptr;
 };
 
 struct DOption {
@@ -90,6 +92,8 @@ private:
 
 public:
 	bool finished;
+	bool destroy_ent;
+	void* destroy_ent_ptr;
 
 	DBox(DTree* _d, Player* player, map<string, int>* _lstate, map<string,
 	int>* _gstate);

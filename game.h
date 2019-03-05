@@ -7,9 +7,11 @@ using namespace std;
 
 #include "utils/txmap.h"
 #include "actors/entity.h"
+#include "actors/entities/keylock.h"
 #include "actors/enemy.h"
 #include "actors/player.h"
 #include "actors/portal.h"
+#include "inventory/keyitem.h"
 #include "map/map.h"
 #include "ui/dbox.h"
 
@@ -39,6 +41,7 @@ private:
 	bool		show_fps;
 
 	DBox* dbox;
+	Entity* delete_ent_ptr;
 	MapTrans* map_trans;
 
 	GameTrans* trans;

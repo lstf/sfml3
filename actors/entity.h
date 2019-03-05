@@ -21,7 +21,7 @@ public:
 	virtual sf::FloatRect bounds() = 0;
 	virtual DBox* interact(Player &player, map<string, int> &lstate, map<string, int> &gstate) = 0;
 	virtual sf::Vector2f size() = 0;
-	virtual void update(Player &player, map<string, int> &lstate, map<string, int> &gstate) = 0;
+	virtual bool update(Player &player, map<string, int> &lstate, map<string, int> &gstate) = 0;
 	virtual void set_pos(sf::Vector2f pos) = 0;
 	Entity();
 	~Entity();
@@ -46,10 +46,11 @@ public:
 		return NULL;
 	}
 
-	virtual void update(Player &player, map<string, int> &lstate, map<string, int> &gstate) {
+	virtual bool update(Player &player, map<string, int> &lstate, map<string, int> &gstate) {
 		(void)player;
 		(void)lstate;
 		(void)gstate;
+		return false;
 	}
 
 	virtual void set_pos(sf::Vector2f pos) {

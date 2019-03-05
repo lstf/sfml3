@@ -103,6 +103,8 @@ bool Map::saveMap() {
 	writeVecGeo	(geometry, map_file);
 	writeDoors	(map_file);
 
+	//TODO write ents
+
 	map_file.close();
 	
 	return true;
@@ -176,6 +178,11 @@ bool Map::loadMap() {
 	}
 	readVecGeo	(geometry, map_file);
 	readDoors	(map_file);
+
+	//TODO read init_lstate;
+	if (lstate == NULL) {
+		lstate = &init_lstate;
+	}
 
 	map_file.close();
 
@@ -298,11 +305,16 @@ std::vector<sf::FloatRect>* Map::getGeom() {
 	return &geometry;
 }
 
+void Map::setLstate(map<string, int>* _lstate) {
+	lstate = _lstate;
+}
+
 Map::Map(std::string _name) {
 	modified = false;
 	deco = true;
 	geom = false;
 	name = _name;
+	lstate = NULL;
 	nextMap = 0;
 	background = new Background(0,1920);
 }
