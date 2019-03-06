@@ -71,6 +71,27 @@ sf::Vector2f KeyItemEnt::size() {
 	return sf::Vector2f(spb.width, spb.height);
 }
 
+void KeyItemEnt::write(ofstream &out) {
+	write_string(name, out);
+
+	write_int(lval, out);
+	write_string(levent, out);
+	write_string(key_name, out);
+	write_string(key_desc, out);
+	write_vec2(sp.getPosition(), out);
+}
+void KeyItemEnt::read(ifstream &inp) {
+	sf::Vector2f pos;
+
+	read_int(lval, inp);
+	read_string(levent, inp);
+	read_string(key_name, inp);
+	read_string(key_desc, inp);
+	read_vec2(pos, inp);
+
+	set_pos(pos);
+}
+
 KeyItemEnt::KeyItemEnt() {
 	name = "key";
 	got = false;

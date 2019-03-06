@@ -12,9 +12,14 @@
 #include <SFML/Graphics.hpp>
 
 #include "background.h"
-#include "../actors/player.h"
-#include "../actors/portal.h"
-#include "../actors/portals/door.h"
+#include "../player.h"
+#include "../enemies/enemy.h"
+#include "../entities/entity.h"
+#include "../entities/keylock.h"
+#include "../inventory/keyitem.h"
+#include "../portals/portal.h"
+#include "../portals/door.h"
+#include "../utils/ioutils.h"
 
 #define MAP_DIR "./ats/mps/"
 #define TEX_DIR "./ats/mps/tx/"
@@ -41,77 +46,51 @@ class Map : public sf::Drawable {
 	friend class Portpanel;
 
 private:
+	Null_Enemy* enm;
+	Null_Entity* ent;
+	Null_Portal* por;
+
 	map<string, int> init_lstate;
 	map<string, int>* lstate;
 
 	vector<img*> sp[MAP_SP_LAYERS];
 	vector<sf::FloatRect> geometry;
-	vector<named_tx*> tx;
-	vector<Portal*> doors;
 	Background* background;
 
-	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
-
-	////
-	//   Editor members
-	////
-	
 	bool deco;		//Draw environment sprites
 	bool geom; 		//Draw geometry
 
-	//Adds Door
-	Portal* addDoor(string name);
-	//Adds geometry
-	bool addWall(const sf::Vector2f &_pos, const sf::Vector2f &_size);
-	//Adds decoration
-	bool addDeco(string name, const sf::Vector2f _pos, int l);
-	//Loads new texture
-	bool loadTexture(string img_name);
+	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
-	bool modified;	//True if map has been modified
+	bool add_geometry(const sf::Vector2f &_pos, const sf::Vector2f &_size);
 
-		//Set used to load only one instance of each texture
-		//Also used for listing textures in editor
-		unordered_set<string> tx_names;
-		//saveMap() helper functions
-		void writeVecImg	(vector<img*> v, ofstream &o);
-		void writeRect		(sf::FloatRect r, ofstream &o);
-		void writeVecGeo	(vector<sf::FloatRect> v, ofstream &o);
-		void writeString	(string s, ofstream &o);
-		void writeDoors		(ofstream &o);
+	bool add_sp(string name, const sf::Vector2f _pos, int l);
 
-		//loadMap() helper functions
-		bool readVecImg		(vector<img*> &v, ifstream &inp);
-		void readRect		(sf::FloatRect &r, ifstream &inp);
-		void readVecGeo		(vector<sf::FloatRect> &v, ifstream &inp);
-		void readString		(string &s, ifstream &inp);
-		void readDoors		(ifstream &inp);
+	//save() load() helpers
+	void write_sp(ofstream &out);
+	void write_geometry(ofstream &out);
+	void write_portals(ofstream &out);
+	void write_entities(ofstream &out);
+	void read_sp(ifstream &inp);
+	void read_geometry(ifstream &inp);
+	void read_doors(ifstream &inp);
+	void read_entities(ifstream &inp);
 
-	//Returns texture by name
-	sf::Texture* getTexture(string img_name);
-	//Returns index of rectange in vector (-1 if not found)
-	int findRect(const sf::FloatRect &r, const vector<sf::FloatRect> &v);
-
-	void deleteDoor(Portal* d);
-
-	////
-	  // END - Editor members
-	////
 
 public:
-	int nextMap;
-	Player* player;
-	sf::Vector2f nextMap_pos;
 	string name;
 
-	vector<sf::FloatRect>* getGeom();
+	Map(string _name, Null_Enemy* _enm, Null_Entity* _ent,
+	Null_Portal* _por);
 
-	//Constructor - Creates Map from map file with _name
-	void setLstate(map<string, int>* _lstate);
-	void setPlayer(Player* p);
-	Map(string _name);
-	bool saveMap();
-	bool loadMap();
+	vector<sf::FloatRect>* get_geom();
+
+	void set_lstate(map<string, int>* _lstate);
+
+	bool save();
+
+	bool load();
+
 	~Map();
 };
 

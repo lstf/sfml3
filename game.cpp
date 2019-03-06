@@ -8,7 +8,7 @@ bool Game::init() {
 		return false;
 	}
 
-	map_current = new Map("null map");
+	map_current = new Map("null map", &enm, &ent, &por);
 	
 	int map_count;
 	string map_name;
@@ -40,18 +40,6 @@ void Game::frame_calc() {
 		frame_rate_text.setString(to_string(1/frame_time));
 	}
 	frame_clock.restart();
-}
-
-void delete_ent(Entity* ent) {
-	if (ent->name == "key") {
-		KeyItemEnt* kd = (KeyItemEnt*)ent;
-		delete kd;
-	} else if (ent->name == "keylock") {
-		KeyLock* kld = (KeyLock*)ent;
-		delete kld;
-	} else {
-		cout << "[GAME] Unnamed entity detected" << endl;
-	}
 }
 
 void Game::handle_input(sf::Event &event) {
@@ -121,9 +109,9 @@ GameTrans* Game::update() {
 			}
 	
 			//updates
-			player.update(map_current->getGeom(), frame_time);
+			player.update(map_current->get_geom(), frame_time);
 			for (auto it = enm.list.begin(); it != enm.list.end(); ++it) {
-				(*it)->update(map_current->getGeom(), frame_time);
+				(*it)->update(map_current->get_geom(), frame_time);
 			}
 		}	
 	}
@@ -157,13 +145,13 @@ bool Game::load_map(string name) {
 	cout << "[GAME] loading map " << name << endl;
 	if (name == "null map") {
 		delete map_current;
-		map_current = new Map("null map");
+		map_current = new Map("null map", &enm, &ent, &por);
 		return true;
 	} else if (name == "") {
 		return true;
 	}
-	Map* next_map = new Map(name);
-	if (!next_map->loadMap()) {
+	Map* next_map = new Map(name, &enm, &ent, &por);
+	if (!next_map->load()) {
 		cout << "[GAME] failed to load map " << name;
 		delete next_map;
 		return false;
@@ -175,8 +163,8 @@ bool Game::load_map(string name) {
 void Game::new_map(string name) {
 	clear();
 	delete map_current;
-	map_current = new Map(name);
-	map_current->saveMap();
+	map_current = new Map(name, &enm, &ent, &por);
+	map_current->save();
 	map_names.push_back(name);
 }
 
@@ -199,6 +187,9 @@ void Game::resetState() {
 void Game::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	w.draw(*map_current);
 
+	for (auto it = por.list.begin(); it != por.list.end(); ++it) {
+		w.draw(*(*it), states);
+	}
 
 	for (auto it = ent.list.begin(); it != ent.list.end(); ++it) {
 		w.draw(*(*it), states);

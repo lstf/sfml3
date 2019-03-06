@@ -6,11 +6,12 @@ using namespace std;
 #include <SFML/Graphics.hpp>
 
 #include "utils/txmap.h"
-#include "actors/entity.h"
-#include "actors/entities/keylock.h"
-#include "actors/enemy.h"
-#include "actors/player.h"
-#include "actors/portal.h"
+#include "entities/entity.h"
+#include "entities/entutils.h"
+#include "entities/keylock.h"
+#include "enemies/enemy.h"
+#include "player.h"
+#include "portals/portal.h"
 #include "inventory/keyitem.h"
 #include "map/map.h"
 #include "ui/dbox.h"

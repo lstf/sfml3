@@ -1,20 +1,5 @@
 #include "map.h"
 
-void Map::deleteDoor(Portal* d) {
-	for (auto it = doors.begin(); it != doors.end(); ++it) {
-		if (*it == d) {
-			doors.erase(it);
-			delete d;
-			return;
-		}
-	}
-	cout << "[MAP] request for delete on non existing door" << endl;
-}
-
-void Map::setPlayer(Player* p) {
-	player = p;
-}
-
 void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	if (deco) {
 		w.draw(*background, states);
@@ -43,141 +28,89 @@ void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 			w.draw(gRect, states);
 		}
 	}
-	for (int i = (int)doors.size()-1; i >= 0; i--) {
-		w.draw(*doors.at(i));
-	}
 }
 
-Portal* Map::addDoor(string name) {
-	if (name == "door") {
-		doors.push_back((Portal*)new Door);
-		doors.at(doors.size()-1)->name = "door";
-		return doors.at(doors.size()-1);
-	} else {
-		cout << "[MAP] invalid portal name " << name << endl;
-		return NULL;
-	}
-}
-
-bool Map::addWall(const sf::Vector2f &_pos, const sf::Vector2f &_size) {
-	modified = true;
+bool Map::add_geometry(const sf::Vector2f &_pos, const sf::Vector2f &_size) {
 	geometry.push_back(sf::FloatRect(_pos, _size));
 	return true;
 }
 
-bool Map::addDeco(std::string name, const sf::Vector2f _pos, int l) {
+bool Map::add_sp(string name, const sf::Vector2f _pos, int l) {
 	img* im = new img;
 	im->sp.setPosition(_pos);
 	im->name = name;
 	im->sp.setTexture(*txmap::get_tx(name));
 	sp[l].push_back(im);
 
-	modified = true;
 	return true;
 }
 
-bool Map::loadTexture(std::string img_name) {
-	tx.push_back(new named_tx);
+bool Map::save() {
+	ofstream map_file((MAP_DIR + name).c_str(), ios::out|ios::binary);
 
-	tx[tx.size()-1]->name = img_name;
-
-	tx[tx.size()-1]->texture = txmap::get_tx(TEX_DIR + img_name);
-	
-	tx_names.insert(img_name);
-	return true;
-}
-
-
-
-bool Map::saveMap() {
-	std::ofstream map_file((MAP_DIR + name).c_str(), std::ios::out|std::ios::binary);
-
-	if (!map_file.is_open()) return false;
-
-	modified = false;
-
-	writeString	(name, map_file);
-	for (int i = 0; i < MAP_SP_LAYERS; i++) {
-		writeVecImg(sp[i], map_file);
+	if (!map_file.is_open()) {
+		return false;
 	}
-	writeVecGeo	(geometry, map_file);
-	writeDoors	(map_file);
 
-	//TODO write ents
+
+	write_string(name, map_file);
+	write_sp(map_file);
+	write_geometry(map_file);
+	write_portals(map_file);
+	write_entities(map_file);
 
 	map_file.close();
 	
 	return true;
 }
-
-void Map::writeVecImg(std::vector<img*> v, std::ofstream &o) {
-	int length = v.size();
-	sf::Vector2f pos;
-
-	o.write((char*)&length, sizeof(length));
-	for (int i = 0; i < (int)v.size(); i++) {
-		writeString(v[i]->name, o);
-		pos = v[i]->sp.getPosition();
-		o.write((char*)&pos, sizeof(pos));
-	}
-}
-
-void Map::writeRect(sf::FloatRect r, std::ofstream &o) {
-	o.write((char*)&r.left, sizeof(r.left));
-	o.write((char*)&r.top, sizeof(r.top));
-	o.write((char*)&r.width, sizeof(r.width));
-	o.write((char*)&r.height, sizeof(r.height));
-}
-
-void Map::writeVecGeo(std::vector<sf::FloatRect> v, std::ofstream &o) {
-	int length = v.size();
-
-	o.write((char*)&length, sizeof(length));
-	for (int i = 0; i < length; i++) {
-		writeRect(v[i], o);
-	}
-}
-
-void Map::writeString(std::string s, std::ofstream &o) {
-	int length = s.length();
-
-	o.write((char*)&length, sizeof(length));
-	for (int i = 0; i < length; i++) {
-		o.write((char*)&s[i], sizeof(s[i]));
-	}
-}
-
-void Map::writeDoors(std::ofstream &o) {
-	int length = doors.size();
-	sf::Vector2f sp_pos;
-
-	o.write((char*)&length, sizeof(length));
-	for (int i = 0; i < length; i++) {
-		writeString(doors.at(i)->name, o);
-
-		writeString(doors.at(i)->target, o);
-
-		sp_pos = doors.at(i)->target_pos;
-		o.write((char*)&sp_pos, sizeof(sp_pos));
-
-		sp_pos = doors.at(i)->getPosition();
-		o.write((char*)&sp_pos, sizeof(sp_pos));
-	}
-}
-
-bool Map::loadMap() {
-	std::ifstream map_file((MAP_DIR + name).c_str(), std::ios::in|std::ios::binary);
-
-	if (!map_file.is_open()) return false;
-
-	modified = false;
-
-	readString	(name, map_file);
+void Map::write_sp(ofstream &out) {
 	for (int i = 0; i < MAP_SP_LAYERS; i++) {
-		if (!readVecImg(sp[i], map_file)) return false;
+		int length = sp[i].size();
+		write_int(length, out);
+		for (int j = 0; j < length; j++) {
+			write_string(sp[i][j]->name, out);
+			write_vec2(sp[i][j]->sp.getPosition(), out);
+		}
 	}
-	readVecGeo	(geometry, map_file);
-	readDoors	(map_file);
+}
+void Map::write_geometry(ofstream &out) {
+	int length = geometry.size();
+
+	write_int(length, out);
+	for (int i = 0; i < length; i++) {
+		write_rect(geometry[i], out);
+	}
+}
+void Map::write_portals(ofstream &out) {
+	int length = por->list.size();
+
+	write_int(length - 1, out);
+	for (int i = 1; i < length; i++) {
+		por->list[i]->write(out);
+	}
+}
+void Map::write_entities(ofstream &out) {
+	int length = ent->list.size();
+
+	write_int(length - 1, out);
+	for (int i = 1; i < length; i++) {
+		ent->list[i]->write(out);
+	}
+}
+
+bool Map::load() {
+	ifstream map_file((MAP_DIR + name).c_str(), ios::in|ios::binary);
+
+	if (!map_file.is_open()) {
+		return false;
+	}
+
+
+	read_string(name, map_file);
+	read_sp(map_file);
+	read_geometry(map_file);
+	read_doors(map_file);
+	read_entities(map_file);
 
 	//TODO read init_lstate;
 	if (lstate == NULL) {
@@ -188,134 +121,88 @@ bool Map::loadMap() {
 
 	return true;
 }
+void Map::read_sp(ifstream &inp) {
+	for (int i = 0; i < MAP_SP_LAYERS; i++) {
+		sp[i].clear();
 
-bool Map::readVecImg(std::vector<img*> &v, std::ifstream &inp) {
-	int length;
-	sf::Vector2f p;
-	sf::Texture* ntx;
-	string name;
+		int length;
+		read_int(length, inp);
+		for (int j = 0; j < length; j++) {
+			string name;
+			sf::Vector2f pos;
 
-	v.clear();
-	tx.clear();
+			read_string(name, inp);
+			read_vec2(pos, inp);
 
-	inp.read((char*)&length, sizeof(length));
-	for (int i = 0; i < length; i++) {
-		readString(name, inp);
-		ntx = txmap::get_tx(name);
-		if (!ntx) {
-			continue;
-		}
-
-		v.push_back(new img);
-
-		v[v.size()-1]->sp.setTexture(*ntx);
-		v[v.size()-1]->name = name;
-		inp.read((char*)&p, sizeof(p));
-		v[v.size()-1]->sp.setPosition(p);
-	}
-
-	return true;
-}
-
-void Map::readRect(sf::FloatRect &r, std::ifstream &inp) {
-	inp.read((char*)&r.left, sizeof(r.left));
-	inp.read((char*)&r.top, sizeof(r.top));
-	inp.read((char*)&r.width, sizeof(r.width));
-	inp.read((char*)&r.height, sizeof(r.height));
-}
-
-void Map::readVecGeo(std::vector<sf::FloatRect> &v, std::ifstream &inp) {
-	int length;
-	sf::FloatRect t;
-
-	v.clear();
-
-	inp.read((char*)&length, sizeof(length));
-	for (int i = 0; i < length; i++) {
-		readRect(t, inp);
-		v.push_back(t);
-	}
-}
-
-void Map::readString(std::string &s, std::ifstream &inp) {
-	int length;
-	char c;
-
-	s = "";
-
-	inp.read((char*)&length, sizeof(length));
-	for (int i = 0; i < length; i++) {
-		inp.read((char*)&c, sizeof(c));
-		s += c;
-	}
-}
-
-void Map::readDoors(std::ifstream &inp) {
-	int length;
-	sf::Vector2f sp_pos;
-	string str;
-
-	inp.read((char*)&length, sizeof(length));
-	int skip = 0;
-	for (int i = 0; i < length; i++) {
-		readString(str, inp);
-		if (str == "door") {
-			doors.push_back(new Door);
-			doors.at(i - skip)->name = "door";
-		} else {
-			skip++;
-			cout << "[MAP] Garbage portal detected" << endl;
-			readString(str, inp);
-			inp.read((char*)&sp_pos, sizeof(sp_pos));
-			inp.read((char*)&sp_pos, sizeof(sp_pos));
-			continue;
-		}
-
-		readString(doors.at(i)->target, inp);
-
-		inp.read((char*)&sp_pos, sizeof(sp_pos));
-		doors.at(i)->target_pos = sp_pos;
-
-		inp.read((char*)&sp_pos, sizeof(sp_pos));
-		doors.at(i)->setPosition(sp_pos);
-	}
-}
-
-sf::Texture* Map::getTexture(std::string img_name) {
-	for (int i = 0; i < (int)tx.size(); i++) {
-		if (tx[i]->name == img_name) {
-			return tx[i]->texture;
+			sp[i].push_back(new img);
+			sp[i].back()->sp.setTexture(*txmap::get_tx(name));
+			sp[i].back()->name = name;
+			sp[i].back()->sp.setPosition(pos);
 		}
 	}
-	return NULL;
 }
+void Map::read_geometry(ifstream &inp) {
+	int length;
+	sf::FloatRect r;
 
-int Map::findRect(const sf::FloatRect &r, const std::vector<sf::FloatRect> &v) {
-	int i;
-	for (i = v.size()-1; i >= 0; i--) {
-		if (v[i] == r) {
-			break;
+	geometry.clear();
+
+	read_int(length, inp);
+	for (int i = 0; i < length; i++) {
+		read_rect(r, inp);
+		geometry.push_back(r);
+	}
+}
+void Map::read_doors(ifstream &inp) {
+	int length;
+	string por_name;
+
+	read_int(length, inp);
+	for (int i = 0; i < length; i++) {
+		read_string(por_name, inp);
+		if (por_name == "door") {
+			Door* new_door = new Door;
+			new_door->read(inp);
 		}
 	}
-	return i;
+}
+void Map::read_entities(ifstream &inp) {
+	int length;
+	string ent_name;
+
+	read_int(length, inp);
+	for (int i = 0; i < length; i++) {
+		read_string(ent_name, inp);
+		if (ent_name == "key") {
+			KeyItemEnt* new_ent = new KeyItemEnt;
+			new_ent->read(inp);
+		} else if (ent_name == "keylock") {
+			KeyLock* new_ent = new KeyLock;
+			new_ent->read(inp);
+		}
+	}
 }
 
-
-std::vector<sf::FloatRect>* Map::getGeom() {
+vector<sf::FloatRect>* Map::get_geom() {
 	return &geometry;
 }
 
-void Map::setLstate(map<string, int>* _lstate) {
+void Map::set_lstate(map<string, int>* _lstate) {
 	lstate = _lstate;
 }
 
-Map::Map(std::string _name) {
-	modified = false;
+Map::Map(string _name, Null_Enemy* _enm, Null_Entity* _ent,
+Null_Portal* _por) {
+	name = _name;
+	enm = _enm;
+	ent = _ent;
+	por = _por;
+
 	deco = true;
 	geom = false;
-	name = _name;
+
 	lstate = NULL;
-	nextMap = 0;
+
 	background = new Background(0,1920);
 }
 

@@ -16,9 +16,9 @@
 #include "snappanel.h"
 #include "entpanel.h"
 #include "../game.h"
-#include "../actors/player.h"
-#include "../actors/entities/sign.h"
-#include "../actors/enemies/testenemy.h"
+#include "../player.h"
+#include "../entities/sign.h"
+#include "../enemies/testenemy.h"
 #include "../map/map.h"
 #include "../utils/sfutils.h"
 

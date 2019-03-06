@@ -101,7 +101,7 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 	bs = buttons[PORT_B_DOOR].btn->handle_input(event, m_pos);
 	if (bs) {
 		if (bs == BCLICK && !selected) {
-			active_por = map->addDoor(buttons[PORT_B_DOOR].name);
+			active_por = (Portal*)new Door;
 			selected = true;
 			reset(true);
 			return;
@@ -111,8 +111,8 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 	if (event.type == sf::Event::MouseButtonPressed) {
 		if (event.mouseButton.button == sf::Mouse::Left) {
 			if (!selected) {
-				for (auto it = map->doors.begin();
-				it != map->doors.end(); ++it) {
+				for (auto it = game->por.list.begin();
+				it != game->por.list.end(); ++it) {
 					if ((*it)->bounds().contains(w_pos_snap)) {
 						active_por = *it;
 						selected = true;
@@ -127,7 +127,8 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 	if (event.type == sf::Event::KeyPressed) {
 		if (event.key.code == sf::Keyboard::Delete) {
 			if (selected) {
-				map->deleteDoor(active_por);
+				//map->deleteDoor(active_por);
+				delete_portal(active_por);
 				reset();
 			}
 		} else if (event.key.code == sf::Keyboard::Escape) {
@@ -202,7 +203,7 @@ void Portpanel::button_setup() {
 		)
 	);
 	y_b = new Button(
-		PORT_BG, PORT_FG, "x", sf::FloatRect(
+		PORT_BG, PORT_FG, "y", sf::FloatRect(
 			(PORT_TOP_W - 2*PORT_B_W) / 2 + PORT_B_W,
 			(PORT_TOP_H - 2*PORT_B_H) / 2 + PORT_BASE_H + PORT_B_H,
 			PORT_B_W,

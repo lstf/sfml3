@@ -1,18 +1,25 @@
 #ifndef _KEYLOCK_H
 #define _KEYLOCK_H
 
+#include <fstream>
 #include <string>
 
 #include <SFML/Graphics.hpp>
 
-#include "../entity.h"
-#include "../../inventory/inventory.h"
-#include "../../inventory/keyitem.h"
+#include "entity.h"
+#include "../inventory/inventory.h"
+#include "../inventory/keyitem.h"
+#include "../utils/ioutils.h"
+
+using namespace std;
 
 class KeyLock : public Entity {
 private:
 	sf::FloatRect r;
 	
+	string levent;
+	int lval;
+
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
 public:
@@ -33,6 +40,9 @@ public:
 	virtual void set_pos(sf::Vector2f pos);
 
 	virtual sf::Vector2f size();
+
+	virtual void write(ofstream &out);
+	virtual void read(ifstream &inp);
 
 	KeyLock();
 };

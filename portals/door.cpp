@@ -1,9 +1,8 @@
 #include "door.h"
 
 Door::Door() {
-	opening = false;
-	traversed = false;
-	
+	name = "door";
+
 	Png png = txmap::get_png(DOOR_DIR + string("D.PNG"));
 
 	sp_sheet.png = png.mem;
@@ -64,6 +63,24 @@ void Door::setPosition(sf::Vector2f pos) {
 
 sf::Vector2f Door::getPosition() {
 	return sp.getPosition();
+}
+
+void Door::write(ofstream &out) {
+	cout << "writing name" << endl;
+	write_string(name, out);
+
+	write_string(target, out);
+	write_vec2(target_pos, out);
+	write_vec2(sp.getPosition(), out);
+}
+void Door::read(ifstream &inp) {
+	sf::Vector2f pos;
+
+	read_string(target, inp);
+	read_vec2(target_pos, inp);
+	read_vec2(pos, inp);
+
+	setPosition(pos);
 }
 
 bool Door::update() {

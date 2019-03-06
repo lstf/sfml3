@@ -70,6 +70,20 @@ sf::Vector2f KeyLock::size() {
 	return sf::Vector2f(r.width, r.height);
 }
 
+void KeyLock::write(ofstream &out) {
+	write_string(name, out);
+
+	write_int(lval, out);
+	write_string(levent, out);
+	write_string(key_name, out);
+	write_rect(r, out);
+}
+void KeyLock::read(ifstream &inp) {
+	read_int(lval, inp);
+	read_string(levent, inp);
+	read_string(key_name, inp);
+	read_rect(r, inp);
+}
 
 KeyLock::KeyLock() {
 	name = "keylock";

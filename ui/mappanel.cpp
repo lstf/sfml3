@@ -167,7 +167,7 @@ void Mappanel::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 				if (game->map_current->name == "null map") {
 					break;
 				}
-				game->map_current->saveMap();
+				game->map_current->save();
 				selected = -1;
 				selected_text.setString(game->map_current->name + " [s]");
 				selected_text.setPosition(

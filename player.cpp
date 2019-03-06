@@ -272,8 +272,9 @@ void Player::update(std::vector<sf::FloatRect>* geo, double frameTime) {
 }
 
 void Player::refresh() {
-	weapon.setPosition(sp.getPosition());
-	view.setCenter(sp.getPosition());
+	sf::Vector2f pp = sp.getPosition();
+	weapon.setPosition(pp);
+	view.setCenter(sf::Vector2f(int(pp.x), int(pp.y)));
 }
 
 void Player::advanceAnimation() {

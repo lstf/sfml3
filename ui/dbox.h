@@ -11,7 +11,7 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "../actors/player.h"
+#include "../player.h"
 #include "../inventory/inventory.h"
 #include "../utils/txmap.h"
 

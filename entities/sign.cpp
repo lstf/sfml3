@@ -36,6 +36,19 @@ void Sign::set_pos(sf::Vector2f pos) {
 	sp.setPosition(pos);
 }
 
+void Sign::write(ofstream &out) {
+	write_string(name, out);
+
+	write_vec2(sp.getPosition(), out);
+}
+void Sign::read(ifstream &inp) {
+	sf::Vector2f pos;
+	
+	read_vec2(pos, inp);
+	
+	set_pos(pos);
+}
+
 Sign::Sign() {
 	name = "sign";
 	sp.setTexture(*txmap::get_tx("ats/signs/sign0.png"));

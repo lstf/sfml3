@@ -7,6 +7,7 @@ OBJ			=$(patsubst %.cpp, %.o, $(SRC))
 DEP			=$(patsubst %.cpp, %.d, $(SRC))
 
 $(EXEC):	$(OBJ) $(DEP)
+	rm -f *.d.* */*.d.* */*/*.d.*
 	$(CC) $(OBJ) -o $(EXEC) $(LIB)
 
 include		$(DEP)
@@ -19,7 +20,6 @@ include		$(DEP)
 
 %.o:		%.cpp
 	$(CC) -c $(FLAGS) $< -o $@
-	rm -f *.d.* */*.d.* */*/*.d.*
 
 clean:
 	rm -f $(EXEC) $(OBJ) $(DEP)

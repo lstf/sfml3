@@ -1,8 +1,9 @@
 #ifndef _PORTAL_H
 #define _PORTAL_H
 
-#include <vector>
+#include <fstream>
 #include <string>
+#include <vector>
 
 #include <SFML/Graphics.hpp>
 
@@ -30,6 +31,8 @@ public:
 	virtual void setPosition(sf::Vector2f pos) = 0;
 	virtual sf::Vector2f getPosition() = 0;
 	virtual bool update() = 0;
+	virtual void write(ofstream &out) = 0;
+	virtual void read(ifstream &inp) = 0;
 	Portal();
 	~Portal();
 };
@@ -60,6 +63,13 @@ public:
 
 	virtual sf::Vector2f getPosition() {
 		return sf::Vector2f(0,0);
+	}
+
+	virtual void write(ofstream &out) {
+		(void)out;
+	}
+	virtual void read(ifstream &inp) {
+		(void)inp;
 	}
 
 	virtual bool update() {

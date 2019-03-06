@@ -7,7 +7,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "uiutils.h"
-#include "../actors/player.h"
+#include "../player.h"
 #include "../inventory/inventory.h"
 #include "../inventory/keyitem.h"
 

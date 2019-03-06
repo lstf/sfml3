@@ -106,7 +106,7 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 					map->sp[active_layer].erase(mb + *it);
 				}
 				for (auto it = ims.begin(); it != ims.end(); ++it) {
-					map->addDeco(buttons[i].file, it->sp.getPosition(), active_layer);
+					map->add_sp(buttons[i].file, it->sp.getPosition(), active_layer);
 				}
 				selected.clear();
 			} else {
@@ -141,7 +141,7 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 		//Left click to add to map
 		if (event.type == sf::Event::MouseButtonPressed &&
 		event.mouseButton.button == sf::Mouse::Left) {
-			map->addDeco(active_name, w_pos_snap, active_layer);
+			map->add_sp(active_name, w_pos_snap, active_layer);
 		}
 	}
 
@@ -204,7 +204,7 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 			} else if (event.key.code == sf::Keyboard::D && shift) {
 				for (auto it = selected.begin(); it != selected.end(); ++it) {
 					img* im = map->sp[active_layer][*it];
-					map->addDeco(im->name, im->sp.getPosition(), active_layer);
+					map->add_sp(im->name, im->sp.getPosition(), active_layer);
 				}
 			//Shifd b, auto geom
 			} else if (event.key.code == sf::Keyboard::B && shift) {
