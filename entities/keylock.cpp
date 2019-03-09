@@ -38,6 +38,11 @@ map<string, int> &gstate) {
 		d->root = newDnode(d, "[Unlock door with " + key_name + "?]");
 		d->root->options[0]->text = "yes";
 		DNode* unlock = newDnode(d, "[Unlocked door]");
+		if (levent != "") {
+			unlock->levent = new DEvent;
+			unlock->levent->key = levent;
+			unlock->levent->val = 1;
+		}
 		unlock->delete_ent = true;
 		unlock->delete_ent_ptr = this;
 		d->root->options[0]->target = unlock;
@@ -87,12 +92,14 @@ void KeyLock::read(ifstream &inp) {
 
 KeyLock::KeyLock() {
 	name = "keylock";
+	lval = 0;
 }
 
 void KeyLockUI::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	w.draw(*w_b, states);
 	w.draw(*h_b, states);
 	w.draw(*key_name_b, states);
+	w.draw(*levent_b, states);
 	if (typing) {
 		w.draw(*tb, states);
 	}
@@ -119,6 +126,13 @@ bool KeyLockUI::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 			if (sp) {
 				typing = false;
 				active_ent->key_name = *sp;
+				delete sp;
+			}
+		} else if (field == 3) {
+			string* sp = tb->handle_input(event);
+			if (sp) {
+				typing = false;
+				active_ent->levent = *sp;
 				delete sp;
 			}
 		}
@@ -172,6 +186,19 @@ bool KeyLockUI::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 			return true;
 		}
 	}
+	bs = levent_b->handle_input(event, m_pos);
+	if (bs) {
+		if (bs == BCLICK) {
+			field = 3;
+			string en = active_ent->levent;
+			typing = true;
+			tb = new Textbox(
+				irfr(levent_b->bounds),
+				false, en
+			);
+			return true;
+		}
+	}
 
 	return false;
 }
@@ -210,6 +237,15 @@ KeyLockUI::KeyLockUI(int x, int y, int w, int h) {
 			h
 		)
 	);
+	levent_b = new Button(
+		KEYENT_BG, KEYENT_FG, "levent", sf::FloatRect(
+			x + w,
+			y + h,
+			w,
+			h
+		)
+	);
+
 	typing = false;
 	tb = NULL;
 	active_ent = NULL;

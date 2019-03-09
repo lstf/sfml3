@@ -1,8 +1,8 @@
 #ifndef _BLOOD_H
 #define _BLOOD_H
 
-#include <vector>
 #include <list>
+#include <vector>
 
 #include <math.h>
 #include <stdlib.h>

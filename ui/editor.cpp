@@ -55,6 +55,10 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 		w.draw(*geompanel, states);
 	} else if (mode == EDIT_PORT) {
 		w.draw(*portpanel, states);
+	} else if (mode == EDIT_GLST) {
+		w.draw(*glstpanel, states);
+	} else if (mode == EDIT_ILST) {
+		w.draw(*ilstpanel, states);
 	} else if (mode == EDIT_MAP) {
 		w.draw(*mappanel, states);
 	} else if (mode == EDIT_RECT) {
@@ -168,6 +172,22 @@ void Editor::handle_input(sf::Event &event) {
 					}
 				}
 				break;
+			case ILST_BUTTON:
+				if (bs == BCLICK) {
+					mode = EDIT_ILST;
+					selected_pan_r.setPosition(buttons[i]->getPosition());
+					selected_pan_r.move(3,3);
+				} else if (bs == BCLICKR) {
+				}
+				break;
+			case GLST_BUTTON:
+				if (bs == BCLICK) {
+					mode = EDIT_GLST;
+					selected_pan_r.setPosition(buttons[i]->getPosition());
+					selected_pan_r.move(3,3);
+				} else if (bs == BCLICKR) {
+				}
+				break;
 			}
 			return;
 		}
@@ -181,6 +201,10 @@ void Editor::handle_input(sf::Event &event) {
 		entpanel->handle_input(event, m_pos, w_pos);
 	} else if (mode == EDIT_PORT) {
 		portpanel->handle_input(event, m_pos, w_pos);
+	} else if (mode == EDIT_GLST) {
+		glstpanel->handle_input(event, m_pos);
+	} else if (mode == EDIT_ILST) {
+		ilstpanel->handle_input(event, m_pos);
 	} else if (mode == EDIT_MAP) {
 		mappanel->handle_input(event, m_pos);
 	} else if (mode == EDIT_RECT) {
@@ -238,10 +262,14 @@ EditorTrans* Editor::update() {
 
 void Editor::reset() {
 	mode = EDIT_MAP;
+	selected_pan_r.setPosition(buttons[0]->getPosition());
+	selected_pan_r.move(3,3);
 	decopanel->reset();
 	entpanel->reset();
 	geompanel->reset();
 	portpanel->reset();
+	glstpanel->reset();
+	ilstpanel->reset();
 	mappanel->reset();
 	rectpanel->reset();
 }
@@ -270,6 +298,10 @@ Editor::Editor(sf::RenderWindow* _w, Game* _game) {
 	geompanel	= new Geompanel(game, &sv);
 	cout << "[EDITOR] portpanel init" << endl;
 	portpanel	= new Portpanel(game, &sv);
+	cout << "[EDITOR] glstpanel init" << endl;
+	glstpanel	= new Glstpanel(game);
+	cout << "[EDITOR] ilstpanel init" << endl;
+	ilstpanel	= new Ilstpanel(game);
 
 	cout << "[EDITOR] rectpanel init" << endl;
 	rectpanel		= new Rectpanel(&sv);
@@ -320,6 +352,12 @@ Button* Editor::gen_button(int i) {
 		break;
 	case RECT_BUTTON:
 		name = "rectangles";
+		break;
+	case ILST_BUTTON:
+		name = "init lstate";
+		break;
+	case GLST_BUTTON:
+		name = "game lstate";
 		break;
 	default:
 		name = "test button " + to_string(i + 1);

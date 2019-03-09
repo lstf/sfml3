@@ -40,46 +40,4 @@ public:
 	~Entity();
 };
 
-class Null_Entity : public Entity {
-private:
-	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const {
-		(void)w;
-		(void)states;
-	}
-
-public:
-	virtual sf::FloatRect bounds() {
-		return sf::FloatRect(0,0,0,0);
-	}
-
-	virtual DBox* interact(Player &player, map<string, int> &lstate, map<string, int> &gstate) {
-		(void)player;
-		(void)lstate;
-		(void)gstate;
-		return NULL;
-	}
-
-	virtual bool update(Player &player, map<string, int> &lstate, map<string, int> &gstate) {
-		(void)player;
-		(void)lstate;
-		(void)gstate;
-		return false;
-	}
-
-	virtual void set_pos(sf::Vector2f pos) {
-		(void)pos;
-	}
-
-	virtual void write(ofstream &out) {
-		(void)out;
-	}
-	virtual void read(ifstream &inp) {
-		(void)inp;
-	}
-
-	virtual sf::Vector2f size() {
-		return sf::Vector2f(0,0);
-	}
-};
-
 #endif

@@ -111,8 +111,8 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 	if (event.type == sf::Event::MouseButtonPressed) {
 		if (event.mouseButton.button == sf::Mouse::Left) {
 			if (!selected) {
-				for (auto it = game->por.list.begin();
-				it != game->por.list.end(); ++it) {
+				for (auto it = Portal::list.begin();
+				it != Portal::list.end(); ++it) {
 					if ((*it)->bounds().contains(w_pos_snap)) {
 						active_por = *it;
 						selected = true;
@@ -120,14 +120,13 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 					}
 				}
 			} else {
-				active_por->setPosition(w_pos_snap);
+				active_por->set_position(w_pos_snap);
 			}
 		}
 	}
 	if (event.type == sf::Event::KeyPressed) {
 		if (event.key.code == sf::Keyboard::Delete) {
 			if (selected) {
-				//map->deleteDoor(active_por);
 				delete_portal(active_por);
 				reset();
 			}

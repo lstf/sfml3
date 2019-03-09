@@ -4,12 +4,21 @@ KeyItem::KeyItem() {
 	category = "key";
 }
 
+KeyItemEnt::KeyItemEnt() {
+	name = "key";
+	got = false;
+	lval = 0;
+	sp.setTexture(*txmap::get_tx("./ats/entities/keyent.png"));
+	
+	sparkle.set_rect(frir(sp.getGlobalBounds()));
+}
 
 void KeyItemEnt::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	if (got) {
 		return;
 	}
 	w.draw(sp, states);
+	w.draw(sparkle, states);
 }
 
 sf::FloatRect KeyItemEnt::bounds() {
@@ -31,9 +40,11 @@ map<string, int> &gstate) {
 	DNode* got_key = newDnode(d, "[got " + key_name + "]");
 	got_key->delete_ent = true;
 	got_key->delete_ent_ptr = this;
-	got_key->levent = new DEvent;
-	got_key->levent->key = levent;
-	got_key->levent->val = 1;
+	if (levent != "") {
+		got_key->levent = new DEvent;
+		got_key->levent->key = levent;
+		got_key->levent->val = 1;
+	}
 	got_key->item = new DItem;
 	got_key->item->item = (Item*)new KeyItem();
 	got_key->item->item->name = key_name;
@@ -51,16 +62,14 @@ bool KeyItemEnt::update(Player &player, map<string, int> &lstate,
 map<string, int> &gstate) {
 	(void)player;
 	(void)gstate;
-	if (levent != "") {
-		if (lstate[levent] != 0) {
-			return true;
-		} 
-	}
+	(void)lstate;
+	sparkle.update();
 	return false;
 }
 
 void KeyItemEnt::set_pos(sf::Vector2f pos) {
 	sp.setPosition(pos);
+	sparkle.set_position(pos);
 }
 
 sf::Vector2f KeyItemEnt::size() {
@@ -90,12 +99,6 @@ void KeyItemEnt::read(ifstream &inp) {
 	read_vec2(pos, inp);
 
 	set_pos(pos);
-}
-
-KeyItemEnt::KeyItemEnt() {
-	name = "key";
-	got = false;
-	sp.setTexture(*txmap::get_tx("./ats/entities/keyent.png"));
 }
 
 void KeyItemEntUI::draw(sf::RenderTarget& w, sf::RenderStates states) const {

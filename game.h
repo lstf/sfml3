@@ -11,6 +11,7 @@ using namespace std;
 #include "entities/keylock.h"
 #include "enemies/enemy.h"
 #include "player.h"
+#include "world.h"
 #include "portals/portal.h"
 #include "inventory/keyitem.h"
 #include "map/map.h"
@@ -35,9 +36,10 @@ class Game : public sf::Drawable {
 	friend class Geompanel;
 	friend class Portpanel;
 	friend class Mappanel;
+	friend class Ilstpanel;
+	friend class Glstpanel;
 private:
 	sf::Clock	frame_clock;
-	double		frame_time;
 	sf::Text	frame_rate_text;
 	bool		show_fps;
 
@@ -47,19 +49,17 @@ private:
 
 	GameTrans* trans;
 
-	Null_Entity ent;
-	Null_Enemy enm;
-	Null_Portal por;
-
 	Map* map_current;
 	vector<string> map_names;
 
 	State state;
 
-	map<string, int> level_state;
-	map<string, int> global_state;
+	map<string, map<string, int>> level_states;
+	map<string, int>* level_state;
+	map<string, int>* global_state;
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
+
 public:
 	Player player;
 

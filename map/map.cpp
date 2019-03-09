@@ -30,19 +30,16 @@ void Map::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	}
 }
 
-bool Map::add_geometry(const sf::Vector2f &_pos, const sf::Vector2f &_size) {
+void Map::add_geometry(const sf::Vector2f &_pos, const sf::Vector2f &_size) {
 	geometry.push_back(sf::FloatRect(_pos, _size));
-	return true;
 }
 
-bool Map::add_sp(string name, const sf::Vector2f _pos, int l) {
+void Map::add_sp(string name, const sf::Vector2f _pos, int l) {
 	img* im = new img;
 	im->sp.setPosition(_pos);
 	im->name = name;
 	im->sp.setTexture(*txmap::get_tx(name));
 	sp[l].push_back(im);
-
-	return true;
 }
 
 bool Map::save() {
@@ -52,8 +49,8 @@ bool Map::save() {
 		return false;
 	}
 
-
 	write_string(name, map_file);
+	write_state(init_lstate, map_file);
 	write_sp(map_file);
 	write_geometry(map_file);
 	write_portals(map_file);
@@ -82,19 +79,19 @@ void Map::write_geometry(ofstream &out) {
 	}
 }
 void Map::write_portals(ofstream &out) {
-	int length = por->list.size();
+	int length = Portal::list.size();
 
-	write_int(length - 1, out);
-	for (int i = 1; i < length; i++) {
-		por->list[i]->write(out);
+	write_int(length, out);
+	for (int i = 0; i < length; i++) {
+		Portal::list[i]->write(out);
 	}
 }
 void Map::write_entities(ofstream &out) {
-	int length = ent->list.size();
+	int length = Entity::list.size();
 
-	write_int(length - 1, out);
-	for (int i = 1; i < length; i++) {
-		ent->list[i]->write(out);
+	write_int(length, out);
+	for (int i = 0; i < length; i++) {
+		Entity::list[i]->write(out);
 	}
 }
 
@@ -105,17 +102,15 @@ bool Map::load() {
 		return false;
 	}
 
-
 	read_string(name, map_file);
-	read_sp(map_file);
-	read_geometry(map_file);
-	read_doors(map_file);
-	read_entities(map_file);
-
-	//TODO read init_lstate;
+	read_state(init_lstate, map_file);
 	if (lstate == NULL) {
 		lstate = &init_lstate;
 	}
+	read_sp(map_file);
+	read_geometry(map_file);
+	read_portals(map_file);
+	read_entities(map_file);
 
 	map_file.close();
 
@@ -124,16 +119,13 @@ bool Map::load() {
 void Map::read_sp(ifstream &inp) {
 	for (int i = 0; i < MAP_SP_LAYERS; i++) {
 		sp[i].clear();
-
 		int length;
 		read_int(length, inp);
 		for (int j = 0; j < length; j++) {
 			string name;
 			sf::Vector2f pos;
-
 			read_string(name, inp);
 			read_vec2(pos, inp);
-
 			sp[i].push_back(new img);
 			sp[i].back()->sp.setTexture(*txmap::get_tx(name));
 			sp[i].back()->name = name;
@@ -144,19 +136,16 @@ void Map::read_sp(ifstream &inp) {
 void Map::read_geometry(ifstream &inp) {
 	int length;
 	sf::FloatRect r;
-
 	geometry.clear();
-
 	read_int(length, inp);
 	for (int i = 0; i < length; i++) {
 		read_rect(r, inp);
 		geometry.push_back(r);
 	}
 }
-void Map::read_doors(ifstream &inp) {
+void Map::read_portals(ifstream &inp) {
 	int length;
 	string por_name;
-
 	read_int(length, inp);
 	for (int i = 0; i < length; i++) {
 		read_string(por_name, inp);
@@ -169,16 +158,23 @@ void Map::read_doors(ifstream &inp) {
 void Map::read_entities(ifstream &inp) {
 	int length;
 	string ent_name;
-
 	read_int(length, inp);
 	for (int i = 0; i < length; i++) {
 		read_string(ent_name, inp);
 		if (ent_name == "key") {
 			KeyItemEnt* new_ent = new KeyItemEnt;
 			new_ent->read(inp);
+			if (lstate->find(new_ent->levent) != lstate->end() &&
+			lstate->at(new_ent->levent) != new_ent->lval) {
+				delete new_ent;
+			}
 		} else if (ent_name == "keylock") {
 			KeyLock* new_ent = new KeyLock;
 			new_ent->read(inp);
+			if (lstate->find(new_ent->levent) != lstate->end() &&
+			lstate->at(new_ent->levent) != new_ent->lval) {
+				delete new_ent;
+			}
 		}
 	}
 }
@@ -191,12 +187,8 @@ void Map::set_lstate(map<string, int>* _lstate) {
 	lstate = _lstate;
 }
 
-Map::Map(string _name, Null_Enemy* _enm, Null_Entity* _ent,
-Null_Portal* _por) {
+Map::Map(string _name) {
 	name = _name;
-	enm = _enm;
-	ent = _ent;
-	por = _por;
 
 	deco = true;
 	geom = false;

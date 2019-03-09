@@ -8,7 +8,7 @@ bool Game::init() {
 		return false;
 	}
 
-	map_current = new Map("null map", &enm, &ent, &por);
+	map_current = new Map("null map");
 	
 	int map_count;
 	string map_name;
@@ -30,14 +30,18 @@ bool Game::init() {
 
 	show_fps = true;
 	frame_clock.restart();
+	global_state = new map<string, int>;
+	map<string, int> null_state;
+	level_states["null map"] = null_state;
+	level_state = &level_states["null map"];
 	return true;
 }
 
 void Game::frame_calc() {
 	long long frame_us = frame_clock.getElapsedTime().asMicroseconds();
-	frame_time = frame_us / 1000000.0;
+	World::frame_time = frame_us / 1000000.0;
 	if (show_fps) {
-		frame_rate_text.setString(to_string(1/frame_time));
+		frame_rate_text.setString(to_string(1/World::frame_time));
 	}
 	frame_clock.restart();
 }
@@ -61,17 +65,17 @@ GameTrans* Game::update() {
 	if (state == GAMEPLAY) {
 		//entity updates 
 
-		//for (int i = ent.list.size() - 1; i > 0; i--) {
-		//	if(ent.list[i]->update(player, level_state, global_state)) {
-		//		delete_ent(*it);
-		//	}
-		//}
+		for (int i = Entity::list.size() - 1; i >= 0; i--) {
+			if(Entity::list[i]->update(player, *level_state, *global_state)) {
+				delete_ent(Entity::list[i]);
+			}
+		}
 
 		//entity interactions
 		if (player.interacted()) {
-			for (auto it = ent.list.begin(); it != ent.list.end(); ++it) {
+			for (auto it = Entity::list.begin(); it != Entity::list.end(); ++it) {
 				if ((*it)->bounds().intersects(player.bounds())) {
-					dbox = (*it)->interact(player, level_state, global_state);
+					dbox = (*it)->interact(player, *level_state, *global_state);
 					if (dbox) {
 						state = DIALOG;
 					}
@@ -79,7 +83,7 @@ GameTrans* Game::update() {
 				}
 			}
 			if (state == GAMEPLAY) {
-				for (auto it = por.list.begin(); it != por.list.end(); ++it) {
+				for (auto it = Portal::list.begin(); it != Portal::list.end(); ++it) {
 					if ((*it)->bounds().intersects(player.bounds())) {
 						map_trans = (*it)->interact();
 						state = PORTAL;
@@ -92,7 +96,7 @@ GameTrans* Game::update() {
 		if (state == GAMEPLAY) {
 			//player weapon
 			if (player.weaponActive()) {
-				for (auto it = enm.list.begin(); it != enm.list.end(); ++it) {
+				for (auto it = Enemy::list.begin(); it != Enemy::list.end(); ++it) {
 					if ((*it)->bounds().intersects(player.weaponBounds())) {
 						(*it)->takeDamage();
 					}
@@ -100,8 +104,7 @@ GameTrans* Game::update() {
 			}
 	
 			//removal
-			//TODO this is buggy
-			for (auto it = enm.list.begin(); it != enm.list.end(); ++it) {
+			for (auto it = Enemy::list.begin(); it != Enemy::list.end(); ++it) {
 				if ((*it)->remove()) {
 					delete *it;
 					break;
@@ -109,9 +112,9 @@ GameTrans* Game::update() {
 			}
 	
 			//updates
-			player.update(map_current->get_geom(), frame_time);
-			for (auto it = enm.list.begin(); it != enm.list.end(); ++it) {
-				(*it)->update(map_current->get_geom(), frame_time);
+			player.update(map_current->get_geom(), World::frame_time);
+			for (auto it = Enemy::list.begin(); it != Enemy::list.end(); ++it) {
+				(*it)->update(map_current->get_geom(), World::frame_time);
 			}
 		}	
 	}
@@ -136,26 +139,34 @@ GameTrans* Game::update() {
 }
 
 void Game::clear() {
-	ent.list.erase(ent.list.begin()+1, ent.list.end()); 
-	enm.list.erase(enm.list.begin()+1, enm.list.end()); 
-	por.list.erase(por.list.begin()+1, por.list.end()); 
+	Entity::list.clear(); 
+	Enemy::list.clear(); 
+	Portal::list.clear(); 
 }
 
 bool Game::load_map(string name) {
 	cout << "[GAME] loading map " << name << endl;
 	if (name == "null map") {
 		delete map_current;
-		map_current = new Map("null map", &enm, &ent, &por);
+		map_current = new Map("null map");
+		level_state = &level_states["null map"];
 		return true;
 	} else if (name == "") {
 		return true;
 	}
-	Map* next_map = new Map(name, &enm, &ent, &por);
+	Map* next_map = new Map(name);
+	if (level_states.find(name) != level_states.end()) {
+		next_map->set_lstate(&level_states[name]);
+	}
 	if (!next_map->load()) {
 		cout << "[GAME] failed to load map " << name;
 		delete next_map;
 		return false;
 	}
+	if (level_states.find(name) == level_states.end()) {
+		level_states[name] = next_map->init_lstate;
+	}
+	level_state = &level_states[name];
 	delete map_current;
 	map_current = next_map;
 	return true;
@@ -163,7 +174,7 @@ bool Game::load_map(string name) {
 void Game::new_map(string name) {
 	clear();
 	delete map_current;
-	map_current = new Map(name, &enm, &ent, &por);
+	map_current = new Map(name);
 	map_current->save();
 	map_names.push_back(name);
 }
@@ -187,15 +198,15 @@ void Game::resetState() {
 void Game::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	w.draw(*map_current);
 
-	for (auto it = por.list.begin(); it != por.list.end(); ++it) {
+	for (auto it = Portal::list.begin(); it != Portal::list.end(); ++it) {
 		w.draw(*(*it), states);
 	}
 
-	for (auto it = ent.list.begin(); it != ent.list.end(); ++it) {
+	for (auto it = Entity::list.begin(); it != Entity::list.end(); ++it) {
 		w.draw(*(*it), states);
 	}
 
-	for (auto it = enm.list.begin(); it != enm.list.end(); ++it) {
+	for (auto it = Enemy::list.begin(); it != Enemy::list.end(); ++it) {
 		w.draw(*(*it), states);
 	}
 

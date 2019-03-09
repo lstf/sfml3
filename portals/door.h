@@ -7,49 +7,48 @@
 #include <SFML/Graphics.hpp>
 
 #include "portal.h"
+#include "../animation.h"
 #include "../utils/ioutils.h"
 #include "../utils/txmap.h"
 
-#define DOOR_DIR "./ats/mps/doors/"
+#define DOOR_PNG_FILE "./ats/mps/doors/D.PNG"
+#define DOOR_PNG_FRAMES 3
 
 using namespace std;
 
-struct DSpriteSheet
-{
-	void* 		png = NULL;
-	sf::Texture tx;
-	int 		pngSize = 0;
-	int 		x = 0;
-	int 		y = 0;
-	int 		frameCount = 1;
-	sf::Clock	clock;
-	float		time = 0;
-	float		fps = 1;
-};
-
-class Door : public Portal
-{
+class Door : public Portal {
 private:
-	DSpriteSheet sp_sheet;
-	sf::Texture tx;
+	Animation anim;
+	int frame;
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
-	
+
+	bool advance_animation();
 	
 public:
 	sf::Sprite sp;
 
-	void setTargetPos(sf::Vector2f _target_pos);
-	bool advanceAnimation();
-	virtual sf::FloatRect bounds();
-	virtual MapTrans* interact();
-	virtual sf::Vector2f size();
-	virtual void setPosition(sf::Vector2f pos);
-	virtual sf::Vector2f getPosition();
-	virtual bool update();
-	virtual void write(ofstream &out);
-	virtual void read(ifstream &inp);
 	Door();
+
+	virtual MapTrans* interact();
+
+	virtual bool update();
+
+	virtual sf::FloatRect bounds();
+
+	virtual sf::Vector2f size();
+
+	virtual void set_position(sf::Vector2f pos);
+
+	virtual sf::Vector2f get_position();
+
+	virtual vector<string>* ats_names();
+
+	virtual void write(ofstream &out);
+
+	virtual void read(ifstream &inp);
+
+	~Door();
 };
 
 #endif 

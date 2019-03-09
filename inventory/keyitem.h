@@ -7,6 +7,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "inventory.h"
+#include "../effects/sparkle.h"
 #include "../entities/entity.h"
 #include "../ui/button.h"
 #include "../ui/textbox.h"
@@ -23,6 +24,7 @@ public:
 class KeyItemEnt : public Entity {
 private:
 	bool got;
+	Sparkle sparkle;
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
@@ -37,6 +39,7 @@ public:
 	string key_name;
 	string key_desc;
 
+	KeyItemEnt();
 
 	virtual sf::FloatRect bounds();
 
@@ -52,8 +55,6 @@ public:
 
 	virtual void write(ofstream &out);
 	virtual void read(ifstream &inp);
-
-	KeyItemEnt();
 };
 
 #define KEYENT_BG sf::Color(127,127,127)

@@ -16,14 +16,14 @@ using namespace std;
 class KeyLock : public Entity {
 private:
 	sf::FloatRect r;
-	
-	string levent;
-	int lval;
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
 public:
 	string key_name;
+
+	string levent;
+	int lval;
 
 	void set_w(int w);
 
@@ -56,6 +56,7 @@ private:
 	Button* w_b;
 	Button* h_b;
 	Button* key_name_b;
+	Button* levent_b;
 	Textbox* tb;
 	
 	bool typing;

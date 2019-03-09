@@ -2,6 +2,7 @@
 #define _IOUTILS_H
 
 #include <fstream>
+#include <map>
 #include <string>
 
 #include <SFML/Graphics.hpp>
@@ -24,4 +25,6 @@ void write_rect(sf::IntRect r, ofstream &out);
 void read_rect(sf::FloatRect &r, ifstream &inp);
 void read_rect(sf::IntRect &r, ifstream &inp);
 
+void write_state(const map<string, int> &state, ofstream &out);
+void read_state(map<string, int> &state, ifstream &inp);
 #endif

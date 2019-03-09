@@ -69,3 +69,25 @@ void read_rect(sf::IntRect &r, ifstream &inp) {
 	inp.read((char*)&r.width, sizeof(r.width));
 	inp.read((char*)&r.height, sizeof(r.height));
 }
+
+void write_state(const map<string, int> &state, ofstream &out) {
+	int length = state.size();
+
+	write_int(length, out);
+	for (auto it = state.begin(); it != state.end(); ++it) {
+		write_string(it->first, out);
+		write_int(it->second, out);
+	}
+}
+void read_state(map<string, int> &state, ifstream &inp) {
+	int length;
+	string event;
+	int val;
+
+	read_int(length, inp);
+	for (int i = 0; i < length; i++) {
+		read_string(event, inp);
+		read_int(val, inp);
+		state[event] = val;
+	}
+}

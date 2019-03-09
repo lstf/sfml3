@@ -24,7 +24,7 @@ void Entpanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	r.setFillColor(sf::Color::Transparent);
 	r.setOutlineColor(sf::Color::Green);
 	r.setOutlineThickness(1.0);
-	for (auto it = game->ent.list.begin(); it != game->ent.list.end(); ++it) {
+	for (auto it = Entity::list.begin(); it != Entity::list.end(); ++it) {
 		sf::FloatRect eb = (*it)->bounds();
 		r.setSize(sf::Vector2f(eb.width, eb.height));
 		r.setPosition(eb.left, eb.top);
@@ -70,8 +70,8 @@ sf::Vector2f w_pos) {
 	if (event.type == sf::Event::MouseButtonPressed) {
 		if (event.mouseButton.button == sf::Mouse::Left) {
 			if (!selected) {
-				for (auto it = game->ent.list.begin();
-				it != game->ent.list.end(); ++it) {
+				for (auto it = Entity::list.begin();
+				it != Entity::list.end(); ++it) {
 					if ((*it)->bounds().contains(w_pos_snap)) {
 						active_ent = *it;
 						selected = true;

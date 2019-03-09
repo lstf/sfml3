@@ -15,6 +15,8 @@
 #include "rectpanel.h"
 #include "snappanel.h"
 #include "entpanel.h"
+#include "ilstpanel.h"
+#include "glstpanel.h"
 #include "../game.h"
 #include "../player.h"
 #include "../entities/sign.h"
@@ -28,15 +30,16 @@ struct EditorTrans {
 	bool is_new;
 };
 
-enum Modes
-{
+enum Modes {
 	EDIT_DECO,
 	EDIT_GEOM,
 	EDIT_MAP,
 	EDIT_SNAP,
 	EDIT_PORT,
 	EDIT_RECT,
-	EDIT_ENT
+	EDIT_ENT,
+	EDIT_ILST,
+	EDIT_GLST
 };
 
 enum RootButtons {
@@ -47,7 +50,9 @@ enum RootButtons {
 	POR_BUTTON,
 	ENT_BUTTON,
 	ENM_BUTTON,
-	RECT_BUTTON
+	RECT_BUTTON,
+	ILST_BUTTON,
+	GLST_BUTTON
 };
 
 class Editor: public sf::Drawable {
@@ -64,6 +69,8 @@ private:
 	Entpanel*	entpanel;
 	Mappanel*	mappanel;
 	Geompanel*	geompanel;
+	Glstpanel*	glstpanel;
+	Ilstpanel*	ilstpanel;
 	Portpanel*	portpanel;
 
 	Rectpanel*	rectpanel;

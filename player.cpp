@@ -1,44 +1,30 @@
 #include "player.h"
 
 Weapon::Weapon() {
-	Png png = txmap::get_png(std::string(PLAY_DIR) + "W.PNG");
-	sp_sheet.png = png.mem;
-	sp_sheet.pngSize = png.length;
+	anim.w = 32;
+	anim.h = 32;
+	anim.set_fps(6, 0);
+	anim.set_fps(6, 1);
+	anim.set_frame_count(4, 0);
+	anim.set_frame_count(4, 1);
+	anim.set_png(WEAPON_PNG);
 
-	tx.loadFromMemory(sp_sheet.png, sp_sheet.pngSize, sf::IntRect(0,0,32,32));
-	sp.setTexture(tx);
+	dir = 0;
 
-	sp_sheet.clock.restart();
-	sp_sheet.time = 0;
-	sp_sheet.x = 0;
-	sp_sheet.y = 0;
-	sp_sheet.frameCount = 4;
-	sp_sheet.dir = RIGHT;
-	sp_sheet.fps = 6;
+	sp.setTexture(anim.tx);
 
 	active = false;
-}
-
-void Weapon::advanceAnimation() {
-	sp_sheet.time += sp_sheet.clock.getElapsedTime().asSeconds();
-	if (sp_sheet.time > 1/sp_sheet.fps) {
-		sp_sheet.clock.restart();
-		sp_sheet.x++;
-		if (sp_sheet.x >= sp_sheet.frameCount) {
-			active = false;
-			sp_sheet.x = 0;
-		}
-		sp_sheet.y =  sp_sheet.dir == RIGHT ? 0 : 1;
-
-		tx.loadFromMemory(sp_sheet.png, sp_sheet.pngSize, sf::IntRect(sp_sheet.x*32, sp_sheet.y*32, 32, 32));
-		sp.setTexture(tx);
-	}
 }
 
 void Weapon::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	w.draw(sp, states);
 }
 
+void Weapon::update() {
+	if (anim.advance()) {
+		sp.setTexture(anim.tx);
+	}
+}
 
 void Weapon::attack() {
 	if (!active) {
@@ -46,40 +32,20 @@ void Weapon::attack() {
 	}
 }
 
-void Weapon::setDirection(Animation _a) {
-	sp_sheet.dir = _a;
-	sp_sheet.x = -1;
-	advanceAnimation();
+void Weapon::set_direction(int d) {
+	anim.set_animation(d);
+	sp.setTexture(anim.tx);
+	dir = d;
 }
 
-void Weapon::setPosition(sf::Vector2f _pos) {
+void Weapon::set_position(sf::Vector2f _pos) {
 	sf::Vector2f offset(0,0);
-	offset.x = sp_sheet.dir == RIGHT ? 16 : -16;
+	offset.x = dir == 0 ? 16 : -16;
 	sp.setPosition(_pos + offset);
 }
 
 sf::FloatRect Weapon::bounds() {
 	return sp.getGlobalBounds();
-}
-
-void Player::setState(States _state) {
-	state = _state;
-	stateModified = true;
-}
-
-void Player::setAnimation(Animation a) {
-	animationCol = 0;
-
-	switch(a) {
-	case RIGHT:
-		animationRow = 0;
-		animationFrameCount = 6;
-		break;
-	case LEFT:
-		animationRow = 1;
-		animationFrameCount = 6;
-		break;	
-	}
 }
 
 void Player::setPosition(sf::Vector2f _pos) {
@@ -119,16 +85,20 @@ void Player::handleInput(sf::Event event) {
 			input.jump = true;
 		}
 	}
+
 	if (input.left) {
-		setState(WALKING_LEFT);
-		weapon.setDirection(LEFT);
-	}
-	else if (input.right) {
-		setState(WALKING_RIGHT);
-		weapon.setDirection(RIGHT);
+		state = WALKING_LEFT;
+		weapon.set_direction(1);
+		anim.set_animation(1);
+		sp.setTexture(anim.tx);
+	} else if (input.right) {
+		state = WALKING_RIGHT;
+		weapon.set_direction(0);
+		anim.set_animation(0);
+		sp.setTexture(anim.tx);
 	}
 	if (!input.left && !input.right) {
-		setState(STANDING);
+		state = STANDING;
 	}
 	if (input.up) {
 		interaction = true;
@@ -197,7 +167,10 @@ std::vector<sf::FloatRect>* geo) {
 			if (n > 10) {
 				break;
 			}
-			sp.setPosition(op + sf::Vector2f(diff.x*(1.0-n*.1), (diff.y*(1.0-n*.1)))); 
+			sp.setPosition(op + sf::Vector2f(
+				int(diff.x*(1.0-n*.1)),
+				int(diff.y*(1.0-n*.1))
+			)); 
 		}
 	}
 
@@ -236,27 +209,23 @@ void Player::update(std::vector<sf::FloatRect>* geo, double frameTime) {
 	//if (velocity.y > 0 && !oldirs.down) {
 	//	cout << sp.getPosition().y << endl;
 	//}
-	if (stateModified) {
-		stateModified = false;
-		if (state == WALKING_LEFT) {
-			setAnimation(LEFT);
-		} else if (state == WALKING_RIGHT) {
-			setAnimation(RIGHT);
-		}
-	}
 	if (state != STANDING) {
 		if (state == WALKING_LEFT && !oldirs.left) {
 			velocity.x = -1*frameTime*speed;
 		} else if (state == WALKING_RIGHT && !oldirs.right) {
 			velocity.x = frameTime*speed;
 		}
-		advanceAnimation();
+		if (anim.advance()) {
+			sp.setTexture(anim.tx);
+		}
 	}
 	if (weapon.active) {
-		weapon.advanceAnimation();
+		weapon.update();
 	}
 
 	sp.move(velocity);
+	sf::Vector2i int_pos = vfvi(sp.getPosition());
+	sp.setPosition(int_pos.x, int_pos.y);
 
 	bool moved = collisionResolver(old_position, geo);
 
@@ -273,21 +242,8 @@ void Player::update(std::vector<sf::FloatRect>* geo, double frameTime) {
 
 void Player::refresh() {
 	sf::Vector2f pp = sp.getPosition();
-	weapon.setPosition(pp);
+	weapon.set_position(pp);
 	view.setCenter(sf::Vector2f(int(pp.x), int(pp.y)));
-}
-
-void Player::advanceAnimation() {
-	animationTime += animationClock.getElapsedTime().asSeconds();
-	if (animationTime > 1/PLAY_FPS) {
-		animationTime = 0;
-		animationClock.restart();
-		animationCol++;
-		animationCol %= animationFrameCount;
-
-		tx.loadFromMemory(png.mem, png.length, sf::IntRect(animationCol*32, animationRow*48,32,48));
-		sp.setTexture(tx);
-	}
 }
 
 sf::FloatRect Player::weaponBounds() {
@@ -299,18 +255,17 @@ bool Player::weaponActive() {
 }
 
 Player::Player() {
-	png = txmap::get_png(std::string(PLAY_DIR) + "P.PNG");
-	tx.loadFromMemory(png.mem, png.length, sf::IntRect(0,0,32,48));
+	anim.w = 32;
+	anim.h = 48;
+	anim.set_fps(12, 0);
+	anim.set_fps(12, 1);
+	anim.set_frame_count(6, 0);
+	anim.set_frame_count(6, 1);
+	anim.set_png(PLAY_PNG);
 
-	sp.setTexture(tx);
+	sp.setTexture(anim.tx);
 
-	animationClock.restart();
-	animationTime = 0;
-	animationCol = 0;
-	animationFrameCount = 1;
-	animationRow = 0;
 	state = STANDING;
-	stateModified = false;
 	speed = 200;
 	fallA = 1000;
 	fallM = 1000;

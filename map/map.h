@@ -44,13 +44,9 @@ class Map : public sf::Drawable {
 	friend class Decopanel;
 	friend class Geompanel;
 	friend class Portpanel;
+	friend class Ilstpanel;
 
 private:
-	Null_Enemy* enm;
-	Null_Entity* ent;
-	Null_Portal* por;
-
-	map<string, int> init_lstate;
 	map<string, int>* lstate;
 
 	vector<img*> sp[MAP_SP_LAYERS];
@@ -62,9 +58,9 @@ private:
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
-	bool add_geometry(const sf::Vector2f &_pos, const sf::Vector2f &_size);
+	void add_geometry(const sf::Vector2f &_pos, const sf::Vector2f &_size);
 
-	bool add_sp(string name, const sf::Vector2f _pos, int l);
+	void add_sp(string name, const sf::Vector2f _pos, int l);
 
 	//save() load() helpers
 	void write_sp(ofstream &out);
@@ -73,15 +69,14 @@ private:
 	void write_entities(ofstream &out);
 	void read_sp(ifstream &inp);
 	void read_geometry(ifstream &inp);
-	void read_doors(ifstream &inp);
+	void read_portals(ifstream &inp);
 	void read_entities(ifstream &inp);
 
-
 public:
+	map<string, int> init_lstate;
 	string name;
 
-	Map(string _name, Null_Enemy* _enm, Null_Entity* _ent,
-	Null_Portal* _por);
+	Map(string _name);
 
 	vector<sf::FloatRect>* get_geom();
 
