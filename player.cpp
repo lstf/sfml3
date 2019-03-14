@@ -254,6 +254,38 @@ bool Player::weaponActive() {
 	return weapon.active;
 }
 
+void Player::write(ofstream &out) {
+	int length;
+
+	write_vec2(sp.getPosition(), out);
+
+	length = inv.keys.size();
+	write_int(length, out);
+	for (auto it = inv.keys.begin(); it != inv.keys.end(); ++it) {
+		it->item->write(out);
+		write_int(it->count, out);
+	}
+}
+
+void Player::read(ifstream &inp) {
+	int length;
+	int count;
+	sf::Vector2f pos;
+
+	read_vec2(pos, inp);
+	setPosition(pos);
+
+	read_int(length, inp);
+	for (int i = 0; i < length; i++) {
+		KeyItem* new_key = new KeyItem;
+
+		new_key->read(inp);
+		read_int(count, inp);
+
+		inv.addItem(new_key, count);
+	}
+}
+
 Player::Player() {
 	anim.w = 32;
 	anim.h = 48;

@@ -14,17 +14,12 @@
 #define INVS_BG sf::Color::Black
 #define INVS_FG sf::Color::White
 
-struct MenuButton {
-	sf::RectangleShape body;
-	sf::Text text;
-};
-
 struct MenuKeyButton {
 	sf::RectangleShape body;
 	sf::Text text;
 };
 
-class InventoryScreen: public sf::Drawable {
+class InventoryScreen : public sf::Drawable {
 private:
 	Player* player;
 

@@ -7,6 +7,7 @@
 #include "game.h"
 #include "ui/editor.h"
 #include "ui/inventoryscreen.h"
+#include "ui/mainmenu.h"
 
 using namespace std;
 
@@ -29,6 +30,7 @@ void load_map(Game &game, string name, sf::Vector2f pos) {
 }
 
 int main() {
+	bool quit = false;
 	cout << "[MAIN] window init" << endl;
 	sf::RenderWindow window(sf::VideoMode(960,480), "Game");
 	window.setVerticalSyncEnabled(true);
@@ -47,11 +49,13 @@ int main() {
 	cout << "[MAIN] inventory init" << endl;
 	InventoryScreen inventory(&game.player);
 
+	cout << "[MAIN] main menu init" << endl;
+	MainMenu mainmenu(&game);
 
-	MainState state = EDITOR;
+	MainState state = MENU;
 
 	cout << "[MAIN] main while" << endl;
-	while (window.isOpen()) {
+	while (!quit && window.isOpen()) {
 		game.frame_calc();		
 
 		while (window.pollEvent(event)) {
@@ -82,6 +86,17 @@ int main() {
 				game.handle_input(event);
 			} else if (state == INVENTORY) {
 				inventory.handle_input(event);
+			} else if (state == MENU) {
+				MainMenuSelection mms = mainmenu.handle_input(event);
+				if (mms == MMS_NEW_GAME) {
+					state = GAME;
+				} else if (mms == MMS_CONTINUE) {
+					state = GAME;
+				} else if (mms == MMS_OPTIONS) {
+					//
+				} else if (mms == MMS_QUIT) {
+					quit = true;
+				}
 			}
 		}	
 		if (state == LOADING) {
@@ -117,12 +132,16 @@ int main() {
 			window.setView(editor.view);
 		} else if (state == GAME) {
 			window.setView(game.player.view);
+		} else if (state == MENU) {
+			window.setView(window.getDefaultView());
 		}
 
 		if (state == GAME || state == EDITOR) {
 			window.draw(game);
 		} else if (state == INVENTORY) {
 			window.draw(inventory);
+		} else if (state == MENU) {
+			window.draw(mainmenu);
 		}
 
 		if (state == EDITOR) {

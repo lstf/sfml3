@@ -11,6 +11,8 @@
 
 #include "animation.h"
 #include "inventory/inventory.h"
+#include "inventory/keyitem.h"
+#include "utils/ioutils.h"
 #include "utils/sfutils.h"
 #include "utils/txmap.h"
 
@@ -115,6 +117,9 @@ public:
 	sf::FloatRect weaponBounds();
 
 	bool weaponActive();
+
+	void write(ofstream &out);
+	void read(ifstream &inp);
 
 	Player();
 };

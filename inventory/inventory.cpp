@@ -7,7 +7,7 @@ void Inventory::addItem(Item* itm, int count) {
 			if (it->item->name == itm->name) {
 				found = true;
 				it->count += count;
-				delete itm;
+				delete_item(itm);
 				break;
 			}
 		}
@@ -27,7 +27,7 @@ void Inventory::addItem(Item* itm, int count) {
 			}
 		}
 		for (auto it = remove_index.begin(); it != remove_index.end(); ++it) {
-			delete keys.at(*it).item;
+			delete_item(keys.at(*it).item);
 			keys.erase(keys.begin() + *it);
 		}
 	}

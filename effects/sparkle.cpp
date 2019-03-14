@@ -82,4 +82,5 @@ Sparkle::~Sparkle() {
 	for (int i = particles.size() - 1; i >= 0; i--) {
 		delete particles.at(i);
 	}
+	cout << "done deleting sparkle" << endl;
 }

@@ -55,6 +55,9 @@ void Game::handle_input(sf::Event &event) {
 			if (dbox->destroy_ent) {
 				delete_ent((Entity*)dbox->destroy_ent_ptr);
 			}
+			if (dbox->save_game) {
+				write();
+			}
 			delete dbox;
 			dbox = NULL;
 		}
@@ -189,6 +192,29 @@ void Game::save_maplist() {
 		maps_file << *it << endl;
 	}
 	maps_file.close();
+}
+
+void Game::write() {
+	ofstream out("./ats/save");
+	
+	player.write(out);
+	write_states(level_states, out);
+
+	write_string(map_current->name, out);
+}
+
+void Game::read() {
+	ifstream inp("./ats/save");
+	if (!inp.is_open()) {
+		cout << "[GAME] no save game found" << endl;
+		return;
+	}
+	player.read(inp);
+	read_states(level_states, inp);
+
+	string name;
+	read_string(name, inp);
+	load_map(name);
 }
 
 void Game::resetState() {

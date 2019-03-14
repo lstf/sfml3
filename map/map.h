@@ -16,7 +16,7 @@
 #include "../enemies/enemy.h"
 #include "../entities/entity.h"
 #include "../entities/keylock.h"
-#include "../inventory/keyitem.h"
+#include "../entities/keyitement.h"
 #include "../portals/portal.h"
 #include "../portals/door.h"
 #include "../utils/ioutils.h"

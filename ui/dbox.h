@@ -13,6 +13,7 @@
 
 #include "../player.h"
 #include "../inventory/inventory.h"
+#include "../inventory/itemutils.h"
 #include "../utils/txmap.h"
 
 
@@ -48,6 +49,7 @@ struct DNode {
 	DEvent* gevent;
 	bool delete_ent;
 	void* delete_ent_ptr;
+	bool save_game;
 };
 
 struct DOption {
@@ -91,6 +93,7 @@ private:
 	void init();
 
 public:
+	bool save_game;
 	bool finished;
 	bool destroy_ent;
 	void* destroy_ent_ptr;

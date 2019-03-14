@@ -1,35 +1,34 @@
-#ifndef _KEYLOCK_H
-#define _KEYLOCK_H
-
-#include <fstream>
-#include <string>
+#ifndef _KEYITEMENT_H
+#define _KEYITEMENT_H
 
 #include <SFML/Graphics.hpp>
 
 #include "entity.h"
-#include "../inventory/inventory.h"
+#include "../effects/sparkle.h"
 #include "../inventory/keyitem.h"
 #include "../ui/button.h"
 #include "../ui/textbox.h"
 #include "../utils/ioutils.h"
 
-using namespace std;
-
-class KeyLock : public Entity {
+class KeyItemEnt : public Entity {
 private:
-	sf::FloatRect r;
+	bool got;
+	Sparkle sparkle;
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
 public:
-	string key_name;
+	sf::Sprite sp;
 
 	string levent;
 	int lval;
+	string gevent;
+	int gval;
 
-	void set_w(int w);
+	string key_name;
+	string key_desc;
 
-	void set_h(int h);
+	KeyItemEnt();
 
 	virtual sf::FloatRect bounds();
 
@@ -45,33 +44,27 @@ public:
 
 	virtual void write(ofstream &out);
 	virtual void read(ifstream &inp);
-
-	KeyLock();
 };
 
-#define KEYLOCK_BG sf::Color(127,127,127)
-#define KEYLOCK_FG sf::Color(0,0,0)
+#define KEYENT_BG sf::Color(127,127,127)
+#define KEYENT_FG sf::Color(0,0,0)
 
-class KeyLockUI : public sf::Drawable {
+class KeyItemEntUI : public sf::Drawable {
 private:
-	KeyLock* active_ent;
-	Button* w_b;
-	Button* h_b;
-	Button* key_name_b;
-	Button* levent_b;
+	KeyItemEnt* active_ent;
+
 	Textbox* tb;
-	
+	Button* name_b;
+	Button* levent_b;
 	bool typing;
 	int field;
 
-	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
+	void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
 public:
 	bool handle_input(sf::Event &event, sf::Vector2i m_pos);
-
-	void reset(KeyLock* ent);
-
-	KeyLockUI(int x, int y, int w, int h);
+	void reset(KeyItemEnt* ent);
+	KeyItemEntUI(int x, int y, int w, int h);
 };
 
 #endif

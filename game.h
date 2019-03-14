@@ -79,6 +79,9 @@ public:
 
 	void save_maplist();
 
+	void write();
+	void read();
+
 	void resetState();
 };
 

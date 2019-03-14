@@ -84,10 +84,36 @@ void read_state(map<string, int> &state, ifstream &inp) {
 	string event;
 	int val;
 
+	state.clear();
+
 	read_int(length, inp);
 	for (int i = 0; i < length; i++) {
 		read_string(event, inp);
 		read_int(val, inp);
 		state[event] = val;
+	}
+}
+
+void write_states(const map<string, map<string, int>> &states, ofstream &out) {
+	int length = states.size();
+
+	write_int(length, out);
+	for (auto it = states.begin(); it != states.end(); ++it) {
+		write_string(it->first, out);
+		write_state(it->second, out);
+	}
+}
+void read_states(map<string, map<string, int>> &states, ifstream &inp) {
+	int length;
+	string name;
+	map<string, int> state;
+
+	states.clear();
+
+	read_int(length, inp);
+	for (int i = 0; i < length; i++) {
+		read_string(name, inp);
+		read_state(state, inp);
+		states[name] = state;
 	}
 }

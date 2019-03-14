@@ -1,11 +1,15 @@
 #ifndef _INVENTORY_H
 #define _INVENTORY_H
 
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
 
 #include <SFML/Graphics.hpp>
+
+#include "item.h"
+#include "itemutils.h"
 
 #define INVENTORYCATEGORIES 8
 #define INV_CONS 0
@@ -18,16 +22,6 @@
 #define INV_MODS 7
 
 using namespace std;
-
-class Item { 
-private:
-public:
-	string category;
-	string name;
-	string description;
-	sf::Sprite sp;
-	string sp_name;
-};
 
 struct ItemQuantity {
 	Item* item;

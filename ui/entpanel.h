@@ -11,7 +11,7 @@
 #include "../game.h"
 #include "../entities/entity.h"
 #include "../entities/keylock.h"
-#include "../inventory/keyitem.h"
+#include "../entities/keyitement.h"
 #include "../utils/txmap.h"
 #include "../utils/sfutils.h"
 

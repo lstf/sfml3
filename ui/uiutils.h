@@ -7,6 +7,11 @@
 
 using namespace std;
 
+struct MenuButton {
+	sf::RectangleShape body;
+	sf::Text text;
+};
+
 struct SnapVals {
 	int x;
 	int y;

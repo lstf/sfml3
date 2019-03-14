@@ -15,6 +15,7 @@ DNode* newDnode(DTree* d, string t) {
 	d->list.back()->levent = NULL;
 	d->list.back()->gevent = NULL;
 	d->list.back()->delete_ent = false;
+	d->list.back()->save_game = false;
 	newDoption(d, d->list.back());
 	return d->list.back();
 }
@@ -51,6 +52,7 @@ void DBox::init() {
 
 	finished = false;
 	destroy_ent = false;
+	save_game = false;
 
 	sp.setPosition(box_x, box_y);
 	text.setPosition(text_x, text_y);
@@ -165,6 +167,9 @@ void DBox::update(sf::Event e) {
 					destroy_ent = true;
 					destroy_ent_ptr = dnode->delete_ent_ptr;
 				}
+				if (dnode->save_game) {
+					save_game = true;
+				}
 				fillBox();
 			} else {
 				finished = true;
@@ -180,7 +185,7 @@ void DBox::update(sf::Event e) {
 DBox::~DBox() {
 	for (auto it = d->list.begin(); it != d->list.end(); ++it) {
 		if ((*it)->item) {
-			delete (*it)->item->item;
+			delete_item((*it)->item->item);
 			delete (*it)->item;
 		}
 		if ((*it)->levent) {

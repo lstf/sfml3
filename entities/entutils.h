@@ -4,8 +4,8 @@
 #include <iostream>
 
 #include "entity.h"
+#include "keyitement.h"
 #include "keylock.h"
-#include "../inventory/keyitem.h"
 
 using namespace std;
 

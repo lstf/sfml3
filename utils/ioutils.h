@@ -27,4 +27,7 @@ void read_rect(sf::IntRect &r, ifstream &inp);
 
 void write_state(const map<string, int> &state, ofstream &out);
 void read_state(map<string, int> &state, ifstream &inp);
+
+void write_states(const map<string, map<string, int>> &states, ofstream &out);
+void read_states(map<string, map<string, int>> &states, ifstream &inp);
 #endif
