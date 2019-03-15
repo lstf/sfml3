@@ -11,7 +11,7 @@
 #include "../game.h"
 #include "../entities/entity.h"
 #include "../entities/keylock.h"
-#include "../entities/keyitement.h"
+#include "../entities/itement.h"
 #include "../utils/txmap.h"
 #include "../utils/sfutils.h"
 
@@ -27,7 +27,7 @@
 #define ENT_FG sf::Color(0,0,0)
 
 #define ENT_B_COUNT 2
-#define ENT_B_KEY 0
+#define ENT_B_ITEM 0
 #define ENT_B_KEYLOCK 1
 
 struct EntButton {
@@ -36,7 +36,7 @@ struct EntButton {
 };
 
 enum ENT_TYPE {
-	ENTT_KEY,
+	ENTT_ITEM,
 	ENTT_KEYLOCK
 };
 
@@ -46,7 +46,7 @@ private:
 	Map* map;
 	SnapVals* sv;
 
-	KeyItemEntUI* kui;
+	ItemEntUI* itui;
 	KeyLockUI* klui;
 
 	sf::RectangleShape top_bg;

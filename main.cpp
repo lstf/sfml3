@@ -19,21 +19,12 @@ enum MainState {
 	LOADING
 };
 
-void load_map(Game &game, string name, sf::Vector2f pos) {
-	cout << "[MAIN] clearing things" << endl;
-	game.clear();
-	cout << "[MAIN] setting position " << pos.x << " " << pos.y << endl;
-	game.player.setPosition(pos);
-	if (!game.load_map(name)) {
-		cout << "[MAIN] failed to load map " << name << endl;
-	}
-}
-
 int main() {
 	bool quit = false;
 	cout << "[MAIN] window init" << endl;
 	sf::RenderWindow window(sf::VideoMode(960,480), "Game");
 	window.setVerticalSyncEnabled(true);
+	//window.setFramerateLimit(30);
 	window.setKeyRepeatEnabled(false);
 
 	sf::Event event;
@@ -108,9 +99,8 @@ int main() {
 			if (et) {
 				if (et->is_new) {
 					game.new_map(et->name);
-					game.player.setPosition(et->position);
 				} else {
-					load_map(game, et->name, et->position);
+					game.load_map(et->name, et->position);
 				}
 				editor.reset();
 				delete et;
@@ -118,7 +108,7 @@ int main() {
 		} else if (state == GAME) {
 			GameTrans* gt = game.update();
 			if (gt) {
-				load_map(game, gt->name, gt->position);
+				game.load_map(gt->name, gt->position);
 				delete gt;
 				state = LOADING;
 				editor.reset();

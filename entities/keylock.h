@@ -7,6 +7,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "entity.h"
+#include "../world.h"
 #include "../inventory/inventory.h"
 #include "../inventory/keyitem.h"
 #include "../ui/button.h"
@@ -33,11 +34,9 @@ public:
 
 	virtual sf::FloatRect bounds();
 
-	virtual DBox* interact(Player &player, map<string, int> &lstate,
-	map<string, int> &gstate);
+	virtual DBox* interact(Player &player);
 
-	virtual bool update(Player &player, map<string, int> &lstate,
-	map<string, int> &gstate);
+	virtual bool update(Player &player);
 
 	virtual void set_pos(sf::Vector2f pos);
 
@@ -48,6 +47,8 @@ public:
 
 	KeyLock();
 };
+
+void read_keylock_ent(ifstream &inp);
 
 #define KEYLOCK_BG sf::Color(127,127,127)
 #define KEYLOCK_FG sf::Color(0,0,0)

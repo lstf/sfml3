@@ -8,7 +8,7 @@ void Sign::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	w.draw(sp, states);
 }
 
-DBox* Sign::interact(Player &player, map<string, int> &lstate, map<string, int> &gstate) {
+DBox* Sign::interact(Player &player) {
 	DTree* dtree = new DTree;
 	dtree->list.push_back(new DNode);
 	dtree->root = dtree->list.back();
@@ -17,13 +17,12 @@ DBox* Sign::interact(Player &player, map<string, int> &lstate, map<string, int> 
 	dtree->root->options.push_back(dtree->olist.back());
 	dtree->root->options.back()->text = "...";
 	dtree->root->options.back()->target = NULL;
-	DBox* ret = new DBox(dtree, &player, &lstate, &gstate);
+	DBox* ret = new DBox(dtree, &player);
 	return ret;
 }
-bool Sign::update(Player &player, map<string, int> &lstate, map<string, int> &gstate) {
+
+bool Sign::update(Player &player) {
 	(void)player;
-	(void)lstate;
-	(void)gstate;
 	return false;
 }
 

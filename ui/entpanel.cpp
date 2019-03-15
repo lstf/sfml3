@@ -12,8 +12,8 @@ void Entpanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 		w.draw(*buttons[i].btn, states);
 	}
 	if (selected) {
-		if (et == ENTT_KEY) {
-			w.draw(*kui, states);
+		if (et == ENTT_ITEM) {
+			w.draw(*itui, states);
 		} else if (et == ENTT_KEYLOCK) {
 			w.draw(*klui, states);
 		}
@@ -37,8 +37,8 @@ sf::Vector2f w_pos) {
 	sf::Vector2f w_pos_snap = snap(w_pos, *sv);
 	
 	if (selected) {
-		if (et == ENTT_KEY) {
-			if (kui->handle_input(event, m_pos)) {
+		if (et == ENTT_ITEM) {
+			if (itui->handle_input(event, m_pos)) {
 				return;
 			}
 		} else if (et == ENTT_KEYLOCK) {
@@ -48,10 +48,10 @@ sf::Vector2f w_pos) {
 		}
 	}
 
-	BState bs = buttons[ENT_B_KEY].btn->handle_input(event, m_pos);
+	BState bs = buttons[ENT_B_ITEM].btn->handle_input(event, m_pos);
 	if (bs) {
 		if (bs == BCLICK && !selected) {
-			active_ent = (Entity*)new KeyItemEnt;
+			active_ent = (Entity*)new ItemEnt;
 			selected = true;
 			reset(true);
 			return;
@@ -104,12 +104,12 @@ void Entpanel::reset(bool retain_sel) {
 		text.setString(active_ent->name);
 		sf::FloatRect text_bounds = text.getGlobalBounds();
 		text.setPosition(
-			(ENT_TOP_W - text_bounds.width) / 2,
-			ENT_BASE_H - 4
+			int((ENT_TOP_W - text_bounds.width) / 2),
+			int(ENT_BASE_H - 4)
 		);
-		if (active_ent->name == "key") {
-			et = ENTT_KEY;
-			kui->reset((KeyItemEnt*)active_ent);
+		if (active_ent->name == "item") {
+			et = ENTT_ITEM;
+			itui->reset((ItemEnt*)active_ent);
 		} else if (active_ent->name == "keylock") {
 			et = ENTT_KEYLOCK;
 			klui->reset((KeyLock*)active_ent);
@@ -145,21 +145,21 @@ Entpanel::Entpanel(Game* _game, SnapVals* _sv) {
 	reset();
 
 	button_setup();
-	kui = new KeyItemEntUI(8, ENT_BASE_H + 16, ENT_B_W, ENT_B_H);
+	itui = new ItemEntUI(8, ENT_BASE_H + 16, ENT_B_W, ENT_B_H);
 	klui = new KeyLockUI(8, ENT_BASE_H + 16, ENT_B_W, ENT_B_H);
 }
 
 void Entpanel::button_setup() {
 	buttons = new EntButton[ENT_B_COUNT];
-	buttons[ENT_B_KEY].btn = new Button(
-		ENT_BG, ENT_FG, "key", sf::FloatRect(
+	buttons[ENT_B_ITEM].btn = new Button(
+		ENT_BG, ENT_FG, "item", sf::FloatRect(
 			0,
 			ENT_TOP_H + ENT_BASE_H,
 			ENT_B_W,
 			ENT_B_H
 		)
 	);
-	buttons[ENT_B_KEY].name = "key";
+	buttons[ENT_B_ITEM].name = "item";
 	buttons[ENT_B_KEYLOCK].btn = new Button(
 		ENT_BG, ENT_FG, "key lock", sf::FloatRect(
 			ENT_B_W,

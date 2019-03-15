@@ -1,7 +1,6 @@
 #include "animation.h"
 
 void Animation::refresh_tx() {
-	cout << "refreshing tx" << endl;
 	tx.loadFromMemory(png.mem, png.length, sf::IntRect(
 		x * w,
 		y * h,

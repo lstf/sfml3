@@ -104,9 +104,6 @@ bool Map::load() {
 
 	read_string(name, map_file);
 	read_state(init_lstate, map_file);
-	if (lstate == NULL) {
-		lstate = &init_lstate;
-	}
 	read_sp(map_file);
 	read_geometry(map_file);
 	read_portals(map_file);
@@ -157,25 +154,10 @@ void Map::read_portals(ifstream &inp) {
 }
 void Map::read_entities(ifstream &inp) {
 	int length;
-	string ent_name;
+
 	read_int(length, inp);
 	for (int i = 0; i < length; i++) {
-		read_string(ent_name, inp);
-		if (ent_name == "key") {
-			KeyItemEnt* new_ent = new KeyItemEnt;
-			new_ent->read(inp);
-			if (lstate->find(new_ent->levent) != lstate->end() &&
-			lstate->at(new_ent->levent) != new_ent->lval) {
-				delete new_ent;
-			}
-		} else if (ent_name == "keylock") {
-			KeyLock* new_ent = new KeyLock;
-			new_ent->read(inp);
-			if (lstate->find(new_ent->levent) != lstate->end() &&
-			lstate->at(new_ent->levent) != new_ent->lval) {
-				delete new_ent;
-			}
-		}
+		read_ent(inp);
 	}
 }
 
@@ -183,17 +165,11 @@ vector<sf::FloatRect>* Map::get_geom() {
 	return &geometry;
 }
 
-void Map::set_lstate(map<string, int>* _lstate) {
-	lstate = _lstate;
-}
-
 Map::Map(string _name) {
 	name = _name;
 
 	deco = true;
 	geom = false;
-
-	lstate = NULL;
 
 	background = new Background(0,1920);
 }

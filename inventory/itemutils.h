@@ -6,4 +6,8 @@
 
 void delete_item(Item* item);
 
+Item* new_item(string category, string name);
+
+string item_ent_sp(string category, string name);
+
 #endif

@@ -1,5 +1,14 @@
 #include "keylock.h"
 
+void read_keylock_ent(ifstream &inp) {
+	KeyLock* new_ent = new KeyLock;
+	new_ent->read(inp);
+	if (World::lstate->find(new_ent->levent) != World::lstate->end() &&
+	World::lstate->at(new_ent->levent) != new_ent->lval) {
+		delete new_ent;
+	}
+}
+
 void KeyLock::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	(void)w;
 	(void)states;
@@ -18,13 +27,7 @@ sf::FloatRect KeyLock::bounds() {
 	return r;
 }
 
-
-
-DBox* KeyLock::interact(Player &player, map<string, int> &lstate,
-map<string, int> &gstate) {
-	(void)lstate;
-	(void)gstate;
-
+DBox* KeyLock::interact(Player &player) {
 	bool has_key = false;
 	vector<ItemQuantity> keys = player.inv.keys;
 	for (auto it = keys.begin(); it != keys.end(); ++it) {
@@ -51,16 +54,13 @@ map<string, int> &gstate) {
 	} else {
 		d->root = newDnode(d, "[Door is locked]");
 	}
-	DBox* ret = new DBox(d, &player, &lstate, &gstate);
+	DBox* ret = new DBox(d, &player);
 	return ret;
 }
 
 
-bool KeyLock::update(Player &player, map<string, int> &lstate,
-map<string, int> &gstate) {
+bool KeyLock::update(Player &player) {
 	(void)player;
-	(void)lstate;
-	(void)gstate;
 	return false;
 }
 
@@ -69,7 +69,6 @@ void KeyLock::set_pos(sf::Vector2f pos) {
 	r.left = pos.x;
 	r.top = pos.y;
 }
-
 
 sf::Vector2f KeyLock::size() {
 	return sf::Vector2f(r.width, r.height);

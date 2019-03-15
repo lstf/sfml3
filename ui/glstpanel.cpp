@@ -60,7 +60,7 @@ void Glstpanel::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 		string* ret = tb->handle_input(event);
 		if (ret) {
 			if (field == 0) {
-				game->level_state->at(event_name) = stoi(*ret);
+				World::lstate->at(event_name) = stoi(*ret);
 			}
 			reset();
 		}
@@ -81,7 +81,7 @@ void Glstpanel::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 			field = 0;
 			tb = new Textbox(
 				irfr(buttons[i].val_b->bounds), 
-				true, to_string(game->level_state->at(buttons[i].name))
+				true, to_string(World::lstate->at(buttons[i].name))
 			);
 			event_name = buttons[i].name;
 			event_val = buttons[i].val;
@@ -99,13 +99,13 @@ void Glstpanel::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 void Glstpanel::reset() {
 	cleanup();
 
-	button_count = game->level_state->size();
+	button_count = World::lstate->size();
 	if (button_count != 0) {
 		buttons = new Glstbutton[button_count];
 	}
 	int i = 0;
-	for (auto it = game->level_state->begin();
-	it != game->level_state->end(); ++it) {
+	for (auto it = World::lstate->begin();
+	it != World::lstate->end(); ++it) {
 		buttons[i].name = it->first;
 		buttons[i].val = it->second;
 		buttons[i].event_b = new Button(

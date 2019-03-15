@@ -54,10 +54,6 @@ private:
 
 	State state;
 
-	map<string, map<string, int>> level_states;
-	map<string, int>* level_state;
-	map<string, int>* global_state;
-
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
 public:
@@ -73,7 +69,7 @@ public:
 
 	void clear();
 
-	bool load_map(string name);
+	bool load_map(string name, sf::Vector2f pos);
 
 	void new_map(string name);
 

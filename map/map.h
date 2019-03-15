@@ -14,9 +14,7 @@
 #include "background.h"
 #include "../player.h"
 #include "../enemies/enemy.h"
-#include "../entities/entity.h"
-#include "../entities/keylock.h"
-#include "../entities/keyitement.h"
+#include "../entities/entutils.h"
 #include "../portals/portal.h"
 #include "../portals/door.h"
 #include "../utils/ioutils.h"
@@ -47,8 +45,6 @@ class Map : public sf::Drawable {
 	friend class Ilstpanel;
 
 private:
-	map<string, int>* lstate;
-
 	vector<img*> sp[MAP_SP_LAYERS];
 	vector<sf::FloatRect> geometry;
 	Background* background;
@@ -79,8 +75,6 @@ public:
 	Map(string _name);
 
 	vector<sf::FloatRect>* get_geom();
-
-	void set_lstate(map<string, int>* _lstate);
 
 	bool save();
 

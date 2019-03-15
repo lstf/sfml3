@@ -21,15 +21,13 @@
 #define PLAY_DIR "./ats/player/"
 #define PLAY_FPS 12.0
 
-enum States
-{
+enum States {
 	STANDING,
 	WALKING_LEFT,
 	WALKING_RIGHT
 };
 
-struct InputBools
-{
+struct InputBools {
 	bool left = false;
 	bool right = false;
 	bool up = false;
@@ -69,8 +67,7 @@ struct ColDirs {
 	bool right;
 };
 
-class Player : public sf::Drawable
-{ 
+class Player : public sf::Drawable { 
 private:
 	std::vector<sf::FloatRect>* geometry;
 

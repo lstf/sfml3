@@ -2,6 +2,7 @@
 #define _KEYITEM_H
 
 #include <fstream>
+#include <iostream>
 #include <string>
 
 #include <SFML/Graphics.hpp>
@@ -23,5 +24,9 @@ public:
 
 	~KeyItem();
 };
+
+string key_item_ent_sp(string name);
+
+KeyItem* new_key_item(string name);
 
 #endif

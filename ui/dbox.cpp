@@ -58,12 +58,9 @@ void DBox::init() {
 	text.setPosition(text_x, text_y);
 }
 
-DBox::DBox(DTree* _d, Player* _player, map<string, int>* _lstate, map<string,
-int>* _gstate) {
+DBox::DBox(DTree* _d, Player* _player) {
 	init();
 
-	lstate = _lstate;
-	gstate = _gstate;
 	player = _player;
 
 	d = _d;
@@ -158,10 +155,10 @@ void DBox::update(sf::Event e) {
 					dnode->item = NULL;
 				}
 				if (dnode->levent) {
-					(*lstate)[dnode->levent->key] = dnode->levent->val;
+					(*World::lstate)[dnode->levent->key] = dnode->levent->val;
 				}
 				if (dnode->gevent) {
-					(*gstate)[dnode->gevent->key] = dnode->gevent->val;
+					(*World::gstate)[dnode->gevent->key] = dnode->gevent->val;
 				}
 				if (dnode->delete_ent) {
 					destroy_ent = true;

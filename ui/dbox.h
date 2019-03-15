@@ -12,6 +12,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "../player.h"
+#include "../world.h"
 #include "../inventory/inventory.h"
 #include "../inventory/itemutils.h"
 #include "../utils/txmap.h"
@@ -63,8 +64,6 @@ DOption* newDoption(DTree* d, DNode* n, string t = "...", DNode* targ = NULL);
 
 class DBox : public sf::Drawable {
 private:
-	map<string, int>* lstate;
-	map<string, int>* gstate;
 	Player* player;
 	sf::Sprite sp;
 	sf::Font font;
@@ -98,8 +97,7 @@ public:
 	bool destroy_ent;
 	void* destroy_ent_ptr;
 
-	DBox(DTree* _d, Player* player, map<string, int>* _lstate, map<string,
-	int>* _gstate);
+	DBox(DTree* _d, Player* player);
 
 	void fillBox();
 

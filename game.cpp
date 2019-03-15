@@ -30,10 +30,10 @@ bool Game::init() {
 
 	show_fps = true;
 	frame_clock.restart();
-	global_state = new map<string, int>;
+	World::gstate = new map<string, int>;
 	map<string, int> null_state;
-	level_states["null map"] = null_state;
-	level_state = &level_states["null map"];
+	World::lstates["null map"] = null_state;
+	World::lstate = &World::lstates["null map"];
 	return true;
 }
 
@@ -69,7 +69,7 @@ GameTrans* Game::update() {
 		//entity updates 
 
 		for (int i = Entity::list.size() - 1; i >= 0; i--) {
-			if(Entity::list[i]->update(player, *level_state, *global_state)) {
+			if(Entity::list[i]->update(player)) {
 				delete_ent(Entity::list[i]);
 			}
 		}
@@ -78,7 +78,7 @@ GameTrans* Game::update() {
 		if (player.interacted()) {
 			for (auto it = Entity::list.begin(); it != Entity::list.end(); ++it) {
 				if ((*it)->bounds().intersects(player.bounds())) {
-					dbox = (*it)->interact(player, *level_state, *global_state);
+					dbox = (*it)->interact(player);
 					if (dbox) {
 						state = DIALOG;
 					}
@@ -147,34 +147,42 @@ void Game::clear() {
 	Portal::list.clear(); 
 }
 
-bool Game::load_map(string name) {
+bool Game::load_map(string name, sf::Vector2f pos) {
+	cout << "[MAIN] clearing things" << endl;
+	clear();
+	cout << "[GAME] setting position " << pos.x << " " << pos.y << endl;
+	player.setPosition(pos);
 	cout << "[GAME] loading map " << name << endl;
 	if (name == "null map") {
 		delete map_current;
 		map_current = new Map("null map");
-		level_state = &level_states["null map"];
+		World::lstate = &World::lstates["null map"];
 		return true;
 	} else if (name == "") {
 		return true;
 	}
 	Map* next_map = new Map(name);
-	if (level_states.find(name) != level_states.end()) {
-		next_map->set_lstate(&level_states[name]);
+	if (World::lstates.find(name) == World::lstates.end()) {
+		World::lstates[name] = next_map->init_lstate;
 	}
+	World::lstate = &World::lstates[name];
 	if (!next_map->load()) {
 		cout << "[GAME] failed to load map " << name;
 		delete next_map;
 		return false;
 	}
-	if (level_states.find(name) == level_states.end()) {
-		level_states[name] = next_map->init_lstate;
+	if (World::lstates.find(name) == World::lstates.end()) {
 	}
-	level_state = &level_states[name];
 	delete map_current;
 	map_current = next_map;
 	return true;
 }
 void Game::new_map(string name) {
+	sf::Vector2f pos(0, 0);
+	cout << "[MAIN] clearing things" << endl;
+	clear();
+	cout << "[GAME] setting position " << pos.x << " " << pos.y << endl;
+	player.setPosition(pos);
 	clear();
 	delete map_current;
 	map_current = new Map(name);
@@ -198,7 +206,7 @@ void Game::write() {
 	ofstream out("./ats/save");
 	
 	player.write(out);
-	write_states(level_states, out);
+	write_states(World::lstates, out);
 
 	write_string(map_current->name, out);
 }
@@ -210,11 +218,11 @@ void Game::read() {
 		return;
 	}
 	player.read(inp);
-	read_states(level_states, inp);
+	read_states(World::lstates, inp);
 
 	string name;
 	read_string(name, inp);
-	load_map(name);
+	load_map(name, player.sp.getPosition());
 }
 
 void Game::resetState() {
