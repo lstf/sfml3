@@ -252,7 +252,7 @@ void Game::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	
 	sf::View temp = w.getView();
 
-	w.setView(w.getDefaultView());
+	w.setView(Window::default_view);
 
 	if (show_fps) {
 		w.draw(frame_rate_text, states);

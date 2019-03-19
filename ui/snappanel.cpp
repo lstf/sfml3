@@ -3,7 +3,7 @@
 void Snappanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	sf::View temp = w.getView();
 
-	w.setView(w.getDefaultView());
+	w.setView(Window::default_view);
 	w.draw(bg, states);
 	w.draw(*snap_x_b, states);
 	w.draw(*snap_xo_b, states);

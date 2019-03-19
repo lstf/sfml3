@@ -7,6 +7,7 @@
 #include "textbox.h"
 #include "uiutils.h"
 #include "../game.h"
+#include "../window.h"
 #include "../portals/portal.h"
 #include "../portals/portutils.h"
 #include "../utils/txmap.h"

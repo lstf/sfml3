@@ -9,6 +9,7 @@
 #include "textbox.h"
 #include "uiutils.h"
 #include "../game.h"
+#include "../window.h"
 #include "../entities/entity.h"
 #include "../entities/keylock.h"
 #include "../entities/itement.h"

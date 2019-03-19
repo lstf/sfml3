@@ -8,7 +8,7 @@ void Rectpanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 		w.draw(add_r, states);
 	}
 
-	w.setView(w.getDefaultView());
+	w.setView(Window::default_view);
 	w.draw(bg, states);
 	for (int i = 0; i < button_count; i++) {
 		w.draw(*buttons[i].btn, states);

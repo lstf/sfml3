@@ -3,7 +3,7 @@
 void Mappanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	sf::View temp = w.getView();
 
-	w.setView(w.getDefaultView());
+	w.setView(Window::default_view);
 	w.draw(top_bg, states);
 	w.draw(bottom_bg, states);
 	w.draw(selected_text, states);
@@ -22,7 +22,7 @@ void Mappanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 		w.draw(*(buttons[i].btn), states);
 	}
 
-	w.setView(w.getDefaultView());
+	w.setView(Window::default_view);
 	w.draw(*scroll, states);
 
 	w.setView(temp);

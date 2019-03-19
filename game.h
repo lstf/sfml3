@@ -12,6 +12,7 @@ using namespace std;
 #include "enemies/enemy.h"
 #include "player.h"
 #include "world.h"
+#include "window.h"
 #include "portals/portal.h"
 #include "inventory/keyitem.h"
 #include "map/map.h"

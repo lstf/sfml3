@@ -19,6 +19,7 @@
 #include "glstpanel.h"
 #include "../game.h"
 #include "../player.h"
+#include "../window.h"
 #include "../entities/sign.h"
 #include "../enemies/testenemy.h"
 #include "../map/map.h"

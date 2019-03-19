@@ -10,6 +10,7 @@
 #include "button.h"
 #include "scrollbar.h"
 #include "uiutils.h"
+#include "../window.h"
 
 #define RECT_BASE_H 16
 #define RECT_W 128

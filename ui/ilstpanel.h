@@ -11,6 +11,7 @@
 #include "scrollbar.h"
 #include "uiutils.h"
 #include "../game.h"
+#include "../window.h"
 #include "../map/map.h"
 
 #define ILST_BASE_H 16

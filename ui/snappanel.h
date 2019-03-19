@@ -8,6 +8,7 @@
 #include "button.h"
 #include "textbox.h"
 #include "uiutils.h"
+#include "../window.h"
 #include "../utils/sfutils.h"
 
 #define SNAP_BASE_H 16

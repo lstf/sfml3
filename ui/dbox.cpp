@@ -72,7 +72,7 @@ DBox::DBox(DTree* _d, Player* _player) {
 
 void DBox::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	sf::View temp = w.getView();
-	w.setView(w.getDefaultView());
+	w.setView(Window::default_view);
 	w.draw(sp, states);
 	w.draw(text, states);
 	for (int i = oindexmax; i >= 0; i--) {

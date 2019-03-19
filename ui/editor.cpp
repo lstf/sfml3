@@ -40,7 +40,7 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 		w.draw(rc, states);
 	}
 
-	w.setView(w.getDefaultView());
+	w.setView(Window::default_view);
 	for (int i = 0; i < 15; i++ ) {
 		w.draw(*buttons[i], states);
 	}
@@ -73,6 +73,8 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 
 void Editor::handle_input(sf::Event &event) {
 	sf::Vector2i m_pos = sf::Mouse::getPosition(*w);
+	m_pos = vfvi((vivf(m_pos) - Window::offset()) /
+	Window::scale());
 	sf::Vector2f w_pos = w->mapPixelToCoords(m_pos);
 
 	//ctrl + shift + left click to place player
@@ -257,6 +259,11 @@ EditorTrans* Editor::update() {
 			delete r_view;
 		}
 	}
+
+	sf::Vector2f view_center = view.getCenter();
+	view = Window::default_view;
+	view.setCenter(view_center);
+
 	return ret;
 }
 

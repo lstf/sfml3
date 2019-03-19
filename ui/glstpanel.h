@@ -11,6 +11,7 @@
 #include "scrollbar.h"
 #include "uiutils.h"
 #include "../game.h"
+#include "../window.h"
 
 #define GLST_BASE_H 16
 #define GLST_W 128

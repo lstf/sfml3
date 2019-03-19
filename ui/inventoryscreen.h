@@ -8,6 +8,7 @@
 
 #include "uiutils.h"
 #include "../player.h"
+#include "../window.h"
 #include "../inventory/inventory.h"
 #include "../inventory/keyitem.h"
 

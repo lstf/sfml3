@@ -10,6 +10,7 @@
 #include "scrollbar.h"
 #include "textbox.h"
 #include "../game.h"
+#include "../window.h"
 #include "../utils/sfutils.h"
 
 #define MAP_BASE_H 16

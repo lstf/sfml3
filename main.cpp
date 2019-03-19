@@ -5,6 +5,7 @@
 #include <map>
 
 #include "game.h"
+#include "window.h"
 #include "ui/editor.h"
 #include "ui/inventoryscreen.h"
 #include "ui/mainmenu.h"
@@ -19,6 +20,7 @@ enum MainState {
 	LOADING
 };
 
+
 int main() {
 	bool quit = false;
 	cout << "[MAIN] window init" << endl;
@@ -26,6 +28,7 @@ int main() {
 	window.setVerticalSyncEnabled(true);
 	//window.setFramerateLimit(30);
 	window.setKeyRepeatEnabled(false);
+	Window::init(window.getDefaultView());
 
 	sf::Event event;
 
@@ -52,9 +55,7 @@ int main() {
 		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed) {
 				window.close();
-			}
-
-			if (event.type == sf::Event::KeyPressed) {
+			} else if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Tab) {
 					if (state == EDITOR) {
 						state = GAME;
@@ -69,6 +70,8 @@ int main() {
 						state = INVENTORY;
 					}
 				}
+			} else if (event.type == sf::Event::Resized) {
+				Window::set_size(event.size.width, event.size.height);
 			}
 
 			if (state == EDITOR) {
@@ -123,7 +126,7 @@ int main() {
 		} else if (state == GAME) {
 			window.setView(game.player.view);
 		} else if (state == MENU) {
-			window.setView(window.getDefaultView());
+			window.setView(Window::default_view);
 		}
 
 		if (state == GAME || state == EDITOR) {

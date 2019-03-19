@@ -3,7 +3,7 @@
 void Ilstpanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	sf::View temp = w.getView();
 
-	w.setView(w.getDefaultView());
+	w.setView(Window::default_view);
 	w.draw(bg, states);
 	w.draw(*plus_b, states);
 	for (int i = 0; i < button_count; i++) {

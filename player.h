@@ -10,6 +10,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "animation.h"
+#include "window.h"
 #include "inventory/inventory.h"
 #include "inventory/keyitem.h"
 #include "utils/ioutils.h"
@@ -85,11 +86,13 @@ private:
 	Weapon weapon;
 	bool interaction;
 
+	float max_jump;
+
 	void updateCollide(std::vector<sf::FloatRect>* geo);
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
-	bool collisionResolver(sf::Vector2f op, std::vector<sf::FloatRect>* geo);
+	void collisionResolver(sf::Vector2f op, std::vector<sf::FloatRect>* geo);
 
 public:
 	Inventory inv;

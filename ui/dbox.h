@@ -12,6 +12,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "../player.h"
+#include "../window.h"
 #include "../world.h"
 #include "../inventory/inventory.h"
 #include "../inventory/itemutils.h"

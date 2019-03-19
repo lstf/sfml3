@@ -4,7 +4,7 @@
 void Background::draw(sf::RenderTarget& w, sf::RenderStates states) const
 {
 	sf::View temp = w.getView();
-	sf::View view = w.getDefaultView();
+	sf::View view = Window::default_view;
 	float relpos;
 
 	relpos = temp.getCenter().x - begin;
@@ -15,7 +15,7 @@ void Background::draw(sf::RenderTarget& w, sf::RenderStates states) const
 		view.move(relpos * ((*it)->size.x - 960), 0);
 		w.setView(view);
 		w.draw((*it)->sprite, states);
-		view = w.getDefaultView();
+		view = Window::default_view;
 	}
 
 	w.setView(temp);

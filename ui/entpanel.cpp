@@ -4,7 +4,7 @@
 void Entpanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	sf::View temp = w.getView();
 
-	w.setView(w.getDefaultView());
+	w.setView(Window::default_view);
 	w.draw(bottom_bg, states);
 	w.draw(top_bg, states);
 	w.draw(text, states);

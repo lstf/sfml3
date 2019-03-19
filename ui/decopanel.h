@@ -11,6 +11,7 @@
 #include "uiutils.h"
 #include "../game.h"
 #include "../map/map.h"
+#include "../window.h"
 
 #define DECO_BASE_H 16
 #define DECO_P_SIZE 128

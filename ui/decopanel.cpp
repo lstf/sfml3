@@ -16,7 +16,7 @@ void Decopanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 		w.draw(selected_rect, states);
 	}
 
-	w.setView(w.getDefaultView());
+	w.setView(Window::default_view);
 	w.draw(preview_bg, states);
 	w.draw(preview_sp, states);
 	w.draw(file_bg, states);
@@ -30,7 +30,7 @@ void Decopanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 		w.draw(*(buttons[i].btn), states);
 	}
 
-	w.setView(w.getDefaultView());
+	w.setView(Window::default_view);
 	w.draw(*scroll, states);
 
 	w.setView(temp);

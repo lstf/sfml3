@@ -6,6 +6,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "../utils/txmap.h"
+#include "../window.h"
 
 using namespace std;
 

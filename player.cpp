@@ -17,7 +17,10 @@ Weapon::Weapon() {
 }
 
 void Weapon::draw(sf::RenderTarget& w, sf::RenderStates states) const {
-	w.draw(sp, states);
+	sf::Sprite sp_i = sp;
+	sf::Vector2f sp_pos_f = sp.getPosition() + sf::Vector2f(0.5, 0.5);
+	sp_i.setPosition((int)sp_pos_f.x, (int)sp_pos_f.y);
+	w.draw(sp_i, states);
 }
 
 void Weapon::update() {
@@ -82,7 +85,9 @@ void Player::handleInput(sf::Event event) {
 			input.up = false;
 		}
 		else if (event.key.code == sf::Keyboard::Z) {
-			input.jump = true;
+			if (coldirs.down && !coldirs.up) {
+				input.jump = true;
+			}
 		}
 	}
 
@@ -118,23 +123,15 @@ void Player::updateCollide(std::vector<sf::FloatRect>* geo) {
 
 	d.height = 1;
 	d.top = u.top + u.height;
-	//d.width *=  3 / 4; 
-	//d.left += d.width / 3 / 2;
 
 	u.height = 1;
 	u.top -= 1;
-	//u.width *= 3 / 4;
-	//u.left += u.width / 3 / 2;
 
 	r.width = 1;
 	r.left = l.left + l.width;
-	//r.height *= 3 / 4;
-	//r.top += r.height / 3 / 2;
 
 	l.width = 1;
 	l.left -= 1;
-	//l.height *= 3 / 4;
-	//l.top += l.height / 3 / 2;
 
 	for (int i = geo->size()-1; i >= 0; i--) {
 		if ((*geo)[i].intersects(u)) {
@@ -152,29 +149,81 @@ void Player::updateCollide(std::vector<sf::FloatRect>* geo) {
 	}
 }
 
-bool Player::collisionResolver(sf::Vector2f op,
+void Player::collisionResolver(sf::Vector2f op,
 std::vector<sf::FloatRect>* geo) {
-	sf::Vector2f diff = sp.getPosition() - op;
+	sf::Vector2f np = sp.getPosition();
+	sf::Vector2f lp = np.x < op.x ? np : op;
+	sf::Vector2f rp = np.x < op.x ? op : np;
 
-	int n = 0;
+	bool vertical = np.x == op.x;
+
+	float m; 
+	float x0;
+	float x1;
+	float y0;
+	float y1;
+	float b;
+
+	if (!vertical) {
+		m = (rp - lp).y / (rp - lp).x; 
+		x0 = lp.x;
+		x1 = rp.x;
+		y0 = lp.y;
+		b = y0 - m * x0;
+	} else {
+		y0 = np.y < op.y ? np.y : op.y;
+		y1 = np.y < op.y ? op.y : np.y;
+	}
+
+	//int n = 0;
 	bool moved = false;
 
 	//back up
 	for (int j = (*geo).size()-1; j >= 0; j--) {
-		while ((*geo)[j].intersects(sp.getGlobalBounds())) {
+		sf::FloatRect gr = (*geo)[j];
+		sf::FloatRect pr = sp.getGlobalBounds();
+		if (gr.intersects(pr)) {
 			moved = true;
-			n++;
-			if (n > 10) {
-				break;
+			if (!vertical) {
+				if (gr.left + gr.width < x1 && gr.left + gr.width > x0) {
+					float x2 = gr.left + gr.width;
+					sp.setPosition(x2, m * x2 + b);
+				} else if (gr.left < x1 + pr.width && gr.left > x0 + pr.width) {
+					float x2 = gr.left - pr.width;
+					sp.setPosition(x2, m * x2 + b);
+				} else {
+					float y2;
+					y0 = np.y < op.y ? np.y : op.y;
+					y1 = np.y < op.y ? op.y : np.y;
+					if (gr.top + gr.height < y1) {
+						y2 = gr.top + gr.height;
+					} else {
+						y2 = gr.top - pr.height;
+					}
+					velocity.y = 0;
+					sp.setPosition((y2 - b) / m, y2);
+				}
+			} else {
+				float y2;
+				if (gr.top + gr.height < y1) {
+					y2 = gr.top + gr.height;
+				} else {
+					y2 = gr.top - pr.height;
+				}
+				velocity.y = 0;
+				sp.setPosition(np.x, y2);
 			}
-			sp.setPosition(op + sf::Vector2f(
-				int(diff.x*(1.0-n*.1)),
-				int(diff.y*(1.0-n*.1))
-			)); 
 		}
 	}
 
-	return moved;
+	updateCollide(geo);
+
+	//if the player is left floating on corner, push up
+	if (moved && !coldirs.up && !coldirs.down && !coldirs.right && 
+	!coldirs.left) {
+		velocity = sf::Vector2f(velocity.x, 0);
+		sp.move(velocity + sf::Vector2f(0, -1));
+	}
 }
 
 
@@ -184,35 +233,33 @@ void Player::update(std::vector<sf::FloatRect>* geo, double frameTime) {
 		fresh = false;
 	}
 
-	ColDirs oldirs = coldirs;
 	sf::Vector2f old_position = sp.getPosition();
 
 	velocity.x = 0;
 	
-	if (!oldirs.down) {
+	if (!coldirs.down) {
 		velocity.y += frameTime*frameTime*fallA;
 		velocity.y = velocity.y > fallM*frameTime ? fallM*frameTime : velocity.y;
 	} else {
 		if (input.jump) {
-			if (!oldirs.up) {
-				velocity.y = jumph*frameTime;
-			}
+		//	max_jump = 109882;
+			velocity.y = jumph*frameTime;
 			input.jump = false;
-		} else {
-			velocity.y = 0;
-		}
+		} 
 	}
-	if (velocity.y < 0 && oldirs.up) {
-		velocity.y = 0;
-	}
-	//TODO something weird going on with jump height
-	//if (velocity.y > 0 && !oldirs.down) {
-	//	cout << sp.getPosition().y << endl;
+
+	//TODO jump height varies by a few pixels
+	//if (velocity.y > 0 && !coldirs.down) {
+	//	float c_y = sp.getPosition().y;
+	//	if (c_y < max_jump) {
+	//		max_jump = c_y;
+	//		cout << c_y << endl;
+	//	}
 	//}
 	if (state != STANDING) {
-		if (state == WALKING_LEFT && !oldirs.left) {
+		if (state == WALKING_LEFT && !coldirs.left) {
 			velocity.x = -1*frameTime*speed;
-		} else if (state == WALKING_RIGHT && !oldirs.right) {
+		} else if (state == WALKING_RIGHT && !coldirs.right) {
 			velocity.x = frameTime*speed;
 		}
 		if (anim.advance()) {
@@ -224,26 +271,22 @@ void Player::update(std::vector<sf::FloatRect>* geo, double frameTime) {
 	}
 
 	sp.move(velocity);
-	sf::Vector2i int_pos = vfvi(sp.getPosition());
-	sp.setPosition(int_pos.x, int_pos.y);
 
-	bool moved = collisionResolver(old_position, geo);
-
-	updateCollide(geo);
-
-	if (moved && !coldirs.up && !coldirs.down && !coldirs.right && 
-	!coldirs.left) {
-		velocity = sf::Vector2f(velocity.x, 0);
-		sp.move(velocity + sf::Vector2f(0, -1));
-	}
+	collisionResolver(old_position, geo);
 
 	refresh();
 }
 
 void Player::refresh() {
 	sf::Vector2f pp = sp.getPosition();
+	sf::FloatRect pb = sp.getGlobalBounds();
 	weapon.set_position(pp);
-	view.setCenter(sf::Vector2f(int(pp.x), int(pp.y)));
+	view = Window::default_view;
+	view.setCenter(sf::Vector2f(
+		int(pp.x + 0.5 + pb.width / 2),
+		int(pp.y + 0.5 + pb.height / 2)
+	));
+	
 }
 
 sf::FloatRect Player::weaponBounds() {
@@ -305,8 +348,7 @@ Player::Player() {
 	velocity = sf::Vector2f(0,0);
 	fresh = true;
 	interaction = false;
-	view.setSize(960,480);
-	view.setCenter(0,0);
+	view = Window::default_view;
 }
 
 sf::FloatRect Player::bounds() {
