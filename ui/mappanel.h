@@ -16,6 +16,7 @@
 #define MAP_BASE_H 16
 #define MAP_F_WIDTH 128
 #define MAP_B_WIDTH 64
+#define MAP_B_H 16
 #define MAP_S_WIDTH 16
 #define MAP_T_HEIGHT 128
 #define MAP_T_WIDTH MAP_F_WIDTH + MAP_S_WIDTH
@@ -62,7 +63,6 @@ private:
 	bool				naming;
 	MAP_NAMING_STATE	nstate;
 
-	sf::View		scrollview;
 	Scrollbar*		scroll;
 	int				scroll_max;
 	Mapbutton*		buttons;

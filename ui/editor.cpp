@@ -40,12 +40,6 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 		w.draw(rc, states);
 	}
 
-	w.setView(Window::default_view);
-	for (int i = 0; i < 15; i++ ) {
-		w.draw(*buttons[i], states);
-	}
-	w.draw(selected_pan_r, states);
-
 	w.setView(temp);
 	if (mode == EDIT_DECO) {
 		w.draw(*decopanel, states);
@@ -69,13 +63,20 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	if (rectpanel_rects) {
 		rectpanel->drawRects(w, states);
 	}
+
+	w.setView(Window::default_view);
+	for (int i = 0; i < 15; i++ ) {
+		w.draw(*buttons[i], states);
+	}
+	w.draw(selected_pan_r, states);
 }
 
 void Editor::handle_input(sf::Event &event) {
 	sf::Vector2i m_pos = sf::Mouse::getPosition(*w);
-	m_pos = vfvi((vivf(m_pos) - Window::offset()) /
-	Window::scale());
-	sf::Vector2f w_pos = w->mapPixelToCoords(m_pos);
+	sf::Vector2f w_pos = vivf(m_pos) + 
+	(view.getCenter() - view.getSize() / 2.f) * Window::scale - Window::offset;
+	w_pos /= Window::scale;
+	m_pos = vfvi((vivf(m_pos) - Window::offset) / Window::scale);
 
 	//ctrl + shift + left click to place player
 	if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) ||

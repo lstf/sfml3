@@ -14,15 +14,13 @@ private:
 	static int w;
 	static int h;
 public:
+	static sf::Vector2f offset;
+	static float scale;
 	static sf::View default_view;
 
 	static void init(sf::View view);
 
 	static void set_size(int _w, int _h);
-
-	static sf::Vector2f offset();
-
-	static float scale();
 };
 
 

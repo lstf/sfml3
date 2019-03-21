@@ -78,6 +78,8 @@ public:
 
 	bool save();
 
+	bool load_init_lstate();
+
 	bool load();
 
 	~Map();

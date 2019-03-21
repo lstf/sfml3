@@ -3,6 +3,8 @@
 sf::View Window::default_view;
 int Window::w;
 int Window::h;
+sf::Vector2f Window::offset;
+float Window::scale;
 
 sf::View letterbox(sf::View view, int w, int h) {
 	float window_ratio = w / (float)h;
@@ -33,23 +35,17 @@ void Window::init(sf::View view) {
 void Window::set_size(int _w, int _h) {
 	w = _w;
 	h = _h;
-	default_view = letterbox(default_view, w, h);
-}
 
-sf::Vector2f Window::offset() {
+	default_view = letterbox(default_view, w, h);
+
 	float window_ratio = w / (float)h;
 
-	sf::Vector2f off(0, 0);
-
+	offset = sf::Vector2f(0, 0);
 	if (window_ratio > 2.0) {
-		off.x = (w - (w * 2.0 / window_ratio)) / 2;
+		offset.x = (w - (w * 2.0 / window_ratio)) / 2;
 	} else {
-		off.y = (h - (h * window_ratio / 2.0)) / 2;
+		offset.y = (h - (h * window_ratio / 2.0)) / 2;
 	}
 
-	return off;
-}
-
-float Window::scale(){
-	return w / 960.0;
+	scale = w / 960.0;
 }

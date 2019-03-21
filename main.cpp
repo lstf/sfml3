@@ -29,6 +29,7 @@ int main() {
 	//window.setFramerateLimit(30);
 	window.setKeyRepeatEnabled(false);
 	Window::init(window.getDefaultView());
+	Window::set_size(960, 480);
 
 	sf::Event event;
 
@@ -44,7 +45,7 @@ int main() {
 	InventoryScreen inventory(&game.player);
 
 	cout << "[MAIN] main menu init" << endl;
-	MainMenu mainmenu(&game);
+	MainMenu mainmenu(&game , &window);
 
 	MainState state = MENU;
 
@@ -72,6 +73,7 @@ int main() {
 				}
 			} else if (event.type == sf::Event::Resized) {
 				Window::set_size(event.size.width, event.size.height);
+				editor.reset();
 			}
 
 			if (state == EDITOR) {

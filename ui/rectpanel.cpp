@@ -36,6 +36,10 @@ sf::Vector2f w_pos) {
 
 	//rect buttons
 	for (int i = 0; i < button_count; i++) {
+		float btn_top = buttons[i].btn->bounds.top;
+		if (btn_top + RECT_B_H <= RECT_BASE_H || btn_top >= 480) {
+			continue;
+		}
 		BState bs = buttons[i].btn->handle_input(event, m_pos);
 		if (bs == BCLICK) {
 			ret_view = new sf::View(sf::FloatRect(0, 0, 960, 480));
@@ -157,16 +161,6 @@ Rectpanel::Rectpanel(SnapVals* _sv) {
 	bg.setOutlineThickness(-1.0);
 
 	scroll = NULL;
-	scrollview = sf::View(
-		sf::Vector2f(RECT_W / 2, RECT_S_H / 2 + RECT_BASE_H),
-		sf::Vector2f(RECT_W, RECT_S_H)
-	);
-	scrollview.setViewport(sf::FloatRect(
-		0,
-		RECT_BASE_H / 480.0,
-		RECT_W / 960.0,
-		RECT_S_H/480.0
-	));
 	buttons = NULL;
 	reset();
 

@@ -1,6 +1,11 @@
 #include "mainmenu.h"
 
 void MainMenu::draw(sf::RenderTarget& w, sf::RenderStates states) const {
+	if (options_active) {
+		w.draw(*options, states);
+		return;
+	}
+
 	for (int i = 0; i < MAINMENU_BUTTONS; i++) {
 		w.draw(buttons[i].body, states);
 		w.draw(buttons[i].text, states);
@@ -9,6 +14,14 @@ void MainMenu::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 
 
 MainMenuSelection MainMenu::handle_input(sf::Event &event) {
+	if (options_active) {
+		OptionsMenuSelection oms = options->handle_input(event);
+		if (oms == OMS_BACK) {
+			options_active = false;
+		}
+		return MMS_NONE;
+	}
+
 	if (event.type == sf::Event::KeyPressed) {
 		if (event.key.code == sf::Keyboard::Down) {
 			if (menu_selection < MAINMENU_BUTTONS - 1) {
@@ -24,16 +37,13 @@ MainMenuSelection MainMenu::handle_input(sf::Event &event) {
 			switch (menu_selection + 1) {
 			case MMS_NEW_GAME:
 				return MMS_NEW_GAME;
-				break;
 			case MMS_CONTINUE:
 				return MMS_CONTINUE;
-				break;
 			case MMS_OPTIONS:
-				return MMS_OPTIONS;
-				break;
+				options_active = true;
+				return MMS_NONE;
 			case MMS_QUIT:
 				return MMS_QUIT;
-				break;
 			default:
 				return MMS_NONE;
 			}
@@ -85,7 +95,7 @@ void gen_buttons(int i, MenuButton &btn) {
 	btn.text.setPosition((int)tp.x, i * 48 - 4 + 128);
 }
 
-MainMenu::MainMenu(Game* _game) {
+MainMenu::MainMenu(Game* _game, sf::RenderWindow* w) {
 	game = _game;
 
 	bg.setSize(sf::Vector2f(960, 480));
@@ -96,5 +106,7 @@ MainMenu::MainMenu(Game* _game) {
 		gen_buttons(i, buttons[i]);
 	}
 	select(0);
+	options = new OptionsMenu(w);
+	options_active = false;
 }
 

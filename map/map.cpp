@@ -95,6 +95,21 @@ void Map::write_entities(ofstream &out) {
 	}
 }
 
+bool Map::load_init_lstate() {
+	ifstream map_file((MAP_DIR + name).c_str(), ios::in|ios::binary);
+
+	if (!map_file.is_open()) {
+		return false;
+	}
+
+	read_string(name, map_file);
+	read_state(init_lstate, map_file);
+
+	map_file.close();
+
+	return true;
+}
+
 bool Map::load() {
 	ifstream map_file((MAP_DIR + name).c_str(), ios::in|ios::binary);
 
@@ -113,6 +128,7 @@ bool Map::load() {
 
 	return true;
 }
+
 void Map::read_sp(ifstream &inp) {
 	for (int i = 0; i < MAP_SP_LAYERS; i++) {
 		sp[i].clear();

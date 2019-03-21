@@ -4,8 +4,13 @@ void Mappanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	sf::View temp = w.getView();
 
 	w.setView(Window::default_view);
-	w.draw(top_bg, states);
 	w.draw(bottom_bg, states);
+
+	for (unsigned int i = 0; i < button_count; i++) {
+		w.draw(*(buttons[i].btn), states);
+	}
+
+	w.draw(top_bg, states);
 	w.draw(selected_text, states);
 	for (unsigned int i = 1; i < 7; i++) {
 		w.draw(*top_buttons[i], states);
@@ -15,11 +20,6 @@ void Mappanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	}
 	if (naming) {
 		w.draw(*name_tb, states);
-	}
-
-	w.setView(scrollview);
-	for (unsigned int i = 0; i < button_count; i++) {
-		w.draw(*(buttons[i].btn), states);
 	}
 
 	w.setView(Window::default_view);
@@ -187,6 +187,10 @@ void Mappanel::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 
 	//map buttons
 	for (unsigned int i = 0; i < button_count; i++) {
+		float btn_top = buttons[i].btn->bounds.top;
+		if (btn_top + MAP_B_H <= MAP_BASE_H + MAP_T_HEIGHT || btn_top >= 480) {
+			continue;
+		}
 		BState bs = buttons[i].btn->handle_input(event, m_pos);	
 		//hover to show preview
 		if (bs == BCLICK) {
@@ -211,6 +215,14 @@ void Mappanel::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 			(MAP_T_WIDTH - selected_text.getGlobalBounds().width) / 2,
 			(MAP_T_HEIGHT - selected_text.getGlobalBounds().height) / 2 - 48
 		);
+	}
+	float scroll_val = scroll->handle_input(event, m_pos);
+	for (unsigned int i = 0; i < button_count; i++) {
+		buttons[i].btn->setPosition(sf::Vector2f(
+				(i % 2) * MAP_B_WIDTH,
+				(i / 2) * MAP_B_WIDTH / 4 + MAP_BASE_H + MAP_T_HEIGHT +
+				int(scroll_max*scroll_val)
+		));
 	}
 }
 
@@ -250,6 +262,11 @@ void Mappanel::reset() {
 		);
 		buttons[i].name = game->map_names[i];
 	}
+
+	if (scroll) {
+		delete scroll;
+	}
+	scroll_setup();
 }
 
 Mappanel::Mappanel(Game* _game) {
@@ -357,18 +374,6 @@ void Mappanel::scroll_setup() {
 		scroll_content_height = 480 - MAP_T_HEIGHT - MAP_BASE_H;
 	}
 	
-	scrollview = sf::View(
-		sf::Vector2f(
-		MAP_F_WIDTH / 2, (480 - MAP_T_HEIGHT - MAP_BASE_H) / 2 +
-		MAP_T_HEIGHT + MAP_BASE_H),
-		sf::Vector2f(MAP_F_WIDTH, 480 - MAP_T_HEIGHT - MAP_BASE_H)
-	);
-	scrollview.setViewport(sf::FloatRect(
-		0,
-		(MAP_T_HEIGHT+MAP_BASE_H)/480.0,
-		MAP_F_WIDTH/960.0,
-		(480 - MAP_T_HEIGHT - MAP_BASE_H)/480.0
-	));
 	scroll_max = 480 - MAP_T_HEIGHT - MAP_BASE_H - scroll_content_height;
 	scroll = new Scrollbar(
 		480 - MAP_T_HEIGHT - MAP_BASE_H,

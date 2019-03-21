@@ -5,11 +5,11 @@ void Ilstpanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 
 	w.setView(Window::default_view);
 	w.draw(bg, states);
-	w.draw(*plus_b, states);
 	for (int i = 0; i < button_count; i++) {
 		w.draw(*buttons[i].event_b, states);
 		w.draw(*buttons[i].val_b, states);
 	}
+	w.draw(*plus_b, states);
 	w.draw(*scroll, states);
 
 	if (typing) {
@@ -30,16 +30,6 @@ Ilstpanel::Ilstpanel(Game* _game) {
 	bg.setOutlineThickness(-1.0);
 	
 	scroll = NULL;
-	scrollview = sf::View(
-		sf::Vector2f(ILST_W / 2, ILST_S_H / 2 + ILST_BASE_H),
-		sf::Vector2f(ILST_W, ILST_S_H)
-	);
-	scrollview.setViewport(sf::FloatRect(
-		0,
-		ILST_BASE_H + ILST_PLUS_H / 480.0,
-		ILST_W / 960.0,
-		ILST_S_H/480.0
-	));
 	buttons = NULL;
 	tb = NULL;
 	reset();
@@ -79,6 +69,10 @@ void Ilstpanel::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 
 	BState bs;
 	for (int i = 0; i < button_count; i++) {
+		float btn_top = buttons[i].event_b->bounds.top;
+		if (btn_top + ILST_B_H <= ILST_BASE_H + ILST_PLUS_H || btn_top >= 480) {
+			continue;
+		}
 		bs = buttons[i].event_b->handle_input(event, m_pos);
 		if (bs == BCLICK) {
 			typing = true;
@@ -97,6 +91,7 @@ void Ilstpanel::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 		} else if (bs == BCLICKR) {
 			map->init_lstate.erase(buttons[i].name);
 			reset();
+			return;
 		}
 		bs = buttons[i].val_b->handle_input(event, m_pos);
 		if (bs == BCLICK) {
@@ -110,7 +105,9 @@ void Ilstpanel::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 			event_val = buttons[i].val;
 			return;
 		} else if (bs == BCLICKR) {
+			cout << "erasing" << endl;
 			map->init_lstate.erase(buttons[i].name);
+			cout << "resetting" << endl;
 			reset();
 		}
 	}
@@ -121,6 +118,21 @@ void Ilstpanel::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 		reset();
 		return;
 	}
+
+	float scroll_val = scroll->handle_input(event, m_pos);
+	for (int i = 0; i < button_count; i++) {
+		buttons[i].event_b->setPosition(sf::Vector2f(
+			0,
+			ILST_BASE_H + ILST_PLUS_H + i * ILST_B_H +
+			int(scroll_val*scroll_max)
+		));
+		buttons[i].val_b->setPosition(sf::Vector2f(
+			ILST_B_E_W,
+			ILST_BASE_H + ILST_PLUS_H + i * ILST_B_H +
+			int(scroll_val*scroll_max)
+		));
+	}
+	
 }
 
 void Ilstpanel::reset() {

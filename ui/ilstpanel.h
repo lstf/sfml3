@@ -43,7 +43,6 @@ private:
 
 	Button* plus_b;
 
-	sf::View	scrollview;
 	Scrollbar*	scroll;
 	int			scroll_max;
 	Ilstbutton*	buttons;

@@ -17,20 +17,19 @@ void Decopanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	}
 
 	w.setView(Window::default_view);
-	w.draw(preview_bg, states);
-	w.draw(preview_sp, states);
 	w.draw(file_bg, states);
 	w.draw(menu_bg, states);
 	w.draw(*layer_up, states);
 	w.draw(*layer_toggle, states);
 	w.draw(*layer_down, states);
 
-	w.setView(scrollview);
 	for (unsigned int i = 0; i < button_count; i++) {
 		w.draw(*(buttons[i].btn), states);
 	}
 
-	w.setView(Window::default_view);
+	w.draw(preview_bg, states);
+	w.draw(preview_sp, states);
+
 	w.draw(*scroll, states);
 
 	w.setView(temp);
@@ -71,7 +70,12 @@ sf::Event &event, sf::Vector2i m_pos, sf::Vector2f w_pos) {
 		}
 		return;
 	}
+
 	for (unsigned int i = 0; i < button_count; i++) {
+		float btn_top = buttons[i].btn->bounds.top;
+		if (btn_top + DECO_B_H <= DECO_BASE_H + DECO_P_SIZE || btn_top >= 480) {
+			continue;
+		}
 		bs = buttons[i].btn->handle_input(event, m_pos);	
 		//hover to show preview
 		if (bs == BHOVER) {
@@ -337,18 +341,6 @@ void Decopanel::scroll_setup() {
 	sf::IntRect bt = buttons[0].btn->bounds;
 	sf::IntRect bb = buttons[button_count - 1].btn->bounds;
 	
-	scrollview = sf::View(
-		sf::Vector2f(
-		DECO_P_SIZE / 2, (480 - DECO_P_SIZE - DECO_BASE_H) / 2 + 
-		DECO_P_SIZE + DECO_BASE_H),
-		sf::Vector2f(DECO_P_SIZE, 480 - DECO_P_SIZE - DECO_BASE_H)
-	);
-	scrollview.setViewport(sf::FloatRect(
-		0,
-		(DECO_P_SIZE+DECO_BASE_H)/480.0,
-		DECO_P_SIZE/960.0,
-		(480 - DECO_P_SIZE - DECO_BASE_H)/480.0
-	));
 	int scroll_content_height = bb.top + bb.height - bt.top;
 	scroll_max = 480 - DECO_P_SIZE - DECO_BASE_H - scroll_content_height;
 	scroll = new Scrollbar(

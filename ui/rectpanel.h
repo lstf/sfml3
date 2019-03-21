@@ -33,7 +33,6 @@ private:
 
 	sf::RectangleShape bg;
 
-	sf::View	scrollview;
 	Scrollbar*	scroll;
 	int			scroll_max;
 	Rectbutton*	buttons;

@@ -6,6 +6,7 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "optionsmenu.h"
 #include "uiutils.h"
 #include "../game.h"
 
@@ -26,6 +27,9 @@ class MainMenu : public sf::Drawable {
 private:
 	Game* game;
 
+	OptionsMenu* options;
+	bool options_active;
+
 	sf::RectangleShape bg;
 
 	MenuButton buttons[MAINMENU_BUTTONS];
@@ -38,7 +42,7 @@ private:
 public:
 	MainMenuSelection handle_input(sf::Event &event);
 	
-	MainMenu(Game* _game);
+	MainMenu(Game* _game, sf::RenderWindow* w);
 };
 
 

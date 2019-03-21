@@ -162,16 +162,21 @@ bool Game::load_map(string name, sf::Vector2f pos) {
 		return true;
 	}
 	Map* next_map = new Map(name);
-	if (World::lstates.find(name) == World::lstates.end()) {
-		World::lstates[name] = next_map->init_lstate;
-	}
-	World::lstate = &World::lstates[name];
-	if (!next_map->load()) {
+	if (!next_map->load_init_lstate()) {
 		cout << "[GAME] failed to load map " << name;
 		delete next_map;
 		return false;
 	}
-	if (World::lstates.find(name) == World::lstates.end()) {
+	if (World::lstates.find(name) != World::lstates.end()) {
+		World::lstate = &World::lstates[name];
+	} else {
+		World::lstates[name] = next_map->init_lstate;
+		World::lstate = &World::lstates[name];
+	}
+	if (!next_map->load()) {
+		cout << "[GAME] failed to load map " << name;
+		delete next_map;
+		return false;
 	}
 	delete map_current;
 	map_current = next_map;

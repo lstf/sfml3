@@ -16,6 +16,7 @@
 #define DECO_BASE_H 16
 #define DECO_P_SIZE 128
 #define DECO_B_SIZE 64
+#define DECO_B_H 16
 
 #define DECO_BG sf::Color(127,127,127)
 #define DECO_FG sf::Color(0,0,0)
@@ -44,7 +45,6 @@ private:
 
 	sf::Sprite preview_sp;
 
-	sf::View		scrollview;
 	Scrollbar*		scroll;
 	int				scroll_max;
 	Decobutton*		buttons;

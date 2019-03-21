@@ -5,11 +5,11 @@ void Glstpanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 
 	w.setView(Window::default_view);
 	w.draw(bg, states);
-	w.draw(*refresh_b, states);
 	for (int i = 0; i < button_count; i++) {
 		w.draw(*buttons[i].event_b, states);
 		w.draw(*buttons[i].val_b, states);
 	}
+	w.draw(*refresh_b, states);
 	w.draw(*scroll, states);
 
 	if (typing) {
@@ -75,6 +75,10 @@ void Glstpanel::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 
 	BState bs;
 	for (int i = 0; i < button_count; i++) {
+		float btn_top = buttons[i].val_b->bounds.top;
+		if (btn_top + GLST_B_H <= GLST_BASE_H + GLST_PLUS_H || btn_top >= 480) {
+			continue;
+		}
 		bs = buttons[i].val_b->handle_input(event, m_pos);
 		if (bs == BCLICK) {
 			typing = true;
@@ -93,6 +97,20 @@ void Glstpanel::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 	if (bs == BCLICK) {
 		reset();
 		return;
+	}
+
+	float scroll_val = scroll->handle_input(event, m_pos);
+	for (int i = 0; i < button_count; i++) {
+		buttons[i].event_b->setPosition(sf::Vector2f(
+			0,
+			GLST_BASE_H + GLST_PLUS_H + i * GLST_B_H +
+			int(scroll_val*scroll_max)
+		));
+		buttons[i].val_b->setPosition(sf::Vector2f(
+			GLST_B_E_W,
+			GLST_BASE_H + GLST_PLUS_H + i * GLST_B_H +
+			int(scroll_val*scroll_max)
+		));
 	}
 }
 
