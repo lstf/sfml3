@@ -92,7 +92,6 @@ void Snappanel::reset() {
 		delete snap_x_b;
 	}
 	snap_x_b = new Button(
-		SNAP_BG, SNAP_FG,
 		"x: " + to_string(sv->x),
 		sf::FloatRect(
 			(SNAP_WIDTH - SNAP_B_WIDTH * 2) / 2,
@@ -105,7 +104,6 @@ void Snappanel::reset() {
 		delete snap_xo_b;
 	}
 	snap_xo_b = new Button(
-		SNAP_BG, SNAP_FG,
 		"x off: " + to_string(sv->xo),
 		sf::FloatRect(
 			(SNAP_WIDTH - SNAP_B_WIDTH * 2) / 2 + SNAP_B_WIDTH,
@@ -118,7 +116,6 @@ void Snappanel::reset() {
 		delete snap_y_b;
 	}
 	snap_y_b = new Button(
-		SNAP_BG, SNAP_FG,
 		"y: " + to_string(sv->y),
 		sf::FloatRect(
 			(SNAP_WIDTH - SNAP_B_WIDTH * 2) / 2,
@@ -131,7 +128,6 @@ void Snappanel::reset() {
 		delete snap_yo_b;
 	}
 	snap_yo_b = new Button(
-		SNAP_BG, SNAP_FG,
 		"y off: " + to_string(sv->yo),
 		sf::FloatRect(
 			(SNAP_WIDTH - SNAP_B_WIDTH * 2) / 2 + SNAP_B_WIDTH,
@@ -152,9 +148,7 @@ Snappanel::Snappanel(SnapVals* _sv) {
 
 	bg = sf::RectangleShape(sf::Vector2f(SNAP_WIDTH, SNAP_HEIGHT));
 	bg.setPosition(0, SNAP_BASE_H);
-	bg.setFillColor(SNAP_BG);
-	bg.setOutlineColor(SNAP_FG);
-	bg.setOutlineThickness(-1.0);
+	bg.setFillColor(UIC_ED_BG);
 
 	snap_tb		= NULL;
 	snap_x_b	= NULL;

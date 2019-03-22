@@ -25,9 +25,7 @@ Ilstpanel::Ilstpanel(Game* _game) {
 
 	bg.setSize(sf::Vector2f(ILST_W, ILST_S_H));
 	bg.setPosition(0, ILST_BASE_H + ILST_PLUS_H);
-	bg.setFillColor(ILST_BG);
-	bg.setOutlineColor(ILST_FG);
-	bg.setOutlineThickness(-1.0);
+	bg.setFillColor(UIC_ED_BG);
 	
 	scroll = NULL;
 	buttons = NULL;
@@ -35,7 +33,6 @@ Ilstpanel::Ilstpanel(Game* _game) {
 	reset();
 
 	plus_b = new Button(
-		ILST_BG, ILST_FG,
 		"+",
 		sf::FloatRect(
 			0, 
@@ -150,7 +147,6 @@ void Ilstpanel::reset() {
 		buttons[i].name = it->first;
 		buttons[i].val = it->second;
 		buttons[i].event_b = new Button(
-			ILST_BG, ILST_FG,
 			it->first,
 			sf::FloatRect(
 				0,
@@ -160,7 +156,6 @@ void Ilstpanel::reset() {
 			)
 		);
 		buttons[i].val_b = new Button(
-			ILST_BG, ILST_FG,
 			to_string(it->second),
 			sf::FloatRect(
 				ILST_B_E_W,

@@ -20,8 +20,6 @@
 #define PORT_TOP_W (128 + 16)
 #define PORT_BOT_H (480 - PORT_TOP_H - PORT_BASE_H)
 #define PORT_BOT_W (128 + 16)
-#define PORT_BG sf::Color(127,127,127)
-#define PORT_FG sf::Color(0,0,0)
 
 #define PORT_B_COUNT 1
 #define PORT_B_DOOR 0

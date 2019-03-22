@@ -162,19 +162,15 @@ Portpanel::Portpanel(Game* _game, SnapVals* _sv) {
 
 	top_bg.setSize(sf::Vector2f(PORT_TOP_W, PORT_TOP_H));
 	top_bg.setPosition(0, PORT_BASE_H);
-	top_bg.setFillColor(PORT_BG);
-	top_bg.setOutlineColor(PORT_FG);
-	top_bg.setOutlineThickness(-1.0);
+	top_bg.setFillColor(UIC_ED_BG);
 
 	bottom_bg.setSize(sf::Vector2f(PORT_BOT_W, PORT_BOT_H));
 	bottom_bg.setPosition(0, PORT_BASE_H + PORT_TOP_H);
-	bottom_bg.setFillColor(PORT_BG);
-	bottom_bg.setOutlineColor(PORT_FG);
-	bottom_bg.setOutlineThickness(-1.0);
+	bottom_bg.setFillColor(UIC_ED_BG);
 
 	text.setFont(*txmap::get_font("./ats/fonts/thintel.ttf"));
 	text.setCharacterSize(PORT_B_H);
-	text.setFillColor(PORT_FG);
+	text.setFillColor(UIC_ED_BG);
 	text.setPosition(PORT_B_W + 14, PORT_BASE_H + 3);
 
 	typing = false;
@@ -186,7 +182,8 @@ Portpanel::Portpanel(Game* _game, SnapVals* _sv) {
 
 void Portpanel::button_setup() {
 	name_b = new Button(
-		PORT_BG, PORT_FG, "name", sf::FloatRect(
+		"name",
+		sf::FloatRect(
 			(PORT_TOP_W - 2*PORT_B_W) / 2,
 			(PORT_TOP_H - 2*PORT_B_H) / 2 + PORT_BASE_H,
 			PORT_B_W,
@@ -194,7 +191,8 @@ void Portpanel::button_setup() {
 		)
 	);
 	x_b = new Button(
-		PORT_BG, PORT_FG, "x", sf::FloatRect(
+		"x",
+		sf::FloatRect(
 			(PORT_TOP_W - 2*PORT_B_W) / 2,
 			(PORT_TOP_H - 2*PORT_B_H) / 2 + PORT_BASE_H + PORT_B_H,
 			PORT_B_W,
@@ -202,7 +200,8 @@ void Portpanel::button_setup() {
 		)
 	);
 	y_b = new Button(
-		PORT_BG, PORT_FG, "y", sf::FloatRect(
+		"y",
+		sf::FloatRect(
 			(PORT_TOP_W - 2*PORT_B_W) / 2 + PORT_B_W,
 			(PORT_TOP_H - 2*PORT_B_H) / 2 + PORT_BASE_H + PORT_B_H,
 			PORT_B_W,
@@ -212,7 +211,8 @@ void Portpanel::button_setup() {
 
 	buttons = new PortButton[PORT_B_COUNT];
 	buttons[PORT_B_DOOR].btn = new Button(
-		PORT_BG, PORT_FG, "door", sf::FloatRect(
+		"door",
+		sf::FloatRect(
 			0,
 			PORT_TOP_H + PORT_BASE_H,
 			PORT_B_W,

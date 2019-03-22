@@ -3,10 +3,8 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "uicolors.h"
 #include "../utils/sfutils.h"
-
-#define SCROLL_FG sf::Color(127,127,127)
-#define SCROLL_BG sf::Color(0,0,0)
 
 using namespace std;
 

@@ -24,9 +24,6 @@
 #define ENT_BOT_H (480 - ENT_TOP_H - ENT_BASE_H)
 #define ENT_BOT_W ENT_TOP_W
 
-#define ENT_BG sf::Color(127,127,127)
-#define ENT_FG sf::Color(0,0,0)
-
 #define ENT_B_COUNT 2
 #define ENT_B_ITEM 0
 #define ENT_B_KEYLOCK 1

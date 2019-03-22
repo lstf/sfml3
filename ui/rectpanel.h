@@ -17,8 +17,6 @@
 #define RECT_S_W 16
 #define RECT_S_H (480 - RECT_BASE_H)
 #define RECT_B_H 16
-#define RECT_BG sf::Color(127,127,127)
-#define RECT_FG sf::Color(0,0,0)
 
 using namespace std;
 

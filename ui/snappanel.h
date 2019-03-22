@@ -15,8 +15,6 @@
 #define SNAP_WIDTH 128 + 16
 #define SNAP_HEIGHT 48
 #define SNAP_B_WIDTH 64
-#define SNAP_BG sf::Color(127,127,127)
-#define SNAP_FG sf::Color(0,0,0)
 
 enum SNAP_FIELD {
 	SNAP_VALUE_X,

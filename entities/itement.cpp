@@ -213,7 +213,8 @@ void ItemEntUI::reset(ItemEnt* ent) {
 
 ItemEntUI::ItemEntUI(int x, int y, int w, int h) {
 	category_b = new Button(
-		KEYENT_BG, KEYENT_FG, "category", sf::FloatRect(
+		"category",
+		sf::FloatRect(
 			x,
 			y,
 			w,
@@ -221,7 +222,8 @@ ItemEntUI::ItemEntUI(int x, int y, int w, int h) {
 		)
 	);
 	name_b = new Button(
-		KEYENT_BG, KEYENT_FG, "name", sf::FloatRect(
+		"name",
+		sf::FloatRect(
 			x + w,
 			y,
 			w,
@@ -229,7 +231,8 @@ ItemEntUI::ItemEntUI(int x, int y, int w, int h) {
 		)
 	);
 	levent_b = new Button(
-		KEYENT_BG, KEYENT_FG, "levent", sf::FloatRect(
+		"levent",
+		sf::FloatRect(
 			x,
 			y + h,
 			w,
@@ -237,7 +240,8 @@ ItemEntUI::ItemEntUI(int x, int y, int w, int h) {
 		)
 	);
 	get_sp_b = new Button(
-		KEYENT_BG, KEYENT_FG, "get sp", sf::FloatRect(
+		"get sp",
+		sf::FloatRect(
 			x + w,
 			y + h,
 			w,

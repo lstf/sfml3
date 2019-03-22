@@ -127,19 +127,15 @@ Entpanel::Entpanel(Game* _game, SnapVals* _sv) {
 
 	top_bg.setSize(sf::Vector2f(ENT_TOP_W, ENT_TOP_H));
 	top_bg.setPosition(0, ENT_BASE_H);
-	top_bg.setFillColor(ENT_BG);
-	top_bg.setOutlineColor(ENT_FG);
-	top_bg.setOutlineThickness(-1.0);
+	top_bg.setFillColor(UIC_ED_BG);
 
 	bottom_bg.setSize(sf::Vector2f(ENT_BOT_W, ENT_BOT_H));
 	bottom_bg.setPosition(0, ENT_BASE_H + ENT_TOP_H);
-	bottom_bg.setFillColor(ENT_BG);
-	bottom_bg.setOutlineColor(ENT_FG);
-	bottom_bg.setOutlineThickness(-1.0);
+	bottom_bg.setFillColor(UIC_ED_BG);
 
 	text.setFont(*txmap::get_font("./ats/fonts/thintel.ttf"));
 	text.setCharacterSize(ENT_B_H);
-	text.setFillColor(ENT_FG);
+	text.setFillColor(UIC_ED_FG);
 
 
 	reset();
@@ -152,7 +148,8 @@ Entpanel::Entpanel(Game* _game, SnapVals* _sv) {
 void Entpanel::button_setup() {
 	buttons = new EntButton[ENT_B_COUNT];
 	buttons[ENT_B_ITEM].btn = new Button(
-		ENT_BG, ENT_FG, "item", sf::FloatRect(
+		"item",
+		sf::FloatRect(
 			0,
 			ENT_TOP_H + ENT_BASE_H,
 			ENT_B_W,
@@ -161,7 +158,8 @@ void Entpanel::button_setup() {
 	);
 	buttons[ENT_B_ITEM].name = "item";
 	buttons[ENT_B_KEYLOCK].btn = new Button(
-		ENT_BG, ENT_FG, "key lock", sf::FloatRect(
+		"key lock",
+		sf::FloatRect(
 			ENT_B_W,
 			ENT_TOP_H + ENT_BASE_H,
 			ENT_B_W,

@@ -251,7 +251,6 @@ void Mappanel::reset() {
 	buttons = new Mapbutton[button_count];
 	for (unsigned int i = 0; i < button_count; i++) {
 		buttons[i].btn = new Button(
-			MAP_BG, MAP_FG,
 			game->map_names[i],
 			sf::FloatRect(
 				(i%2)*MAP_B_WIDTH,
@@ -280,23 +279,18 @@ void Mappanel::bg_setup() {
 	top_bg =
 	sf::RectangleShape(sf::Vector2f(MAP_T_WIDTH, MAP_T_HEIGHT));
 	top_bg.setPosition(0, MAP_BASE_H);
-	top_bg.setFillColor(MAP_BG);
-	top_bg.setOutlineColor(MAP_FG);
-	top_bg.setOutlineThickness(-1.0);
+	top_bg.setFillColor(UIC_ED_BG);
 
 	bottom_bg =
 	sf::RectangleShape(sf::Vector2f(MAP_F_WIDTH, 480-MAP_T_HEIGHT-MAP_BASE_H));
 	bottom_bg.setPosition(0, MAP_BASE_H + MAP_T_HEIGHT);
-	bottom_bg.setFillColor(MAP_BG);
-	bottom_bg.setOutlineColor(MAP_FG);
-	bottom_bg.setOutlineThickness(-1.0);
+	bottom_bg.setFillColor(UIC_ED_BG);
 }
 
 void gen_top_button(Button** btn, int i, const string &s) {
 	if (i > 0) {
 		i--;
 		*btn = new Button(
-			MAP_BG, MAP_FG,
 			s,
 			sf::FloatRect(
 				(i%2)*MAP_B_WIDTH+8,
@@ -308,7 +302,6 @@ void gen_top_button(Button** btn, int i, const string &s) {
 		return;
 	} 
 	*btn = new Button(
-		MAP_BG, MAP_FG,
 		s,
 		sf::FloatRect(
 			MAP_B_WIDTH+8,
@@ -344,14 +337,13 @@ void Mappanel::button_setup() {
 		(MAP_T_WIDTH - selected_text.getGlobalBounds().width) / 2,
 		(MAP_T_HEIGHT - selected_text.getGlobalBounds().height) / 2 - 48
 	);
-	selected_text.setFillColor(sf::Color::Black);
+	selected_text.setFillColor(UIC_ED_FG);
 	selected = -1;
 
 	button_count = game->map_names.size();
 	buttons = new Mapbutton[button_count];
 	for (unsigned int i = 0; i < button_count; i++) {
 		buttons[i].btn = new Button(
-			MAP_BG, MAP_FG,
 			game->map_names[i],
 			sf::FloatRect(
 				(i%2)*MAP_B_WIDTH,

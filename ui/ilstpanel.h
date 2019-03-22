@@ -23,8 +23,6 @@
 #define ILST_B_E_W 96
 #define ILST_B_V_W 32
 #define ILST_B_H 16
-#define ILST_BG sf::Color(127,127,127)
-#define ILST_FG sf::Color(0,0,0)
 
 using namespace std;
 

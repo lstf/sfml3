@@ -117,7 +117,6 @@ void Rectpanel::reset() {
 		rect_info << int(r.left) << "  " << int(r.top) << "  " <<
 		int(r.width) << "  " << int(r.height);
 		buttons[i].btn = new Button(
-			RECT_BG, RECT_FG,
 			rect_info.str(),
 			sf::FloatRect(
 				0,
@@ -156,9 +155,7 @@ Rectpanel::Rectpanel(SnapVals* _sv) {
 
 	bg = sf::RectangleShape(sf::Vector2f(RECT_W, RECT_S_H));
 	bg.setPosition(0, RECT_BASE_H);
-	bg.setFillColor(RECT_BG);
-	bg.setOutlineColor(RECT_FG);
-	bg.setOutlineThickness(-1.0);
+	bg.setFillColor(UIC_ED_BG);
 
 	scroll = NULL;
 	buttons = NULL;

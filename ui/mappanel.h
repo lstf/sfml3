@@ -9,6 +9,7 @@
 #include "button.h"
 #include "scrollbar.h"
 #include "textbox.h"
+#include "uicolors.h"
 #include "../game.h"
 #include "../window.h"
 #include "../utils/sfutils.h"
@@ -20,9 +21,6 @@
 #define MAP_S_WIDTH 16
 #define MAP_T_HEIGHT 128
 #define MAP_T_WIDTH MAP_F_WIDTH + MAP_S_WIDTH
-
-#define MAP_BG sf::Color(127,127,127)
-#define MAP_FG sf::Color(0,0,0)
 
 using namespace std;
 

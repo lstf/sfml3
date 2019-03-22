@@ -212,38 +212,10 @@ void KeyLockUI::reset(KeyLock* ent) {
 }
 
 KeyLockUI::KeyLockUI(int x, int y, int w, int h) {
-	w_b = new Button(
-		KEYLOCK_BG, KEYLOCK_FG, "width", sf::FloatRect(
-			x,
-			y,
-			w,
-			h	
-		)
-	);
-	h_b = new Button(
-		KEYLOCK_BG, KEYLOCK_FG, "height", sf::FloatRect(
-			x + w,
-			y,
-			w,
-			h
-		)
-	);
-	key_name_b = new Button(
-		KEYLOCK_BG, KEYLOCK_FG, "key name", sf::FloatRect(
-			x,
-			y + h,
-			w,
-			h
-		)
-	);
-	levent_b = new Button(
-		KEYLOCK_BG, KEYLOCK_FG, "levent", sf::FloatRect(
-			x + w,
-			y + h,
-			w,
-			h
-		)
-	);
+	w_b = new Button("width", sf::FloatRect(x, y, w, h));
+	h_b = new Button("height", sf::FloatRect(x + w, y, w, h));
+	key_name_b = new Button("key name", sf::FloatRect(x, y + h, w, h));
+	levent_b = new Button("levent", sf::FloatRect(x + w, y + h, w, h));
 
 	typing = false;
 	tb = NULL;

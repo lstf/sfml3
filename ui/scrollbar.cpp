@@ -46,14 +46,15 @@ float Scrollbar::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 Scrollbar::Scrollbar(int h1, int h2, int x, int y, int w, int h) {
 	if (h1 >= h2) {
 		fg = sf::RectangleShape(sf::Vector2f(w, h));
+		fg.setFillColor(UIC_ED_BG);
 	} else {
 		fg = sf::RectangleShape(sf::Vector2f(w, int(h*float(h1)/h2)));
+		fg.setFillColor(UIC_ED_FG);
 	}
 	fg.setPosition(x, y);
-	fg.setFillColor(SCROLL_FG);
-	bg = sf::RectangleShape(sf::Vector2f(w, h));
+	bg.setSize(sf::Vector2f(w, h));
 	bg.setPosition(x, y);
-	bg.setFillColor(SCROLL_BG);
+	bg.setFillColor(UIC_ED_BG);
 
 	p_m_pos = sf::Vector2i(0, 0);
 	clicked = false;

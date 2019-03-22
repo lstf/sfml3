@@ -22,8 +22,6 @@
 #define GLST_B_E_W 96
 #define GLST_B_V_W 32
 #define GLST_B_H 16
-#define GLST_BG sf::Color(127,127,127)
-#define GLST_FG sf::Color(0,0,0)
 
 using namespace std;
 

@@ -292,7 +292,7 @@ Editor::Editor(sf::RenderWindow* _w, Game* _game) {
 		buttons[i] = gen_button(i);
 	}
 	selected_pan_r = sf::RectangleShape(sf::Vector2f(4,4));
-	selected_pan_r.setFillColor(sf::Color::White);
+	selected_pan_r.setFillColor(sf::Color(127,127,127));
 	selected_pan_r.setPosition(buttons[0]->getPosition());
 	selected_pan_r.move(3,3);
 
@@ -370,10 +370,16 @@ Button* Editor::gen_button(int i) {
 	default:
 		name = "test button " + to_string(i + 1);
 	}
-	return new Button(
-			sf::Color::Black,
-			sf::Color::White,
+	Button* ret = new Button(
 			name,
 			sf::FloatRect(i*64,0,64,16)
 	);
+	ret->normal_b = UIC_ED_BUTTON_BODY_HOVER;
+	ret->hover_b = UIC_ED_BUTTON_BODY_NORMAL;
+	ret->normal_t = UIC_ED_BUTTON_TEXT_HOVER;
+	ret->hover_t = UIC_ED_BUTTON_TEXT_NORMAL;
+	ret->normal_o = UIC_ED_BUTTON_OUTLINE_HOVER;
+	ret->hover_o = UIC_ED_BUTTON_OUTLINE_NORMAL;
+	ret->setColors();
+	return ret;
 }

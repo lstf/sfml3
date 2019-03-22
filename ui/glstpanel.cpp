@@ -24,9 +24,7 @@ Glstpanel::Glstpanel(Game* _game) {
 
 	bg.setSize(sf::Vector2f(GLST_W, GLST_S_H));
 	bg.setPosition(0, GLST_BASE_H + GLST_PLUS_H);
-	bg.setFillColor(GLST_BG);
-	bg.setOutlineColor(GLST_FG);
-	bg.setOutlineThickness(-1.0);
+	bg.setFillColor(UIC_ED_BG);
 	
 	scroll = NULL;
 	scrollview = sf::View(
@@ -44,7 +42,6 @@ Glstpanel::Glstpanel(Game* _game) {
 	reset();
 
 	refresh_b = new Button(
-		GLST_BG, GLST_FG,
 		"refresh",
 		sf::FloatRect(
 			0, 
@@ -127,7 +124,6 @@ void Glstpanel::reset() {
 		buttons[i].name = it->first;
 		buttons[i].val = it->second;
 		buttons[i].event_b = new Button(
-			GLST_BG, GLST_FG,
 			it->first,
 			sf::FloatRect(
 				0,
@@ -137,7 +133,6 @@ void Glstpanel::reset() {
 			)
 		);
 		buttons[i].val_b = new Button(
-			GLST_BG, GLST_FG,
 			to_string(it->second),
 			sf::FloatRect(
 				GLST_B_E_W,

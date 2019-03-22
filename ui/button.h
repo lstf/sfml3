@@ -5,6 +5,7 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "uicolors.h"
 #include "../utils/txmap.h"
 
 using namespace std;
@@ -18,9 +19,6 @@ enum BState {
 
 class Button : public sf::Drawable {
 private:
-	sf::Color normal;
-	sf::Color hover;
-
 	sf::RectangleShape body;
 
 	sf::Text text;
@@ -28,6 +26,12 @@ private:
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
 public:
+	sf::Color normal_b;
+	sf::Color hover_b;
+	sf::Color normal_t;
+	sf::Color hover_t;
+	sf::Color normal_o;
+	sf::Color hover_o;
 	sf::IntRect bounds;
 
 	BState handle_input(sf::Event &event, sf::Vector2i m_pos);
@@ -36,9 +40,11 @@ public:
 
 	void setString(string str);
 
+	void setColors(bool hover = false);
+
 	sf::Vector2f getPosition();
 
-	Button(sf::Color n, sf::Color h, string t, sf::FloatRect r);
+	Button(string t, sf::FloatRect r);
 };
 
 #endif

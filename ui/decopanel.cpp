@@ -255,24 +255,24 @@ void Decopanel::bg_setup() {
 	preview_bg = 
 	sf::RectangleShape(sf::Vector2f(DECO_P_SIZE, DECO_P_SIZE));
 	preview_bg.setPosition(0, DECO_BASE_H);
-	preview_bg.setFillColor(DECO_BG);
-	preview_bg.setOutlineColor(DECO_FG);
-	preview_bg.setOutlineThickness(-1.0);
+	preview_bg.setFillColor(UIC_ED_BG);
+	//preview_bg.setOutlineColor(UIC_ED_BG);
+	//preview_bg.setOutlineThickness(-1.0);
 
 	file_bg = 
 	sf::RectangleShape(sf::Vector2f(DECO_P_SIZE, 480 - DECO_P_SIZE -
 	DECO_BASE_H));
 	file_bg.setPosition(0, DECO_BASE_H+DECO_P_SIZE);
-	file_bg.setFillColor(DECO_BG);
-	file_bg.setOutlineColor(DECO_FG);
-	file_bg.setOutlineThickness(-1.0);
+	file_bg.setFillColor(UIC_ED_BG);
+	//file_bg.setOutlineColor(UIC_ED_BG);
+	//file_bg.setOutlineThickness(-1.0);
 
 	menu_bg = 
 	sf::RectangleShape(sf::Vector2f(16, DECO_P_SIZE));
 	menu_bg.setPosition(DECO_P_SIZE, DECO_BASE_H);
-	menu_bg.setFillColor(DECO_BG);
-	menu_bg.setOutlineColor(DECO_FG);
-	menu_bg.setOutlineThickness(-1.0);
+	menu_bg.setFillColor(UIC_ED_BG);
+	//menu_bg.setOutlineColor(UIC_ED_BG);
+	//menu_bg.setOutlineThickness(-1.0);
 }
 
 void Decopanel::button_setup() {
@@ -292,7 +292,6 @@ void Decopanel::button_setup() {
 	buttons = new Decobutton[button_count];
 	for (unsigned int i = 0; i < button_count; i++) {
 		buttons[i].btn = new Button(
-			DECO_BG, DECO_FG, 
 			files[i],
 			sf::FloatRect(
 				(i%2)*DECO_B_SIZE,
@@ -306,7 +305,6 @@ void Decopanel::button_setup() {
 
 	active_layer = 2;
 	layer_up = new Button(
-		DECO_BG, DECO_FG,
 		"+",
 		sf::FloatRect(
 			DECO_P_SIZE,
@@ -316,7 +314,6 @@ void Decopanel::button_setup() {
 		)
 	);
 	layer_toggle = new Button(
-		DECO_BG, DECO_FG,
 		to_string(active_layer),
 		sf::FloatRect(
 			DECO_P_SIZE,
@@ -326,7 +323,6 @@ void Decopanel::button_setup() {
 		)
 	);
 	layer_down = new Button(
-		DECO_BG, DECO_FG,
 		"-",
 		sf::FloatRect(
 			DECO_P_SIZE,
