@@ -130,12 +130,12 @@ GameTrans* Game::update() {
 			delete map_trans;
 			map_trans = NULL;
 			return trans;
-			state = TRANSITION;
 		}
 	}
 	
 	if (state == DIALOG && dbox == NULL) {
 		state = GAMEPLAY;
+		player.reset_input();
 	}
 
 	return NULL;
@@ -152,6 +152,7 @@ bool Game::load_map(string name, sf::Vector2f pos) {
 	clear();
 	cout << "[GAME] setting position " << pos.x << " " << pos.y << endl;
 	player.setPosition(pos);
+	player.reset_input();
 	cout << "[GAME] loading map " << name << endl;
 	if (name == "null map") {
 		delete map_current;

@@ -40,6 +40,8 @@ class Weapon : public sf::Drawable {
 private:
 	Animation anim;
 	int dir;
+	int frame_counter;
+	bool buffered_attack;
 
 	sf::Sprite sp;
 
@@ -113,6 +115,8 @@ public:
 	void advanceAnimation();
 
 	void refresh();
+
+	void reset_input();
 
 	sf::FloatRect weaponBounds();
 

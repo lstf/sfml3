@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#define INDEX_INC(n, s) (n + s >= ar_size ? 0 : n + s)
+#define INDEX_INC(n, s) (n + s >= ar_size ? n + s - ar_size : n + s)
 
 using namespace std;
 
@@ -54,7 +54,7 @@ void CQueue<T>::set_size(int n) {
 		return;
 	}
 	if (ar) {
-		delete ar;
+		delete [] ar;
 	}
 	ar = new T[n];
 	ar_size = n;

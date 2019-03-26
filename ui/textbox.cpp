@@ -6,11 +6,20 @@ void Textbox::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 }
 
 void Textbox::update() {
-	blink_frame++;
-	if (blink_frame > TEXTBOX_BLINK_FRAMES) {
-		blink_frame = 0;	
+	float elapsed = clock.restart().asSeconds();
+	time += elapsed;
+	if (time > TEXTBOX_BLINK_TIME) {
 		cursor = cursor == "|" ? "." : "|";
 		text.setString(left + cursor + right);
+	}
+	if (backspace) {
+		backspace_time += elapsed;
+		if (backspace_time > TEXTBOX_BACKSPACE_TIME) {
+			backspace_time = 0;
+			if (left != "") {
+				left.pop_back();
+			}
+		}
 	}
 }
 
@@ -29,6 +38,8 @@ string* Textbox::handle_input(sf::Event &event) {
 		} else if (code >= 26 && code <= 35) {
 			left += char(code - 26 + 48);
 		} else if (code == sf::Keyboard::Backspace) {
+			backspace_time = 0;
+			backspace = true;
 			if (left != "") {
 				left.pop_back();
 			}
@@ -52,6 +63,10 @@ string* Textbox::handle_input(sf::Event &event) {
 			return ret;
 		}
 		text.setString(left + cursor + right);
+	} else if (event.type == sf::Event::KeyReleased) {
+		if (event.key.code == sf::Keyboard::Backspace) {
+			backspace = false;
+		}
 	}
 	return NULL;
 }
@@ -75,5 +90,8 @@ Textbox::Textbox(sf::FloatRect r, bool _digits, string t) {
 
 	digits = _digits;
 
-	blink_frame = 0;
+	time = 0;
+	clock.restart();
+
+	backspace = false;
 }

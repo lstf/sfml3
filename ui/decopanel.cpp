@@ -376,14 +376,9 @@ bool gen_geom_next_to(sf::FloatRect u, sf::FloatRect v) {
 bool gen_geom_comp(
 const sf::FloatRect &u, const sf::FloatRect &v) {
 	if (u.top == v.top) {
-		if (u.left < v.left) {
-			return true;
-		}
-		return false;
-	} else if (u.top < v.top) {
-		return true;
-	} 
-	return false;
+		return u.left < v.left;
+	}
+	return u.top < v.top;
 }
 
 vector<sf::FloatRect> Decopanel::gen_geom() {
@@ -406,17 +401,16 @@ vector<sf::FloatRect> Decopanel::gen_geom() {
 	}
 	rects2.push_back(r);
 	rects.clear();
-	iti = rects2.begin();
-	r = *iti;
-	for (auto it = iti + 1; it != rects2.end(); ++it) {
-		if (gen_geom_over(*(it - 1), *it)) {
-			r.height = it->top + it->height - r.top;
-		} else {
-			rects.push_back(r);
-			r = *it;
+	for (auto it = rects2.begin(); it != rects2.end(); ++it) {
+		for (auto jt = it + 1; jt != rects2.end(); ++jt) {
+			if (gen_geom_over(*it, *jt)) {
+				it->height = jt->top + jt->height - it->top;
+				rects2.erase(jt);
+				--it;
+				break;
+			} 
 		}
 	}
-	rects.push_back(r);
 
-	return rects;
+	return rects2;
 }

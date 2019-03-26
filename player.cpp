@@ -3,17 +3,19 @@
 Weapon::Weapon() {
 	anim.w = 32;
 	anim.h = 32;
-	anim.set_fps(6, 0);
-	anim.set_fps(6, 1);
+	anim.set_fps(24, 0);
+	anim.set_fps(24, 1);
 	anim.set_frame_count(4, 0);
 	anim.set_frame_count(4, 1);
 	anim.set_png(WEAPON_PNG);
+	frame_counter = 0;
 
 	dir = 0;
 
 	sp.setTexture(anim.tx);
 
 	active = false;
+	buffered_attack = false;
 }
 
 void Weapon::draw(sf::RenderTarget& w, sf::RenderStates states) const {
@@ -25,20 +27,36 @@ void Weapon::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 
 void Weapon::update() {
 	if (anim.advance()) {
+		frame_counter++;
+		if (frame_counter == 4) {
+			frame_counter = 0;
+			if (buffered_attack) {
+				buffered_attack = false;
+			} else {
+				active = false;
+			}
+		}
 		sp.setTexture(anim.tx);
 	}
 }
 
 void Weapon::attack() {
 	if (!active) {
+		anim.restart();
 		active = true;
+	} else {
+		buffered_attack = true;
 	}
 }
 
 void Weapon::set_direction(int d) {
-	anim.set_animation(d);
-	sp.setTexture(anim.tx);
-	dir = d;
+	if (dir != d) {
+		frame_counter = 0;
+		active = false;
+		anim.set_animation(d);
+		sp.setTexture(anim.tx);
+		dir = d;
+	}
 }
 
 void Weapon::set_position(sf::Vector2f _pos) {
@@ -62,41 +80,46 @@ void Player::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 }
 
 void Player::handleInput(sf::Event event) {
-	input.left = sf::Keyboard::isKeyPressed(sf::Keyboard::Left);
-	input.right = sf::Keyboard::isKeyPressed(sf::Keyboard::Right);
-	input.down = sf::Keyboard::isKeyPressed(sf::Keyboard::Down);
-	input.up = sf::Keyboard::isKeyPressed(sf::Keyboard::Up);
-
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
-		weapon.attack();
-	}
 	if (event.type == sf::Event::KeyPressed) {
-		//Pick most recent direction so left + right doesnt stop movement
-		if (event.key.code == sf::Keyboard::Left && input.right) {
+		if (event.key.code == sf::Keyboard::Left) {
+			input.left = true;
 			input.right = false;
-		}
-		else if (event.key.code == sf::Keyboard::Right && input.left) {
+		} else if (event.key.code == sf::Keyboard::Right) {
+			input.right = true;
 			input.left = false;
-		}
-		else if (event.key.code == sf::Keyboard::Up && input.down) {
+		} else if (event.key.code == sf::Keyboard::Up) {
+			input.up = true;
 			input.down = false;
-		}
-		else if (event.key.code == sf::Keyboard::Down && input.up) {
+		} else if (event.key.code == sf::Keyboard::Down) {
+			input.down = true;
 			input.up = false;
-		}
-		else if (event.key.code == sf::Keyboard::Z) {
+		} else if (event.key.code == sf::Keyboard::Z) {
 			if (coldirs.down && !coldirs.up) {
 				input.jump = true;
 			}
+		} else if (event.key.code == sf::Keyboard::X) {
+			weapon.attack();
 		}
+	} else if (event.type == sf::Event::KeyReleased) {
+		if (event.key.code == sf::Keyboard::Left) {
+			input.left = false;
+		} else if (event.key.code == sf::Keyboard::Right) {
+			input.right = false;
+		} else if (event.key.code == sf::Keyboard::Up) {
+			input.up = false;
+		} else if (event.key.code == sf::Keyboard::Down) {
+			input.down = false;
+		} else if (event.key.code == sf::Keyboard::Z) {
+			input.jump = false;
+		}	
 	}
 
-	if (input.left) {
+	if (input.left && state != WALKING_LEFT) {
 		state = WALKING_LEFT;
 		weapon.set_direction(1);
 		anim.set_animation(1);
 		sp.setTexture(anim.tx);
-	} else if (input.right) {
+	} else if (input.right && state != WALKING_RIGHT) {
 		state = WALKING_RIGHT;
 		weapon.set_direction(0);
 		anim.set_animation(0);
@@ -287,6 +310,16 @@ void Player::refresh() {
 		int(pp.y + 0.5 + pb.height / 2)
 	));
 	
+}
+
+void Player::reset_input() {
+	state = STANDING;
+	input.left = false;
+	input.right = false;
+	input.up = false;
+	input.down = false;
+	input.jump = false;
+	interaction = false;
 }
 
 sf::FloatRect Player::weaponBounds() {

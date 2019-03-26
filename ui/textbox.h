@@ -8,7 +8,10 @@
 
 #include "../utils/txmap.h"
 
-#define TEXTBOX_BLINK_FRAMES 15
+#define TEXTBOX_BLINK_FPS 15.0
+#define TEXTBOX_BLINK_TIME (1 / TEXTBOX_BLINK_FPS)
+#define TEXTBOX_BACKSPACE_FPS 8.0
+#define TEXTBOX_BACKSPACE_TIME (1 / TEXTBOX_BACKSPACE_FPS)
 
 using namespace std;
 
@@ -24,7 +27,11 @@ private:
 
 	bool digits;
 
-	int blink_frame;
+	sf::Clock clock;
+	float time;
+
+	bool backspace;
+	float backspace_time;
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 

@@ -59,6 +59,8 @@ void Animation::set_animation(int a) {
 void Animation::restart() {
 	x = 0;
 	refresh_tx();
+	clock.restart();
+	time = 0;
 }
 
 bool Animation::advance() {

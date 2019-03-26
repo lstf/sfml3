@@ -2,19 +2,30 @@
 #define _SNAPPANEL_H
 
 #include <string>
+#include <vector>
 
 #include <SFML/Graphics.hpp>
 
 #include "button.h"
+#include "scrollbar.h"
 #include "textbox.h"
 #include "uiutils.h"
 #include "../window.h"
 #include "../utils/sfutils.h"
 
 #define SNAP_BASE_H 16
-#define SNAP_WIDTH 128 + 16
-#define SNAP_HEIGHT 48
-#define SNAP_B_WIDTH 64
+#define SNAP_T_W (128 + 16)
+#define SNAP_T_H 128
+#define SNAP_BG_W 128
+#define SNAP_BG_H (480 - SNAP_BASE_H - SNAP_T_H)
+#define SNAP_B_W 64
+#define SNAP_S_W 16
+#define SNAP_S_H SNAP_BG_H
+
+struct SnapButton {
+	Button* btn;
+	int i;
+};
 
 enum SNAP_FIELD {
 	SNAP_VALUE_X,
@@ -27,7 +38,8 @@ class Snappanel : public sf::Drawable {
 private:
 	SnapVals* sv;
 
-	sf::RectangleShape bg;
+	sf::RectangleShape top_bg;
+	sf::RectangleShape bottom_bg;
 
 	Textbox*	snap_tb;
 	bool		typing;
@@ -37,6 +49,16 @@ private:
 	Button* snap_xo_b;
 	Button* snap_y_b;
 	Button* snap_yo_b;
+	Button* add_b;
+
+
+	vector<SnapVals> svs;
+	Scrollbar* scroll;
+	int scroll_max;
+	SnapButton* buttons;
+	int button_count;
+
+	void scroll_setup();
 
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
