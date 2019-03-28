@@ -1,33 +1,27 @@
 #include "keylock.h"
 
-void read_keylock_ent(ifstream &inp) {
-	KeyLock* new_ent = new KeyLock;
-	new_ent->read(inp);
-	if (World::lstate->find(new_ent->levent) != World::lstate->end() &&
-	World::lstate->at(new_ent->levent) != new_ent->lval) {
-		delete new_ent;
-	}
-}
+////////////////////////////////////////////////
+//
+// Entity
+//
+////////////////////////////////////////////////
 
 void KeyLock::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	(void)w;
 	(void)states;
 }
 
-void KeyLock::set_w(int w) {
-	r.width = w;
+KeyLock::KeyLock() {
+	log_dbg("constructing key lock");
+	name = "keylock";
 }
-
-void KeyLock::set_h(int h) {
-	r.height = h;
-}
-
 
 sf::FloatRect KeyLock::bounds() {
 	return r;
 }
 
 DBox* KeyLock::interact(Player &player) {
+	log_dbg("player interacted");
 	bool has_key = false;
 	vector<ItemQuantity> keys = player.inv.keys;
 	for (auto it = keys.begin(); it != keys.end(); ++it) {
@@ -58,12 +52,10 @@ DBox* KeyLock::interact(Player &player) {
 	return ret;
 }
 
-
 bool KeyLock::update(Player &player) {
 	(void)player;
 	return false;
 }
-
 
 void KeyLock::set_pos(sf::Vector2f pos) {
 	r.left = pos.x;
@@ -74,7 +66,41 @@ sf::Vector2f KeyLock::size() {
 	return sf::Vector2f(r.width, r.height);
 }
 
-void KeyLock::write(ofstream &out) {
+KeyLock::~KeyLock() {
+	log_dbg("destructing key lock");
+}
+
+////////////////////////////////////////////////
+//
+// Spawner
+//
+////////////////////////////////////////////////
+
+KeyLockSpawner::KeyLockSpawner() {
+	log_dbg("constructing key lock spawner");
+	name = "keylock";
+	lval = 0;
+}
+
+sf::FloatRect KeyLockSpawner::bounds() {
+	if (r.width == 0 || r.height == 0) {
+		return sf::FloatRect(
+			r.left,
+			r.top,
+			32,
+			32
+		);
+	}
+	return r;
+}
+
+void KeyLockSpawner::set_pos(sf::Vector2f pos) {
+	r.left = pos.x;
+	r.top = pos.y;
+}
+
+void KeyLockSpawner::write(ofstream &out) {
+	log_dbg("writing key lock spawner");
 	write_string(name, out);
 
 	write_int(lval, out);
@@ -82,16 +108,56 @@ void KeyLock::write(ofstream &out) {
 	write_string(key_name, out);
 	write_rect(r, out);
 }
-void KeyLock::read(ifstream &inp) {
+
+void KeyLockSpawner::read(ifstream &inp) {
+	log_dbg("reading key lock spawner");
 	read_int(lval, inp);
 	read_string(levent, inp);
 	read_string(key_name, inp);
 	read_rect(r, inp);
 }
 
-KeyLock::KeyLock() {
-	name = "keylock";
-	lval = 0;
+EntitySpawner* read_keylock_spawner(ifstream &inp) {
+	KeyLockSpawner* spawn = new KeyLockSpawner();
+	spawn->read(inp);
+
+	return (EntitySpawner*)spawn;
+}
+
+void new_keylock_ent(KeyLockSpawner* spawn) {
+	if (spawn->levent != "" &&
+	World::lstate->find(spawn->levent) != World::lstate->end() &&
+	World::lstate->at(spawn->levent) != spawn->lval) {
+		return;
+	}
+	KeyLock* keylock = new KeyLock();
+	keylock->r = spawn->r;
+	keylock->levent = spawn->levent;
+	keylock->lval = spawn->lval;
+	keylock->key_name = spawn->key_name;
+}
+
+KeyLockSpawner::~KeyLockSpawner() {
+	log_dbg("destructing key lock spawner");
+}
+
+////////////////////////////////////////////////
+//
+// UI
+//
+////////////////////////////////////////////////
+
+KeyLockUI::KeyLockUI(int x, int y, int w, int h) {
+	log_dbg("constructing key lock ui");
+
+	w_b = new Button("width", sf::FloatRect(x, y, w, h));
+	h_b = new Button("height", sf::FloatRect(x + w, y, w, h));
+	key_name_b = new Button("key name", sf::FloatRect(x, y + h, w, h));
+	levent_b = new Button("levent", sf::FloatRect(x + w, y + h, w, h));
+
+	typing = false;
+	tb = NULL;
+	spawn = NULL;
 }
 
 void KeyLockUI::draw(sf::RenderTarget& w, sf::RenderStates states) const {
@@ -110,28 +176,32 @@ bool KeyLockUI::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 			string* sp = tb->handle_input(event);
 			if (sp) {
 				typing = false;
-				active_ent->set_w(stoi(*sp));
+				spawn->r.width = stoi(*sp);
+				log_dbg("set width " << spawn->r.width);
 				delete sp;
 			}
 		} else if (field == 1) {
 			string* sp = tb->handle_input(event);
 			if (sp) {
 				typing = false;
-				active_ent->set_h(stoi(*sp));
+				spawn->r.height  = stoi(*sp);
+				log_dbg("set height " << spawn->r.height);
 				delete sp;
 			}
 		} else if (field == 2) {
 			string* sp = tb->handle_input(event);
 			if (sp) {
 				typing = false;
-				active_ent->key_name = *sp;
+				spawn->key_name = *sp;
+				log_dbg("set key name " << spawn->key_name);
 				delete sp;
 			}
 		} else if (field == 3) {
 			string* sp = tb->handle_input(event);
 			if (sp) {
 				typing = false;
-				active_ent->levent = *sp;
+				spawn->levent = *sp;
+				log_dbg("set levent " << spawn->levent);
 				delete sp;
 			}
 		}
@@ -150,11 +220,11 @@ bool KeyLockUI::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 	if (bs) {
 		if (bs == BCLICK) {
 			field = 0;
-			string en = to_string((int)active_ent->bounds().width);
+			string sw = to_string((int)spawn->r.width);
 			typing = true;
 			tb = new Textbox(
 				irfr(w_b->bounds),
-				true, en
+				true, sw 
 			);
 			return true;
 		}
@@ -163,11 +233,11 @@ bool KeyLockUI::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 	if (bs) {
 		if (bs == BCLICK) {
 			field = 1;
-			string en = to_string((int)active_ent->bounds().height);
+			string sh = to_string((int)spawn->r.height);
 			typing = true;
 			tb = new Textbox(
 				irfr(h_b->bounds),
-				true, en
+				true, sh
 			);
 			return true;
 		}
@@ -176,11 +246,11 @@ bool KeyLockUI::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 	if (bs) {
 		if (bs == BCLICK) {
 			field = 2;
-			string en = active_ent->key_name;
+			string sk = spawn->key_name;
 			typing = true;
 			tb = new Textbox(
 				irfr(key_name_b->bounds),
-				false, en
+				false, sk
 			);
 			return true;
 		}
@@ -189,11 +259,11 @@ bool KeyLockUI::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 	if (bs) {
 		if (bs == BCLICK) {
 			field = 3;
-			string en = active_ent->levent;
+			string sl = spawn->levent;
 			typing = true;
 			tb = new Textbox(
 				irfr(levent_b->bounds),
-				false, en
+				false, sl
 			);
 			return true;
 		}
@@ -202,23 +272,16 @@ bool KeyLockUI::handle_input(sf::Event &event, sf::Vector2i m_pos) {
 	return false;
 }
 
-void KeyLockUI::reset(KeyLock* ent) {
+void KeyLockUI::reset(KeyLockSpawner* _spawn) {
+	log_dbg("resetting");
 	if (typing) {
 		typing = false;
 		delete tb;
 		tb = NULL;
 	}
-	active_ent = ent;
+	spawn = _spawn;
 }
 
-KeyLockUI::KeyLockUI(int x, int y, int w, int h) {
-	w_b = new Button("width", sf::FloatRect(x, y, w, h));
-	h_b = new Button("height", sf::FloatRect(x + w, y, w, h));
-	key_name_b = new Button("key name", sf::FloatRect(x, y + h, w, h));
-	levent_b = new Button("levent", sf::FloatRect(x + w, y + h, w, h));
-
-	typing = false;
-	tb = NULL;
-	active_ent = NULL;
+KeyLockUI::~KeyLockUI() {
+	log_dbg("destructing key lock ui");
 }
-

@@ -10,6 +10,7 @@ void Animation::refresh_tx() {
 }
 
 Animation::Animation() {
+	log_dbg("constructing animation");
 	x = 0;
 	y = 0;
 
@@ -29,7 +30,7 @@ void Animation::set_fps(float fps, int a) {
 	if (a < MAX_ANIMATIONS && a >= 0) {
 		frame_time[a] = 1/fps;
 	} else {
-		cout << "[ANIM] request to set fps for out of range animation" << endl;
+		log_err("out of range: " << a << " >= " << MAX_ANIMATIONS);
 	}
 }
 
@@ -37,8 +38,7 @@ void Animation::set_frame_count(int n, int a) {
 	if (a < MAX_ANIMATIONS && a >= 0) {
 		frame_count[a] = n;
 	} else {
-		cout << 
-		"[ANIM] request to set frame count for out of range animation" << endl;
+		log_err("out of range: " << a << " >= " << MAX_ANIMATIONS);
 	}
 }
 
@@ -52,7 +52,7 @@ void Animation::set_animation(int a) {
 		y = a;
 		restart();
 	} else {
-		cout << "[ANIM] request to set out of range animation" << endl;
+		log_err("out of range: " << a << " >= " << MAX_ANIMATIONS);
 	}
 }
 
@@ -79,5 +79,5 @@ bool Animation::advance() {
 }
 
 Animation::~Animation() {
-	
+	log_dbg("destructing animation");
 }

@@ -27,3 +27,18 @@ string item_ent_sp(string category, string name) {
 
 	return "";
 }
+
+void write_item(Item* item, ofstream &out) {
+	write_string(item->category, out);
+	write_string(item->name, out);
+}
+
+void read_item(Item* &item, ifstream &inp) {
+	string category;
+	string name;
+
+	read_string(category, inp);
+	read_string(name, inp);
+
+	item = new_item(category, name);
+}

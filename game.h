@@ -5,18 +5,19 @@ using namespace std;
 
 #include <SFML/Graphics.hpp>
 
-#include "utils/txmap.h"
+#include "logger.h"
+#include "player.h"
+#include "world.h"
+#include "window.h"
 #include "entities/entity.h"
 #include "entities/entutils.h"
 #include "entities/keylock.h"
 #include "enemies/enemy.h"
-#include "player.h"
-#include "world.h"
-#include "window.h"
-#include "portals/portal.h"
 #include "inventory/keyitem.h"
 #include "map/map.h"
+#include "portals/portal.h"
 #include "ui/dbox.h"
+#include "utils/txmap.h"
 
 struct GameTrans {
 	string name;
@@ -58,7 +59,11 @@ private:
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
 public:
+	bool ok;
+
 	Player player;
+
+	Game();
 
 	bool init();
 
@@ -80,6 +85,8 @@ public:
 	void read();
 
 	void resetState();
+
+	~Game();
 };
 
 #endif

@@ -71,6 +71,51 @@ void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	w.draw(selected_pan_r, states);
 }
 
+Editor::Editor(sf::RenderWindow* _w, Game* _game) {
+	log_dbg("constructing editor");
+	w		= _w;
+	game	= _game;
+
+	mode = EDIT_MAP;
+
+	for (int i = 0; i < 15; i++) {
+		buttons[i] = gen_button(i);
+	}
+	selected_pan_r = sf::RectangleShape(sf::Vector2f(4,4));
+	selected_pan_r.setFillColor(sf::Color(127,127,127));
+	selected_pan_r.setPosition(buttons[0]->getPosition());
+	selected_pan_r.move(3,3);
+
+	decopanel	= new Decopanel(game, &sv);
+	entpanel	= new Entpanel(game, &sv);
+	mappanel	= new Mappanel(game);
+	geompanel	= new Geompanel(game, &sv);
+	portpanel	= new Portpanel(game, &sv);
+	glstpanel	= new Glstpanel(game);
+	ilstpanel	= new Ilstpanel(game);
+
+	rectpanel		= new Rectpanel(&sv);
+	rectpanel_rects	= false;
+
+	snappanel	= new Snappanel(&sv);
+	snap		= false;
+	sv.x		= 1;
+	sv.y		= 1;
+	sv.xo		= 0;
+	sv.yo		= 0;
+	sv_b.x		= 32;
+	sv_b.y		= 32;
+	sv_b.xo		= 0;
+	sv_b.yo 	= 0;
+
+	p_m_pos			= sf::Vector2i(0,0);
+	mouse_middle	= false;
+
+	view.setSize(960,480);
+	view.setCenter(480,240);
+	log_dbg("done");
+}
+
 void Editor::handle_input(sf::Event &event) {
 	sf::Vector2i m_pos = sf::Mouse::getPosition(*w);
 	sf::Vector2f w_pos = vivf(m_pos) + 
@@ -282,58 +327,6 @@ void Editor::reset() {
 	rectpanel->reset();
 }
 
-Editor::Editor(sf::RenderWindow* _w, Game* _game) {
-	w		= _w;
-	game	= _game;
-
-	mode = EDIT_MAP;
-
-	for (int i = 0; i < 15; i++) {
-		buttons[i] = gen_button(i);
-	}
-	selected_pan_r = sf::RectangleShape(sf::Vector2f(4,4));
-	selected_pan_r.setFillColor(sf::Color(127,127,127));
-	selected_pan_r.setPosition(buttons[0]->getPosition());
-	selected_pan_r.move(3,3);
-
-	cout << "[EDITOR] decopanel init" << endl;
-	decopanel	= new Decopanel(game, &sv);
-	cout << "[EDITOR] entpanel init" << endl;
-	entpanel	= new Entpanel(game, &sv);
-	cout << "[EDITOR] mappanel init" << endl;
-	mappanel	= new Mappanel(game);
-	cout << "[EDITOR] geompanel init" << endl;
-	geompanel	= new Geompanel(game, &sv);
-	cout << "[EDITOR] portpanel init" << endl;
-	portpanel	= new Portpanel(game, &sv);
-	cout << "[EDITOR] glstpanel init" << endl;
-	glstpanel	= new Glstpanel(game);
-	cout << "[EDITOR] ilstpanel init" << endl;
-	ilstpanel	= new Ilstpanel(game);
-
-	cout << "[EDITOR] rectpanel init" << endl;
-	rectpanel		= new Rectpanel(&sv);
-	rectpanel_rects	= false;
-
-	cout << "[EDITOR] snappanel init" << endl;
-	snappanel	= new Snappanel(&sv);
-	snap		= false;
-	sv.x		= 1;
-	sv.y		= 1;
-	sv.xo		= 0;
-	sv.yo		= 0;
-	sv_b.x		= 32;
-	sv_b.y		= 32;
-	sv_b.xo		= 0;
-	sv_b.yo 	= 0;
-
-	p_m_pos			= sf::Vector2i(0,0);
-	mouse_middle	= false;
-
-	view.setSize(960,480);
-	view.setCenter(480,240);
-}
-
 Button* Editor::gen_button(int i) {
 	string name;
 	switch (i) {
@@ -382,4 +375,8 @@ Button* Editor::gen_button(int i) {
 	ret->hover_o = UIC_ED_BUTTON_OUTLINE_NORMAL;
 	ret->setColors();
 	return ret;
+}
+
+Editor::~Editor() {
+	log_dbg("destructing editor");
 }

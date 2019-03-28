@@ -12,6 +12,8 @@ using namespace std;
 
 void delete_ent(Entity* ent);
 
-void read_ent(ifstream &inp);
+EntitySpawner* read_spawner(ifstream &inp);
+
+void new_ent(EntitySpawner* spawner);
 
 #endif

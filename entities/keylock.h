@@ -7,6 +7,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "entity.h"
+#include "../logger.h"
 #include "../world.h"
 #include "../inventory/inventory.h"
 #include "../inventory/keyitem.h"
@@ -16,21 +17,28 @@
 
 using namespace std;
 
+class KeyLockSpawner;
+////////////////////////////////////////////////
+//
+// Entity
+//
+////////////////////////////////////////////////
+
 class KeyLock : public Entity {
+friend class KeyLockSpawner;
+friend void new_keylock_ent(KeyLockSpawner* spawn);
 private:
 	sf::FloatRect r;
-
-	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
-
-public:
-	string key_name;
 
 	string levent;
 	int lval;
 
-	void set_w(int w);
+	string key_name;
 
-	void set_h(int h);
+	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
+
+public:
+	KeyLock();
 
 	virtual sf::FloatRect bounds();
 
@@ -42,20 +50,54 @@ public:
 
 	virtual sf::Vector2f size();
 
-	virtual void write(ofstream &out);
-	virtual void read(ifstream &inp);
-
-	KeyLock();
+	~KeyLock();
 };
 
-void read_keylock_ent(ifstream &inp);
+////////////////////////////////////////////////
+//
+// Spawner
+//
+////////////////////////////////////////////////
+
+class KeyLockSpawner : public EntitySpawner {
+private:
+public:
+	sf::FloatRect r;
+
+	string levent;
+	int lval;
+
+	string key_name;
+
+	KeyLockSpawner();
+
+	virtual sf::FloatRect bounds();
+
+	virtual void set_pos(sf::Vector2f pos);
+
+	virtual void write(ofstream &out);
+
+	virtual void read(ifstream &inp);
+
+	~KeyLockSpawner();
+};
+
+EntitySpawner* read_keylock_spawner(ifstream &inp);
+
+void new_keylock_ent(KeyLockSpawner* spawn);
+
+////////////////////////////////////////////////
+//
+// UI
+//
+////////////////////////////////////////////////
 
 #define KEYLOCK_BG sf::Color(127,127,127)
 #define KEYLOCK_FG sf::Color(0,0,0)
 
 class KeyLockUI : public sf::Drawable {
 private:
-	KeyLock* active_ent;
+	KeyLockSpawner* spawn;
 	Button* w_b;
 	Button* h_b;
 	Button* key_name_b;
@@ -68,11 +110,13 @@ private:
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 
 public:
+	KeyLockUI(int x, int y, int w, int h);
+
 	bool handle_input(sf::Event &event, sf::Vector2i m_pos);
 
-	void reset(KeyLock* ent);
+	void reset(KeyLockSpawner* _spawn);
 
-	KeyLockUI(int x, int y, int w, int h);
+	~KeyLockUI();
 };
 
 #endif

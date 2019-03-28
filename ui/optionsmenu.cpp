@@ -108,6 +108,7 @@ OptionsMenuSelection OptionsMenu::handle_input(sf::Event &event) {
 
 
 OptionsMenu::OptionsMenu(sf::RenderWindow* _w) {
+	log_dbg("constructing options menu");
 	w = _w;
 
 	vector<sf::VideoMode> modes_temp = sf::VideoMode::getFullscreenModes();
@@ -127,7 +128,6 @@ OptionsMenu::OptionsMenu(sf::RenderWindow* _w) {
 	bg.setSize(sf::Vector2f(960, 480));
 	bg.setPosition(0, 0);
 	bg.setFillColor(OMNU_BG);
-	cout << "gen buttons" << endl;
 	gen_buttons(0, buttons[0], "Fullscreen: off");
 	gen_buttons(1, buttons[1], "Mode: " + mode_string(modes[mode_index]));
 	gen_buttons(3, buttons[2], "Back");

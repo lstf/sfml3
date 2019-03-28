@@ -11,15 +11,29 @@ void delete_ent(Entity* ent) {
 	}
 }
 
-void read_ent(ifstream &inp) {
+EntitySpawner* read_spawner(ifstream &inp) {
 	string name;
 
 	read_string(name, inp);
 	if (name == "item") {
-		read_item_ent(inp);
+		return read_itement_spawner(inp);
 	} else if (name == "keylock") {
-		read_keylock_ent(inp);
+		return read_keylock_spawner(inp);
 	} else {
-		cout << "[ENTU] read requested on unkown entity " << name << endl; 
+		cout << "[ENTU] read requested on unkown entity spanwer" << name <<
+		endl; 
+	}
+
+	return NULL;
+}
+
+void new_ent(EntitySpawner* spawn) {
+	if (spawn->name == "item") {
+		new_itement_ent((ItemEntSpawner*)spawn);
+	} else if (spawn->name == "keylock") {
+		new_keylock_ent((KeyLockSpawner*)spawn);
+	} else {
+		cout << "[ENTU] request for new ent of unknown type " << spawn->name <<
+		endl;
 	}
 }

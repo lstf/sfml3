@@ -1,6 +1,7 @@
 #include "player.h"
 
 Weapon::Weapon() {
+	log_dbg("constructing weapon");
 	anim.w = 32;
 	anim.h = 32;
 	anim.set_fps(24, 0);
@@ -69,7 +70,12 @@ sf::FloatRect Weapon::bounds() {
 	return sp.getGlobalBounds();
 }
 
+Weapon::~Weapon() {
+	log_dbg("destructing weapon");
+}
+
 void Player::setPosition(sf::Vector2f _pos) {
+	log_dbg("setting position to " << _pos.x << " " << _pos.y);
 	state = STANDING;
 	sp.setPosition(_pos);
 }
@@ -313,6 +319,7 @@ void Player::refresh() {
 }
 
 void Player::reset_input() {
+	log_dbg("resetting input");
 	state = STANDING;
 	input.left = false;
 	input.right = false;
@@ -331,38 +338,23 @@ bool Player::weaponActive() {
 }
 
 void Player::write(ofstream &out) {
-	int length;
-
+	log_dbg("writing player");
 	write_vec2(sp.getPosition(), out);
-
-	length = inv.keys.size();
-	write_int(length, out);
-	for (auto it = inv.keys.begin(); it != inv.keys.end(); ++it) {
-		it->item->write(out);
-		write_int(it->count, out);
-	}
+	inv.write(out);
 }
 
 void Player::read(ifstream &inp) {
-	int length;
-	int count;
+	log_dbg("reading player");
 	sf::Vector2f pos;
 
 	read_vec2(pos, inp);
 	setPosition(pos);
 
-	read_int(length, inp);
-	for (int i = 0; i < length; i++) {
-		KeyItem* new_key = new KeyItem;
-
-		new_key->read(inp);
-		read_int(count, inp);
-
-		inv.addItem(new_key, count);
-	}
+	inv.read(inp);
 }
 
 Player::Player() {
+	log_dbg("constructing player");
 	anim.w = 32;
 	anim.h = 48;
 	anim.set_fps(12, 0);
@@ -394,4 +386,8 @@ bool Player::interacted() {
 		return true;
 	}
 	return false;
+}
+
+Player::~Player() {
+	log_dbg("destructing player");
 }

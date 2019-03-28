@@ -34,6 +34,11 @@ public:
 	vector<ItemQuantity> keys;
 
 	void addItem(Item* itm, int count);
+
+	void write(ofstream &out);
+
+	void read(ifstream &inp);
 };
+
 
 #endif

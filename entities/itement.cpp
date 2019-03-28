@@ -1,19 +1,15 @@
 #include "itement.h"
 
-void read_item_ent(ifstream &inp) {
-	cout << "[READ ENT] reading item ent" << endl;
-	ItemEnt* new_ent = new ItemEnt;
-	new_ent->read(inp);
-	if (World::lstate->find(new_ent->levent) != World::lstate->end() &&
-	World::lstate->at(new_ent->levent) != new_ent->lval) {
-		delete new_ent;
-	}
-}
+////////////////////////////////////////////////
+//
+// Entity
+//
+////////////////////////////////////////////////
 
 ItemEnt::ItemEnt() {
+	log_dbg("constructing item ent");
 	name = "item";
 	got = false;
-	lval = 0;
 }
 
 void ItemEnt::draw(sf::RenderTarget& w, sf::RenderStates states) const {
@@ -32,6 +28,7 @@ sf::FloatRect ItemEnt::bounds() {
 }
 
 DBox* ItemEnt::interact(Player &player) {
+	log_dbg("player interacted");
 	if (got) {
 		return NULL;
 	}
@@ -83,7 +80,47 @@ sf::Vector2f ItemEnt::size() {
 	return sf::Vector2f(spb.width, spb.height);
 }
 
-void ItemEnt::write(ofstream &out) {
+ItemEnt::~ItemEnt() {
+	log_dbg("destructing item ent");
+}
+
+////////////////////////////////////////////////
+//
+// Spawner
+//
+////////////////////////////////////////////////
+
+ItemEntSpawner::ItemEntSpawner() {
+	log_dbg("constructing item ent spawner");
+	name = "item";
+	lval = 0;
+}
+
+sf::FloatRect ItemEntSpawner::bounds() {
+	if (sp_name == "") {
+		return sf::FloatRect(
+			sp.getPosition().x,
+			sp.getPosition().y,
+			32,
+			32
+		);
+	}
+	return sp.getGlobalBounds();
+}
+
+void ItemEntSpawner::set_pos(sf::Vector2f pos) {
+	sp.setPosition(pos);
+}
+
+void ItemEntSpawner::get_sp() {
+	sp_name = item_ent_sp(item_cat, item_name);
+	if (sp_name != "") {
+		sp.setTexture(*txmap::get_tx(sp_name), true);
+	}
+}
+
+void ItemEntSpawner::write(ofstream &out) {
+	log_dbg("writing item ent spawner");
 	write_string(name, out);
 
 	write_int(lval, out);
@@ -92,7 +129,9 @@ void ItemEnt::write(ofstream &out) {
 	write_string(item_cat, out);
 	write_vec2(sp.getPosition(), out);
 }
-void ItemEnt::read(ifstream &inp) {
+
+void ItemEntSpawner::read(ifstream &inp) {
+	log_dbg("reading item ent spawner");
 	sf::Vector2f pos;
 
 	read_int(lval, inp);
@@ -101,9 +140,39 @@ void ItemEnt::read(ifstream &inp) {
 	read_string(item_cat, inp);
 	read_vec2(pos, inp);
 
-	set_item(item_cat, item_name);
-	set_pos(pos);
+	sp.setPosition(pos);
 }
+
+ItemEntSpawner::~ItemEntSpawner() {
+	log_dbg("destructing item ent spawner");
+}
+
+EntitySpawner* read_itement_spawner(ifstream &inp) {
+	ItemEntSpawner* spawn = new ItemEntSpawner();
+	spawn->read(inp);
+	spawn->get_sp();
+	
+	return (EntitySpawner*)spawn;
+}
+
+void new_itement_ent(ItemEntSpawner* spawn){
+	if (spawn->levent != "" &&
+	World::lstate->find(spawn->levent) != World::lstate->end() &&
+	World::lstate->at(spawn->levent) != spawn->lval) {
+		return;
+	}
+	ItemEnt* itement = new ItemEnt();
+	itement->levent = spawn->levent;
+	itement->lval = spawn->lval;
+	itement->set_item(spawn->item_cat, spawn->item_name);
+	itement->set_pos(spawn->sp.getPosition());
+}
+
+////////////////////////////////////////////////
+//
+// UI
+//
+////////////////////////////////////////////////
 
 void ItemEntUI::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	w.draw(*category_b, states);
@@ -115,103 +184,8 @@ void ItemEntUI::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	}
 }
 
-bool ItemEntUI::handle_input(sf::Event &event, sf::Vector2i m_pos) {
-	if (typing) {
-		if (field == 0) {
-			string* sp = tb->handle_input(event);
-			if (sp) {
-				typing = false;
-				item_cat = *sp;
-				delete sp;
-			}
-		} else if (field == 1) {
-			string* sp = tb->handle_input(event);
-			if (sp) {
-				typing = false;
-				item_name = *sp;
-				delete sp;
-			}
-		} else if (field == 2) {
-			string* sp = tb->handle_input(event);
-			if (sp) {
-				typing = false;
-				active_ent->levent = *sp;
-				delete sp;
-			}
-		}
-		if (event.type == sf::Event::KeyPressed &&
-		event.key.code == sf::Keyboard::Escape) {
-			typing = false;
-		}
-		if (typing == false) {
-			delete tb;
-			tb = NULL;
-		}
-		return true;
-	}
-
-	BState bs = category_b->handle_input(event, m_pos);
-	if (bs) {
-		if (bs == BCLICK) {
-			field = 0;
-			typing = true;
-			tb = new Textbox(
-				irfr(category_b->bounds),
-				false, item_cat
-			);
-			return true;
-		}
-	} 
-	bs = name_b->handle_input(event, m_pos);
-	if (bs) {
-		if (bs == BCLICK) {
-			field = 1;
-			typing = true;
-			tb = new Textbox(
-				irfr(name_b->bounds),
-				false, item_name
-			);
-			return true;
-		}
-	} 
-	bs = levent_b->handle_input(event, m_pos);
-	if (bs) {
-		if (bs == BCLICK) {
-			field = 2;
-			string en = active_ent->levent;
-			typing = true;
-			tb = new Textbox(
-				irfr(levent_b->bounds),
-				false, en
-			);
-			return true;
-		}
-	}
-	bs = get_sp_b->handle_input(event, m_pos);
-	if (bs) {
-		if (bs == BCLICK) {
-			if (item_name != "" && item_cat != "") {
-				active_ent->set_item(item_cat, item_name);
-			}
-			return true;
-		}
-	}
-
-	return false;
-}
-
-void ItemEntUI::reset(ItemEnt* ent) {
-	if (typing) {
-		typing = false;
-		delete tb;
-		tb = NULL;
-	}
-	active_ent = ent;
-	item_name = ent->item_name;
-	item_cat = ent->item_cat;
-}
-
 ItemEntUI::ItemEntUI(int x, int y, int w, int h) {
+	log_dbg("constructing item ent ui");
 	category_b = new Button(
 		"category",
 		sf::FloatRect(
@@ -250,5 +224,107 @@ ItemEntUI::ItemEntUI(int x, int y, int w, int h) {
 	);
 	typing = false;
 	tb = NULL;
-	active_ent = NULL;
+	spawn = NULL;
+}
+
+bool ItemEntUI::handle_input(sf::Event &event, sf::Vector2i m_pos) {
+	if (typing) {
+		if (field == 0) {
+			string* sp = tb->handle_input(event);
+			if (sp) {
+				typing = false;
+				spawn->item_cat = *sp;
+				log_dbg("set item cat " << spawn->item_cat);
+				delete sp;
+			}
+		} else if (field == 1) {
+			string* sp = tb->handle_input(event);
+			if (sp) {
+				typing = false;
+				spawn->item_name = *sp;
+				log_dbg("set item cat " << spawn->item_name);
+				delete sp;
+			}
+		} else if (field == 2) {
+			string* sp = tb->handle_input(event);
+			if (sp) {
+				typing = false;
+				spawn->levent = *sp;
+				log_dbg("set item cat " << spawn->levent);
+				delete sp;
+			}
+		}
+		if (event.type == sf::Event::KeyPressed &&
+		event.key.code == sf::Keyboard::Escape) {
+			typing = false;
+		}
+		if (typing == false) {
+			delete tb;
+			tb = NULL;
+		}
+		return true;
+	}
+
+	BState bs = category_b->handle_input(event, m_pos);
+	if (bs) {
+		if (bs == BCLICK) {
+			field = 0;
+			typing = true;
+			string ic = spawn->item_cat;
+			tb = new Textbox(
+				irfr(category_b->bounds),
+				false, ic
+			);
+			return true;
+		}
+	} 
+	bs = name_b->handle_input(event, m_pos);
+	if (bs) {
+		if (bs == BCLICK) {
+			field = 1;
+			typing = true;
+			string in = spawn->item_name;
+			tb = new Textbox(
+				irfr(name_b->bounds),
+				false, in
+			);
+			return true;
+		}
+	} 
+	bs = levent_b->handle_input(event, m_pos);
+	if (bs) {
+		if (bs == BCLICK) {
+			field = 2;
+			string le = spawn->levent;
+			typing = true;
+			tb = new Textbox(
+				irfr(levent_b->bounds),
+				false, le
+			);
+			return true;
+		}
+	}
+	bs = get_sp_b->handle_input(event, m_pos);
+	if (bs) {
+		if (bs == BCLICK) {
+			spawn->get_sp();
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void ItemEntUI::reset(ItemEntSpawner* _spawn) {
+	log_dbg("resetting");
+	if (typing) {
+		typing = false;
+		delete tb;
+		tb = NULL;
+	}
+	spawn = _spawn;
+}
+
+ItemEntUI::~ItemEntUI() {
+	log_dbg("destructing item ent ui");
 }

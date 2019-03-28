@@ -56,7 +56,7 @@ private:
 	EntButton* buttons;
 
 	bool selected;
-	Entity* active_ent;
+	EntitySpawner* spawn;
 
 	void button_setup();
 	void key_setup();

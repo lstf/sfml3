@@ -43,8 +43,11 @@ class Map : public sf::Drawable {
 	friend class Geompanel;
 	friend class Portpanel;
 	friend class Ilstpanel;
+	friend class Entpanel;
 
 private:
+	vector<EntitySpawner*> ent_spawn;
+
 	vector<img*> sp[MAP_SP_LAYERS];
 	vector<sf::FloatRect> geometry;
 	Background* background;
@@ -57,6 +60,10 @@ private:
 	void add_geometry(const sf::Vector2f &_pos, const sf::Vector2f &_size);
 
 	void add_sp(string name, const sf::Vector2f _pos, int l);
+
+	void add_ent_spawn(EntitySpawner* spawn);
+
+	void remove_ent_spawn(EntitySpawner* spawn);
 
 	//save() load() helpers
 	void write_sp(ofstream &out);

@@ -16,10 +16,6 @@ public:
 	string description;
 	sf::Sprite sp;
 	string sp_name;
-
-	virtual void write(ofstream &out) = 0;
-
-	virtual void read(ifstream &inp) = 0;
 };
 
 #endif

@@ -32,3 +32,26 @@ void Inventory::addItem(Item* itm, int count) {
 		}
 	}
 }
+
+void Inventory::write(ofstream &out) {
+	int length = keys.size();
+
+	write_int(length, out);
+	for (auto it = keys.begin(); it != keys.end(); it++) {
+		write_item(it->item, out);
+		write_int(it->count, out);
+	}
+}
+
+void Inventory::read(ifstream &inp) {
+	int length;
+	ItemQuantity iq;
+
+	keys.clear();
+	read_int(length, inp);
+	for (int i = 0; i < length; i++) {
+		read_item(iq.item, inp);
+		read_int(iq.count, inp);
+		keys.push_back(iq);
+	}
+}

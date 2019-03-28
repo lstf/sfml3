@@ -1,7 +1,7 @@
 #ifndef _WINDOW_H
 #define _WINDOW_H
 
-#include <iostream>
+#include "logger.h"
 
 #include <SFML/Graphics.hpp>
 

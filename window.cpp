@@ -27,6 +27,7 @@ sf::View letterbox(sf::View view, int w, int h) {
 }
 
 void Window::init(sf::View view) {
+	log_dbg("initializing window 960x480:windowed");
 	w = 960;
 	h = 480;
 	default_view = view;

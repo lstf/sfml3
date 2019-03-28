@@ -1,10 +1,10 @@
 #include <vector>
 #include <string>
-#include <iostream>
 #include <fstream>
 #include <map>
 
 #include "game.h"
+#include "logger.h"
 #include "window.h"
 #include "ui/editor.h"
 #include "ui/inventoryscreen.h"
@@ -20,10 +20,11 @@ enum MainState {
 	LOADING
 };
 
-
 int main() {
+	log_dbg("main begin");
 	bool quit = false;
-	cout << "[MAIN] window init" << endl;
+
+	log_dbg("window init");
 	sf::RenderWindow window(sf::VideoMode(960,480), "Game");
 	window.setVerticalSyncEnabled(true);
 	//window.setFramerateLimit(30);
@@ -31,26 +32,24 @@ int main() {
 	Window::init(window.getDefaultView());
 	Window::set_size(960, 480);
 
-	sf::Event event;
-
-	cout << "[MAIN] game init" << endl;
 	Game game;
-	game.init();
+	if (!game.ok) {
+		log_dbg("game failed to initialize");
+		return -1;
+	}
 
-	cout << "[MAIN] editor init" << endl;
 	Editor editor(&window, &game);
-	window.setView(editor.view);
 
-	cout << "[MAIN] inventory init" << endl;
 	InventoryScreen inventory(&game.player);
 
-	cout << "[MAIN] main menu init" << endl;
-	MainMenu mainmenu(&game , &window);
+	MainMenu mainmenu(&game, &window);
 
 	MainState state = MENU;
 
-	cout << "[MAIN] main while" << endl;
+	log_dbg("main while begin");
 	while (!quit && window.isOpen()) {
+		sf::Event event;
+
 		game.frame_calc();		
 
 		while (window.pollEvent(event)) {
@@ -146,9 +145,8 @@ int main() {
 		window.display();
 	}
 
-	cout << "[MAIN] storing map list" << endl;
-
 	game.save_maplist();
 
+	log_dbg("main end");
 	return 0;
 }

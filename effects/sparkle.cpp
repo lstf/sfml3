@@ -78,9 +78,7 @@ void Sparkle::set_position(sf::Vector2f p) {
 }
 
 Sparkle::~Sparkle() {
-	cout << "deleting sparkle" << endl;
 	for (int i = particles.size() - 1; i >= 0; i--) {
 		delete particles.at(i);
 	}
-	cout << "done deleting sparkle" << endl;
 }

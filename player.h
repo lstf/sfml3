@@ -2,7 +2,6 @@
 #define _PLAYER_H
 
 #include <fstream>
-#include <iostream>
 #include <string>
 #include <vector>
 #include <math.h>
@@ -10,6 +9,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "animation.h"
+#include "logger.h"
 #include "window.h"
 #include "inventory/inventory.h"
 #include "inventory/keyitem.h"
@@ -48,6 +48,8 @@ private:
 	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 	
 public:
+	Weapon();
+
 	bool active;
 
 	void update();
@@ -60,7 +62,7 @@ public:
 
 	sf::FloatRect bounds();
 
-	Weapon();
+	~Weapon();
 };
 
 struct ColDirs {
@@ -104,6 +106,8 @@ public:
 
 	sf::FloatRect bounds();
 
+	Player();
+
 	bool interacted();
 
 	void handleInput(sf::Event event);
@@ -123,9 +127,10 @@ public:
 	bool weaponActive();
 
 	void write(ofstream &out);
+
 	void read(ifstream &inp);
 
-	Player();
+	~Player();
 };
 
 #endif

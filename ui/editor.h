@@ -18,6 +18,7 @@
 #include "ilstpanel.h"
 #include "glstpanel.h"
 #include "../game.h"
+#include "../logger.h"
 #include "../player.h"
 #include "../window.h"
 #include "../entities/sign.h"
@@ -92,13 +93,15 @@ private:
 public:
 	sf::View view;
 
+	Editor(sf::RenderWindow* _w, Game* _game);
+
 	void handle_input(sf::Event &event);
 
 	EditorTrans* update();
 
 	void reset();
 
-	Editor(sf::RenderWindow* _w, Game* _game);
+	~Editor();
 };
 
 #endif

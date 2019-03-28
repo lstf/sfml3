@@ -1,12 +1,12 @@
 #ifndef _OPTIONSMENU_H
 #define _OPTIONSMENU_H
 
-#include <iostream>
 #include <string>
 #include <vector>
 
 #include <SFML/Graphics.hpp>
 
+#include "../logger.h"
 #include "../utils/txmap.h"
 #include "uiutils.h"
 

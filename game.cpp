@@ -1,40 +1,46 @@
 #include "game.h"
 
-bool Game::init() {
+Game::Game() {
+	log_dbg("constructing game");
+
 	//Map setup
+	log_dbg("loading map list");
 	ifstream maps_file("./ats/mps/maps.list", std::ifstream::in);
 	if (!maps_file.is_open()) {
-		std::cout << std::string("(map load) Failed to open ") + "maps.list";
-		return false;
+		ok = false;
+		log_err("failed to open map list");
+		return;
 	}
+	ok = true;
 
-	map_current = new Map("null map");
-	
-	int map_count;
 	string map_name;
+	int map_count;
 	maps_file >> map_count;
-	for (int i = 0; i < map_count; i++)
-	{
+	
+	for (int i = 0; i < map_count; i++) {
 		maps_file >> map_name;
 		map_names.push_back(map_name);
 	}
+
 	maps_file.close();
 
 	//Frame rate display setup
+	show_fps = true;
+	frame_clock.restart();
 	frame_rate_text.setFont(*txmap::get_font("./ats/fonts/thintel.ttf"));
 	frame_rate_text.setString("0");
 	frame_rate_text.setCharacterSize(20);
 	frame_rate_text.setFillColor(sf::Color::Yellow);
 
-	state = GAMEPLAY;
-
-	show_fps = true;
-	frame_clock.restart();
-	World::gstate = new map<string, int>;
+	//In-game state setup
 	map<string, int> null_state;
 	World::lstates["null map"] = null_state;
 	World::lstate = &World::lstates["null map"];
-	return true;
+	World::gstate = new map<string, int>;
+
+	//Game setup
+	state = GAMEPLAY;
+	map_current = new Map("null map");
 }
 
 void Game::frame_calc() {
@@ -56,7 +62,7 @@ void Game::handle_input(sf::Event &event) {
 				delete_ent((Entity*)dbox->destroy_ent_ptr);
 			}
 			if (dbox->save_game) {
-				write();
+				//write();
 			}
 			delete dbox;
 			dbox = NULL;
@@ -67,7 +73,6 @@ void Game::handle_input(sf::Event &event) {
 GameTrans* Game::update() {
 	if (state == GAMEPLAY) {
 		//entity updates 
-
 		for (int i = Entity::list.size() - 1; i >= 0; i--) {
 			if(Entity::list[i]->update(player)) {
 				delete_ent(Entity::list[i]);
@@ -76,7 +81,8 @@ GameTrans* Game::update() {
 
 		//entity interactions
 		if (player.interacted()) {
-			for (auto it = Entity::list.begin(); it != Entity::list.end(); ++it) {
+			for (auto it = Entity::list.begin();
+			it != Entity::list.end(); ++it) {
 				if ((*it)->bounds().intersects(player.bounds())) {
 					dbox = (*it)->interact(player);
 					if (dbox) {
@@ -86,7 +92,8 @@ GameTrans* Game::update() {
 				}
 			}
 			if (state == GAMEPLAY) {
-				for (auto it = Portal::list.begin(); it != Portal::list.end(); ++it) {
+				for (auto it = Portal::list.begin();
+				it != Portal::list.end(); ++it) {
 					if ((*it)->bounds().intersects(player.bounds())) {
 						map_trans = (*it)->interact();
 						state = PORTAL;
@@ -99,7 +106,8 @@ GameTrans* Game::update() {
 		if (state == GAMEPLAY) {
 			//player weapon
 			if (player.weaponActive()) {
-				for (auto it = Enemy::list.begin(); it != Enemy::list.end(); ++it) {
+				for (auto it = Enemy::list.begin();
+				it != Enemy::list.end(); ++it) {
 					if ((*it)->bounds().intersects(player.weaponBounds())) {
 						(*it)->takeDamage();
 					}
@@ -142,65 +150,81 @@ GameTrans* Game::update() {
 }
 
 void Game::clear() {
+	log_dbg("clearing entities");
 	Entity::list.clear(); 
+	log_dbg("clearing enemies");
 	Enemy::list.clear(); 
+	log_dbg("clearing portals");
 	Portal::list.clear(); 
 }
 
 bool Game::load_map(string name, sf::Vector2f pos) {
-	cout << "[MAIN] clearing things" << endl;
-	clear();
-	cout << "[GAME] setting position " << pos.x << " " << pos.y << endl;
+	log_dbg("transitioning to map " << name);
 	player.setPosition(pos);
 	player.reset_input();
-	cout << "[GAME] loading map " << name << endl;
+
+	if (name == "") {
+		return true;
+	}
+
+	clear();
+
+	log_dbg("loading map " << name);
 	if (name == "null map") {
 		delete map_current;
 		map_current = new Map("null map");
 		World::lstate = &World::lstates["null map"];
 		return true;
-	} else if (name == "") {
-		return true;
 	}
+
 	Map* next_map = new Map(name);
 	if (!next_map->load_init_lstate()) {
-		cout << "[GAME] failed to load map " << name;
 		delete next_map;
+		log_err("failed to load map " << name);
 		return false;
 	}
+
 	if (World::lstates.find(name) != World::lstates.end()) {
+		log_dbg("lstate exists");
 		World::lstate = &World::lstates[name];
 	} else {
+		log_dbg("lstate does not exist, copying init lstate");
 		World::lstates[name] = next_map->init_lstate;
 		World::lstate = &World::lstates[name];
 	}
+
 	if (!next_map->load()) {
-		cout << "[GAME] failed to load map " << name;
 		delete next_map;
+		log_err("failed to load map " << name);
 		return false;
 	}
+
 	delete map_current;
 	map_current = next_map;
+
 	return true;
 }
 void Game::new_map(string name) {
+	log_dbg("adding new map " << name);
 	sf::Vector2f pos(0, 0);
-	cout << "[MAIN] clearing things" << endl;
-	clear();
-	cout << "[GAME] setting position " << pos.x << " " << pos.y << endl;
 	player.setPosition(pos);
+
 	clear();
+
 	delete map_current;
 	map_current = new Map(name);
-	map_current->save();
 	map_names.push_back(name);
+	map_current->save();
 }
 
 void Game::save_maplist() {
+	log_dbg("saving map list");
 	ofstream maps_file("./ats/mps/maps.list");
 	if (!maps_file.is_open()) {
-		cout << "[GAME] cannot open maps list" << endl;
+		log_err("cannot open maps list");
+		return;
 	}
+
 	maps_file << map_names.size() << endl;
 	for (auto it = map_names.begin(); it != map_names.end(); ++it) {
 		maps_file << *it << endl;
@@ -209,6 +233,7 @@ void Game::save_maplist() {
 }
 
 void Game::write() {
+	log_err("saving even though its not implemented");
 	ofstream out("./ats/save");
 	
 	player.write(out);
@@ -218,9 +243,10 @@ void Game::write() {
 }
 
 void Game::read() {
+	log_err("saving even though its not implemented");
 	ifstream inp("./ats/save");
 	if (!inp.is_open()) {
-		cout << "[GAME] no save game found" << endl;
+		log_err("no save game found");
 		return;
 	}
 	player.read(inp);
@@ -232,6 +258,7 @@ void Game::read() {
 }
 
 void Game::resetState() {
+	log_dbg("resetting state to gameplay");
 	state = GAMEPLAY;
 }
 
@@ -265,4 +292,8 @@ void Game::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	}
 
 	w.setView(temp);
+}
+
+Game::~Game() {
+	log_dbg("destructing game");
 }

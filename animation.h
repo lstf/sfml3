@@ -1,12 +1,12 @@
 #ifndef _ANIMATION_H
 #define _ANIMATION_H
 
-#include <iostream>
 #include <string>
 #include <float.h>
 
 #include <SFML/Graphics.hpp>
 
+#include "logger.h"
 #include "utils/txmap.h"
 
 #define MAX_ANIMATIONS 10

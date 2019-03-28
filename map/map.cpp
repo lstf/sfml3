@@ -42,6 +42,25 @@ void Map::add_sp(string name, const sf::Vector2f _pos, int l) {
 	sp[l].push_back(im);
 }
 
+void Map::add_ent_spawn(EntitySpawner* spawn) {
+	ent_spawn.push_back(spawn);
+}
+
+void Map::remove_ent_spawn(EntitySpawner* spawn) {
+	bool found = false;;
+
+	for (int i = ent_spawn.size() - 1; i >= 0; i--) {
+		if (spawn == ent_spawn[i]) {
+			ent_spawn.erase(ent_spawn.begin() + i);
+			found = true;
+		}
+	}
+
+	if (!found) {
+		cout << "[MAP] request for removal of nonexistant spawner" << endl;
+	}
+}
+
 bool Map::save() {
 	ofstream map_file((MAP_DIR + name).c_str(), ios::out|ios::binary);
 
@@ -87,11 +106,11 @@ void Map::write_portals(ofstream &out) {
 	}
 }
 void Map::write_entities(ofstream &out) {
-	int length = Entity::list.size();
+	int length = ent_spawn.size();
 
 	write_int(length, out);
 	for (int i = 0; i < length; i++) {
-		Entity::list[i]->write(out);
+		ent_spawn[i]->write(out);
 	}
 }
 
@@ -171,9 +190,11 @@ void Map::read_portals(ifstream &inp) {
 void Map::read_entities(ifstream &inp) {
 	int length;
 
+	ent_spawn.clear();
 	read_int(length, inp);
 	for (int i = 0; i < length; i++) {
-		read_ent(inp);
+		ent_spawn.push_back(read_spawner(inp));
+		new_ent(ent_spawn.back());
 	}
 }
 
