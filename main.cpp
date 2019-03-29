@@ -1,12 +1,13 @@
-#include <vector>
-#include <string>
-#include <fstream>
 #include <map>
+#include <string>
+#include <vector>
 
 #include "game.h"
 #include "logger.h"
 #include "window.h"
+#ifdef EDITOR_BUILD
 #include "ui/editor.h"
+#endif
 #include "ui/inventoryscreen.h"
 #include "ui/mainmenu.h"
 
@@ -38,7 +39,9 @@ int main() {
 		return -1;
 	}
 
+	#ifdef EDITOR_BUILD
 	Editor editor(&window, &game);
+	#endif
 
 	InventoryScreen inventory(&game.player);
 
@@ -57,11 +60,13 @@ int main() {
 				window.close();
 			} else if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Tab) {
+					#ifdef EDITOR_BUILD
 					if (state == EDITOR) {
 						state = GAME;
 					} else if (state == GAME) {
 						state = EDITOR;
 					}
+					#endif
 				} else if (event.key.code == sf::Keyboard::Enter) {
 					if (state == INVENTORY) {
 						state = GAME;
@@ -72,11 +77,15 @@ int main() {
 				}
 			} else if (event.type == sf::Event::Resized) {
 				Window::set_size(event.size.width, event.size.height);
+				#ifdef EDITOR_BUILD
 				editor.reset();
+				#endif
 			}
 
 			if (state == EDITOR) {
+				#ifdef EDITOR_BUILD
 				editor.handle_input(event);
+				#endif
 			} else if (state == GAME) {
 				game.handle_input(event);
 			} else if (state == INVENTORY) {
@@ -99,6 +108,7 @@ int main() {
 			game.resetState();
 		}
 		if (state == EDITOR) {
+			#ifdef EDITOR_BUILD
 			EditorTrans* et = editor.update();
 			if (et) {
 				if (et->is_new) {
@@ -109,13 +119,16 @@ int main() {
 				editor.reset();
 				delete et;
 			}
+			#endif
 		} else if (state == GAME) {
 			GameTrans* gt = game.update();
 			if (gt) {
 				game.load_map(gt->name, gt->position);
 				delete gt;
 				state = LOADING;
+				#ifdef EDITOR_BUILD
 				editor.reset();
+				#endif
 				continue;
 			}
 		}
@@ -123,7 +136,9 @@ int main() {
 		window.clear();
 
 		if (state == EDITOR) {
+			#ifdef EDITOR_BUILD
 			window.setView(editor.view);
+			#endif
 		} else if (state == GAME) {
 			window.setView(game.player.view);
 		} else if (state == MENU) {
@@ -139,13 +154,17 @@ int main() {
 		}
 
 		if (state == EDITOR) {
+			#ifdef EDITOR_BUILD
 			window.draw(editor);
+			#endif
 		}
 
 		window.display();
 	}
 
+	#ifdef EDITOR_BUILD
 	game.save_maplist();
+	#endif
 
 	log_dbg("main end");
 	return 0;

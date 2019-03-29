@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #ifndef _BUTTON_H
 #define _BUTTON_H
 
@@ -47,4 +48,5 @@ public:
 	Button(string t, sf::FloatRect r);
 };
 
+#endif
 #endif

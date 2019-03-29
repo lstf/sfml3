@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #include "scrollbar.h"
 
 void Scrollbar::draw(sf::RenderTarget& w, sf::RenderStates states) const {
@@ -64,3 +65,5 @@ Scrollbar::Scrollbar(int h1, int h2, int x, int y, int w, int h) {
 	max_y = bg_bounds.top + bg_bounds.height - fg_bounds.top - fg_bounds.height;
 	cur_y = 0;
 }
+
+#endif

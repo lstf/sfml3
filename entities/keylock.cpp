@@ -6,11 +6,6 @@
 //
 ////////////////////////////////////////////////
 
-void KeyLock::draw(sf::RenderTarget& w, sf::RenderStates states) const {
-	(void)w;
-	(void)states;
-}
-
 KeyLock::KeyLock() {
 	log_dbg("constructing key lock");
 	name = "keylock";
@@ -21,7 +16,7 @@ sf::FloatRect KeyLock::bounds() {
 }
 
 DBox* KeyLock::interact(Player &player) {
-	log_dbg("player interacted");
+	log_dbg("player interacted with " << key_name << " lock");
 	bool has_key = false;
 	vector<ItemQuantity> keys = player.inv.keys;
 	for (auto it = keys.begin(); it != keys.end(); ++it) {
@@ -62,13 +57,15 @@ void KeyLock::set_pos(sf::Vector2f pos) {
 	r.top = pos.y;
 }
 
-sf::Vector2f KeyLock::size() {
-	return sf::Vector2f(r.width, r.height);
-}
-
 KeyLock::~KeyLock() {
 	log_dbg("destructing key lock");
 }
+
+void KeyLock::draw(sf::RenderTarget& w, sf::RenderStates states) const {
+	(void)w;
+	(void)states;
+}
+
 
 ////////////////////////////////////////////////
 //
@@ -82,6 +79,7 @@ KeyLockSpawner::KeyLockSpawner() {
 	lval = 0;
 }
 
+#ifdef EDITOR_BUILD
 sf::FloatRect KeyLockSpawner::bounds() {
 	if (r.width == 0 || r.height == 0) {
 		return sf::FloatRect(
@@ -108,6 +106,7 @@ void KeyLockSpawner::write(ofstream &out) {
 	write_string(key_name, out);
 	write_rect(r, out);
 }
+#endif
 
 void KeyLockSpawner::read(ifstream &inp) {
 	log_dbg("reading key lock spawner");
@@ -124,7 +123,7 @@ EntitySpawner* read_keylock_spawner(ifstream &inp) {
 	return (EntitySpawner*)spawn;
 }
 
-void new_keylock_ent(KeyLockSpawner* spawn) {
+void new_keylock(KeyLockSpawner* spawn) {
 	if (spawn->levent != "" &&
 	World::lstate->find(spawn->levent) != World::lstate->end() &&
 	World::lstate->at(spawn->levent) != spawn->lval) {
@@ -147,6 +146,7 @@ KeyLockSpawner::~KeyLockSpawner() {
 //
 ////////////////////////////////////////////////
 
+#ifdef EDITOR_BUILD
 KeyLockUI::KeyLockUI(int x, int y, int w, int h) {
 	log_dbg("constructing key lock ui");
 
@@ -158,16 +158,6 @@ KeyLockUI::KeyLockUI(int x, int y, int w, int h) {
 	typing = false;
 	tb = NULL;
 	spawn = NULL;
-}
-
-void KeyLockUI::draw(sf::RenderTarget& w, sf::RenderStates states) const {
-	w.draw(*w_b, states);
-	w.draw(*h_b, states);
-	w.draw(*key_name_b, states);
-	w.draw(*levent_b, states);
-	if (typing) {
-		w.draw(*tb, states);
-	}
 }
 
 bool KeyLockUI::handle_input(sf::Event &event, sf::Vector2i m_pos) {
@@ -285,3 +275,14 @@ void KeyLockUI::reset(KeyLockSpawner* _spawn) {
 KeyLockUI::~KeyLockUI() {
 	log_dbg("destructing key lock ui");
 }
+
+void KeyLockUI::draw(sf::RenderTarget& w, sf::RenderStates states) const {
+	w.draw(*w_b, states);
+	w.draw(*h_b, states);
+	w.draw(*key_name_b, states);
+	w.draw(*levent_b, states);
+	if (typing) {
+		w.draw(*tb, states);
+	}
+}
+#endif

@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #include "glstpanel.h"
 
 void Glstpanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
@@ -189,3 +190,5 @@ void Glstpanel::cleanup() {
 		tb = NULL;
 	}
 }
+
+#endif

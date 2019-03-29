@@ -5,8 +5,9 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "../utils/txmap.h"
 #include "../window.h"
+#include "../logger.h"
+#include "../utils/txmap.h"
 
 using namespace std;
 
@@ -15,16 +16,18 @@ struct bg_layer {
 	sf::Vector2u size;
 };
 
-class Background : public sf:: Drawable
-{
-	private:
-		void draw(sf::RenderTarget& w, sf::RenderStates states) const;
-	public:
-		int begin;
-		int end;
-		vector<bg_layer*> tx;
+class Background : public sf:: Drawable {
+public:
+	int begin;
+	int end;
+	vector<bg_layer*> tx;
 
-		Background(int b, int e);
+	Background(int b, int e);
+
+	~Background();
+
+private:
+	void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 };
 
 #endif

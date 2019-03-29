@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #include "entpanel.h"
 
 void Entpanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
@@ -181,3 +182,5 @@ void Entpanel::button_setup() {
 	);
 	buttons[ENT_B_KEYLOCK].name = "key lock";
 }
+
+#endif

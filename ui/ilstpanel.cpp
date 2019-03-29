@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #include "ilstpanel.h"
 
 void Ilstpanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
@@ -212,3 +213,5 @@ void Ilstpanel::cleanup() {
 		tb = NULL;
 	}
 }
+
+#endif

@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #include "snappanel.h"
 
 void Snappanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
@@ -266,3 +267,5 @@ void Snappanel::scroll_setup() {
 		SNAP_S_H
 	);
 }
+
+#endif

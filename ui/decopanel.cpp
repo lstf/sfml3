@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #include "decopanel.h"
 
 void Decopanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
@@ -414,3 +415,5 @@ vector<sf::FloatRect> Decopanel::gen_geom() {
 
 	return rects2;
 }
+
+#endif

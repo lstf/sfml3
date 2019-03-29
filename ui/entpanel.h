@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #ifndef _ENTPANEL_H
 #define _ENTPANEL_H
 
@@ -76,4 +77,5 @@ public:
 	Entpanel(Game* _game, SnapVals* _sv);
 };
 
+#endif
 #endif

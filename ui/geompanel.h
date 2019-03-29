@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #ifndef _GEOMPANEL_H
 #define _GEOMPANEL_H
 
@@ -36,4 +37,5 @@ public:
 	Geompanel(Game* _game, SnapVals* _sv);
 };
 
+#endif
 #endif

@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #ifndef _EDITOR_H
 #define _EDITOR_H
 
@@ -104,4 +105,5 @@ public:
 	~Editor();
 };
 
+#endif
 #endif

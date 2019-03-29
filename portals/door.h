@@ -8,23 +8,25 @@
 
 #include "portal.h"
 #include "../animation.h"
+#include "../logger.h"
 #include "../utils/ioutils.h"
 #include "../utils/txmap.h"
 
-#define DOOR_PNG_FILE "./ats/mps/doors/D.PNG"
-#define DOOR_PNG_FRAMES 3
+#define DOOR_W 32
+#define DOOR_H 48
+#define DOOR_PNG "./ats/mps/doors/D.PNG"
+#define DOOR_FRAMES 3
+#define DOOR_FPS 6
 
 using namespace std;
 
+////////////////////////////////////////////////
+//
+// Entity
+//
+////////////////////////////////////////////////
+
 class Door : public Portal {
-private:
-	Animation anim;
-	int frame;
-
-	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
-
-	bool advance_animation();
-	
 public:
 	sf::Sprite sp;
 
@@ -36,19 +38,45 @@ public:
 
 	virtual sf::FloatRect bounds();
 
-	virtual sf::Vector2f size();
-
 	virtual void set_position(sf::Vector2f pos);
 
-	virtual sf::Vector2f get_position();
+	~Door();
 
-	virtual vector<string>* ats_names();
+private:
+	Animation anim;
+	int frame;
+
+	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
+};
+
+////////////////////////////////////////////////
+//
+// Spawner
+//
+////////////////////////////////////////////////
+
+class DoorSpawner : public PortalSpawner {
+public:
+	DoorSpawner();
+
+	#ifdef EDITOR_BUILD
+	virtual sf::FloatRect bounds();
+
+	virtual void set_pos(sf::Vector2f pos);
 
 	virtual void write(ofstream &out);
+	#endif
 
 	virtual void read(ifstream &inp);
 
-	~Door();
+	~DoorSpawner();
+
+private:
+	sf::Texture tx;
 };
+
+PortalSpawner* read_door_spawner(ifstream &inp);
+
+void new_door(DoorSpawner* spawn);
 
 #endif 

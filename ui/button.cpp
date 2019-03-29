@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #include "button.h"
 void Button::draw(sf::RenderTarget& w, sf::RenderStates states) const {
 	w.draw(body, states);
@@ -86,3 +87,5 @@ Button::Button(string t, sf::FloatRect r) {
 
 	setColors();
 }
+
+#endif

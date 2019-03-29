@@ -10,10 +10,10 @@
 
 using namespace std;
 
-void delete_ent(Entity* ent);
+void delete_entity(Entity* ent);
 
-EntitySpawner* read_spawner(ifstream &inp);
+EntitySpawner* read_entity_spawner(ifstream &inp);
 
-void new_ent(EntitySpawner* spawner);
+void new_entity(EntitySpawner* spawn);
 
 #endif

@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #include "editor.h"
 
 void Editor::draw(sf::RenderTarget& w, sf::RenderStates states) const {
@@ -175,7 +176,8 @@ void Editor::handle_input(sf::Event &event) {
 					selected_pan_r.setPosition(buttons[i]->getPosition());
 					selected_pan_r.move(3,3);
 				} else if (bs == BCLICKR) {
-					game->map_current->deco = !game->map_current->deco;
+					game->map_current->draw_deco = 
+					!game->map_current->draw_deco;
 				}
 				break;
 			case GEOM_BUTTON:
@@ -183,9 +185,10 @@ void Editor::handle_input(sf::Event &event) {
 					mode = EDIT_GEOM;
 					selected_pan_r.setPosition(buttons[i]->getPosition());
 					selected_pan_r.move(3,3);
-					game->map_current->geom = true;
+					game->map_current->draw_geom = true;
 				} else if (bs == BCLICKR) {
-					game->map_current->geom = !game->map_current->geom;
+					game->map_current->draw_geom =
+					!game->map_current->draw_geom;
 				}
 				break;
 			case POR_BUTTON:
@@ -380,3 +383,5 @@ Button* Editor::gen_button(int i) {
 Editor::~Editor() {
 	log_dbg("destructing editor");
 }
+
+#endif

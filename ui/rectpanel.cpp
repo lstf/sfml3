@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #include "rectpanel.h"
 
 void Rectpanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
@@ -170,3 +171,5 @@ Rectpanel::Rectpanel(SnapVals* _sv) {
 
 	right_click = false;
 }
+
+#endif

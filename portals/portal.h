@@ -9,6 +9,12 @@
 
 using namespace std;
 
+////////////////////////////////////////////////
+//
+// Portal
+//
+////////////////////////////////////////////////
+
 class Portal;
 
 struct MapTrans {
@@ -37,17 +43,42 @@ public:
 
 	virtual sf::FloatRect bounds() = 0;
 
-	virtual sf::Vector2f size() = 0;
-
 	virtual void set_position(sf::Vector2f pos) = 0;
 
-	virtual sf::Vector2f get_position() = 0;
-
-	virtual vector<string>* ats_names() = 0;
-	virtual void write(ofstream &out) = 0;
-	virtual void read(ifstream &inp) = 0;
-
 	~Portal();
+};
+
+////////////////////////////////////////////////
+//
+// Spawner
+//
+////////////////////////////////////////////////
+
+class PortalSpawner : public sf::Drawable {
+private:
+	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const {
+		if (sp_name != "") {
+			w.draw(sp, states);
+		}
+	};
+
+public:
+	string name;
+	string sp_name;
+	sf::Sprite sp;
+
+	string target;
+	sf::Vector2f target_pos;
+
+	#ifdef EDITOR_BUILD
+	virtual sf::FloatRect bounds() = 0;
+
+	virtual void set_pos(sf::Vector2f pos) = 0;
+
+	virtual void write(ofstream &out) = 0;
+	#endif
+
+	virtual void read(ifstream &inp) = 0;
 };
 
 #endif

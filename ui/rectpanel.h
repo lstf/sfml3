@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #ifndef _RECTPANEL_H
 #define _RECTPANEL_H
 
@@ -57,4 +58,5 @@ public:
 	Rectpanel(SnapVals* _sv);
 };
 
+#endif
 #endif

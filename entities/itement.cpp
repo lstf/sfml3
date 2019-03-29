@@ -9,43 +9,28 @@
 ItemEnt::ItemEnt() {
 	log_dbg("constructing item ent");
 	name = "item";
-	got = false;
-}
-
-void ItemEnt::draw(sf::RenderTarget& w, sf::RenderStates states) const {
-	if (got) {
-		return;
-	}
-	w.draw(sp, states);
-	w.draw(sparkle, states);
 }
 
 sf::FloatRect ItemEnt::bounds() {
-	if (got) {
-		return sf::FloatRect(0, 0, 0, 0);
-	}
 	return sp.getGlobalBounds();
 }
 
 DBox* ItemEnt::interact(Player &player) {
-	log_dbg("player interacted");
-	if (got) {
-		return NULL;
-	}
+	log_dbg("player interacted with " << item_name);
 	DTree* d = new DTree;
 	d->root = newDnode(d, "[Pick up " + item_name + "?]");
 	d->root->options[0]->text = "yes";
-	DNode* got_item = newDnode(d, "[got " + item_name + "]");
-	got_item->delete_ent = true;
-	got_item->delete_ent_ptr = this;
-	if (levent != "") {
-		got_item->levent = new DEvent;
-		got_item->levent->key = levent;
-		got_item->levent->val = 1;
-	}
-	got_item->item = new DItem;
-	got_item->item->item = new_item(item_cat, item_name);
-	got_item->item->count = 1;
+		DNode* got_item = newDnode(d, "[got " + item_name + "]");
+		got_item->delete_ent = true;
+		got_item->delete_ent_ptr = this;
+		if (levent != "") {
+			got_item->levent = new DEvent;
+			got_item->levent->key = levent;
+			got_item->levent->val = 1;
+		}
+		got_item->item = new DItem;
+		got_item->item->item = new_item(item_cat, item_name);
+		got_item->item->count = 1;
 	d->root->options[0]->target = got_item;
 	DNode* not_got_item = newDnode(d, "[did not pick up " + item_name + "]");
 	newDoption(d, d->root, "no", not_got_item);
@@ -72,16 +57,13 @@ void ItemEnt::set_item(string cat, string name) {
 	sparkle.set_rect(frir(sp.getGlobalBounds()));
 }
 
-sf::Vector2f ItemEnt::size() {
-	if (got) {
-		return sf::Vector2f(0, 0);
-	}
-	sf::FloatRect spb = sp.getGlobalBounds();
-	return sf::Vector2f(spb.width, spb.height);
+ItemEnt::~ItemEnt() {
+	log_dbg("destructing item ent " << item_name);
 }
 
-ItemEnt::~ItemEnt() {
-	log_dbg("destructing item ent");
+void ItemEnt::draw(sf::RenderTarget& w, sf::RenderStates states) const {
+	w.draw(sp, states);
+	w.draw(sparkle, states);
 }
 
 ////////////////////////////////////////////////
@@ -96,6 +78,7 @@ ItemEntSpawner::ItemEntSpawner() {
 	lval = 0;
 }
 
+#ifdef EDITOR_BUILD
 sf::FloatRect ItemEntSpawner::bounds() {
 	if (sp_name == "") {
 		return sf::FloatRect(
@@ -129,6 +112,7 @@ void ItemEntSpawner::write(ofstream &out) {
 	write_string(item_cat, out);
 	write_vec2(sp.getPosition(), out);
 }
+#endif
 
 void ItemEntSpawner::read(ifstream &inp) {
 	log_dbg("reading item ent spawner");
@@ -150,12 +134,14 @@ ItemEntSpawner::~ItemEntSpawner() {
 EntitySpawner* read_itement_spawner(ifstream &inp) {
 	ItemEntSpawner* spawn = new ItemEntSpawner();
 	spawn->read(inp);
+	#ifdef EDITOR_BUILD
 	spawn->get_sp();
+	#endif
 	
 	return (EntitySpawner*)spawn;
 }
 
-void new_itement_ent(ItemEntSpawner* spawn){
+void new_itement(ItemEntSpawner* spawn) {
 	if (spawn->levent != "" &&
 	World::lstate->find(spawn->levent) != World::lstate->end() &&
 	World::lstate->at(spawn->levent) != spawn->lval) {
@@ -173,17 +159,7 @@ void new_itement_ent(ItemEntSpawner* spawn){
 // UI
 //
 ////////////////////////////////////////////////
-
-void ItemEntUI::draw(sf::RenderTarget& w, sf::RenderStates states) const {
-	w.draw(*category_b, states);
-	w.draw(*name_b, states);
-	w.draw(*levent_b, states);
-	w.draw(*get_sp_b, states);
-	if (typing) {
-		w.draw(*tb, states);
-	}
-}
-
+#ifdef EDITOR_BUILD
 ItemEntUI::ItemEntUI(int x, int y, int w, int h) {
 	log_dbg("constructing item ent ui");
 	category_b = new Button(
@@ -328,3 +304,14 @@ void ItemEntUI::reset(ItemEntSpawner* _spawn) {
 ItemEntUI::~ItemEntUI() {
 	log_dbg("destructing item ent ui");
 }
+
+void ItemEntUI::draw(sf::RenderTarget& w, sf::RenderStates states) const {
+	w.draw(*category_b, states);
+	w.draw(*name_b, states);
+	w.draw(*levent_b, states);
+	w.draw(*get_sp_b, states);
+	if (typing) {
+		w.draw(*tb, states);
+	}
+}
+#endif

@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #ifndef _DECOPANEL_H
 #define _DECOPANEL_H
 
@@ -80,5 +81,7 @@ public:
 
 	Decopanel(Game* _game, SnapVals* _sv);
 };
+
+#endif
 
 #endif

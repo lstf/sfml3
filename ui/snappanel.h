@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #ifndef _SNAPPANEL_H
 #define _SNAPPANEL_H
 
@@ -70,4 +71,5 @@ public:
 	Snappanel(SnapVals* _sv);
 };
 
+#endif
 #endif

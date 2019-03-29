@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #ifndef _GLSTPANEL_H
 #define _GLSTPANEL_H
 
@@ -65,4 +66,5 @@ public:
 	~Glstpanel();
 };
 
+#endif
 #endif

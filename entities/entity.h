@@ -34,8 +34,6 @@ public:
 
 	virtual DBox* interact(Player &player) = 0;
 
-	virtual sf::Vector2f size() = 0;
-
 	virtual bool update(Player &player) = 0;
 
 	virtual void set_pos(sf::Vector2f pos) = 0;
@@ -62,11 +60,13 @@ public:
 	string sp_name;
 	sf::Sprite sp;
 
+	#ifdef EDITOR_BUILD
 	virtual sf::FloatRect bounds() = 0;
 
 	virtual void set_pos(sf::Vector2f pos) = 0;
 
 	virtual void write(ofstream &out) = 0;
+	#endif
 
 	virtual void read(ifstream &inp) = 0;
 };

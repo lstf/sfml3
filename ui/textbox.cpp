@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #include "textbox.h"
 
 void Textbox::draw(sf::RenderTarget& w, sf::RenderStates states) const {
@@ -95,3 +96,5 @@ Textbox::Textbox(sf::FloatRect r, bool _digits, string t) {
 
 	backspace = false;
 }
+
+#endif

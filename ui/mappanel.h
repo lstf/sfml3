@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #ifndef _MAPPANEL_H
 #define _MAPPANEL_H
 
@@ -81,5 +82,7 @@ public:
 
 	Mappanel(Game* _game);
 };
+
+#endif
 
 #endif

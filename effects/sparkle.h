@@ -1,12 +1,12 @@
 #ifndef _SPARKLE_H
 #define _SPARKLE_H
 
-#include <iostream>
 #include <stdlib.h>
 #include <time.h>
 
 #include <SFML/Graphics.hpp>
 
+#include "../logger.h"
 #include "../world.h"
 #include "../utils/cqueue.h"
 
@@ -16,13 +16,13 @@
 
 using namespace std;
 
+////////////////////////////////////////////////
+//
+// Particle
+//
+////////////////////////////////////////////////
+
 class SparkleParticle : public sf::Drawable {
-private:
-	sf::RectangleShape r;
-	sf::Vector2f velocity;
-
-	void draw(sf::RenderTarget& w, sf::RenderStates states) const;
-
 public:
 	float life;
 
@@ -30,18 +30,20 @@ public:
 	
 	void update();
 
-	~SparkleParticle();
+private:
+	sf::RectangleShape r;
+	sf::Vector2f velocity;
+
+	void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 };
 
+////////////////////////////////////////////////
+//
+// Effect
+//
+////////////////////////////////////////////////
+
 class Sparkle : public sf::Drawable {
-private:
-	sf::IntRect r;
-	int sparkle_counter;
-
-	CQueue<SparkleParticle*> particles;
-	
-	void draw(sf::RenderTarget& w, sf::RenderStates states) const;
-
 public:
 	Sparkle();
 
@@ -52,6 +54,14 @@ public:
 	void set_position(sf::Vector2f p);
 
 	~Sparkle();
+
+private:
+	sf::IntRect r;
+	int sparkle_counter;
+
+	CQueue<SparkleParticle*> particles;
+	
+	void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 };
 
 #endif

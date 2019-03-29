@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #ifndef _UICOLORS_H
 #define _UICOLORS_H
 
@@ -18,4 +19,5 @@
 #define UIC_ED_SCROLL UIC_ED_FG
 #define UIC_ED_TEXTBOX UIC_ED_FG
 
+#endif
 #endif

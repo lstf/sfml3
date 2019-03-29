@@ -1,8 +1,10 @@
 #include "sparkle.h"
 
-void SparkleParticle::draw(sf::RenderTarget& w, sf::RenderStates states) const {
-	w.draw(r, states);
-}
+////////////////////////////////////////////////
+//
+// Particle
+//
+////////////////////////////////////////////////
 
 SparkleParticle::SparkleParticle(sf::Vector2f pos) {
 	life = 1;
@@ -30,19 +32,18 @@ void SparkleParticle::update() {
 	life -= World::frame_time;
 }
 
-SparkleParticle::~SparkleParticle() {
-	
+void SparkleParticle::draw(sf::RenderTarget& w, sf::RenderStates states) const {
+	w.draw(r, states);
 }
 
-void Sparkle::draw(sf::RenderTarget& w, sf::RenderStates states) const {
-	for (int i = particles.size() - 1; i >= 0; i--) {
-		if (!(rand() % 3)) {
-			w.draw(*particles.at(i), states);
-		}
-	}
-}
+////////////////////////////////////////////////
+//
+// Effect
+//
+////////////////////////////////////////////////
 
 Sparkle::Sparkle() {
+	log_dbg("constructing sparkle");
 	particles.set_size(SPARKLE_P_COUNT);
 	sparkle_counter = 0;
 }
@@ -78,7 +79,16 @@ void Sparkle::set_position(sf::Vector2f p) {
 }
 
 Sparkle::~Sparkle() {
+	log_dbg("destructing sparkle");
 	for (int i = particles.size() - 1; i >= 0; i--) {
 		delete particles.at(i);
+	}
+}
+
+void Sparkle::draw(sf::RenderTarget& w, sf::RenderStates states) const {
+	for (int i = particles.size() - 1; i >= 0; i--) {
+		if (!(rand() % 3)) {
+			w.draw(*particles.at(i), states);
+		}
 	}
 }

@@ -1,3 +1,8 @@
+#editor off
+EDITOR=
+#editor on
+EDITOR=-DEDITOR_BUILD
+
 #debug logger off
 DEBUG=
 #debug logger on
@@ -5,7 +10,7 @@ DEBUG=-DDEBUG_GAME
 
 EXEC		=game
 CC			=g++
-FLAGS		=-Wall -Wextra -Wpedantic $(DEBUG)
+FLAGS		=-Wall -Wextra -Wpedantic $(DEBUG) $(EDITOR)
 LIB			=-lsfml-graphics -lsfml-window -lsfml-system -pthread
 SRC			=$(wildcard *.cpp) $(wildcard */*.cpp) $(wildcard */*/*.cpp)
 OBJ			=$(patsubst %.cpp, %.o, $(SRC))

@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #ifndef _TEXTBOX_H
 #define _TEXTBOX_H
 
@@ -42,4 +43,6 @@ public:
 
 	Textbox(sf::FloatRect r, bool _digits = false, string t = "");
 };
+
+#endif
 #endif

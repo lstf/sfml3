@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #ifndef _SCROLLBAR_H
 #define _SCROLLBAR_H
 
@@ -28,3 +29,4 @@ public:
 };
 
 #endif 
+#endif

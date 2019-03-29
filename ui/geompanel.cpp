@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #include "geompanel.h"
 
 void Geompanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
@@ -125,3 +126,4 @@ Geompanel::Geompanel(Game* _game, SnapVals* _sv) {
 
 	right_click	= false;
 }
+#endif

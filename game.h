@@ -77,9 +77,11 @@ public:
 
 	bool load_map(string name, sf::Vector2f pos);
 
+	#ifdef EDITOR_BUILD
 	void new_map(string name);
 
 	void save_maplist();
+	#endif
 
 	void write();
 	void read();

@@ -1,39 +1,37 @@
 #include "entutils.h"
 
-void delete_ent(Entity* ent) {
-	string name = ent->name;
+void new_entity(EntitySpawner* spawn) {
+	string name = spawn->name;
 	if (name == "item") {
-		delete (ItemEnt*)ent;
+		new_itement((ItemEntSpawner*)spawn);
 	} else if (name == "keylock") {
-		delete (KeyLock*)ent;
+		new_keylock((KeyLockSpawner*)spawn);
 	} else {
-		cout << "[ENTU] delete requested on unknown entity " << name << endl; 
+		log_err("unknown name '" << name << "'");
 	}
 }
 
-EntitySpawner* read_spawner(ifstream &inp) {
+EntitySpawner* read_entity_spawner(ifstream &inp) {
 	string name;
-
 	read_string(name, inp);
 	if (name == "item") {
 		return read_itement_spawner(inp);
 	} else if (name == "keylock") {
 		return read_keylock_spawner(inp);
 	} else {
-		cout << "[ENTU] read requested on unkown entity spanwer" << name <<
-		endl; 
+		log_err("unknown name '" << name << "'");
 	}
 
 	return NULL;
 }
 
-void new_ent(EntitySpawner* spawn) {
-	if (spawn->name == "item") {
-		new_itement_ent((ItemEntSpawner*)spawn);
-	} else if (spawn->name == "keylock") {
-		new_keylock_ent((KeyLockSpawner*)spawn);
+void delete_entity(Entity* ent) {
+	string name = ent->name;
+	if (name == "item") {
+		delete (ItemEnt*)ent;
+	} else if (name == "keylock") {
+		delete (KeyLock*)ent;
 	} else {
-		cout << "[ENTU] request for new ent of unknown type " << spawn->name <<
-		endl;
+		log_err("unknown name '" << name << "'");
 	}
 }

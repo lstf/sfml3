@@ -59,7 +59,7 @@ void Game::handle_input(sf::Event &event) {
 		dbox->update(event);
 		if (dbox->finished) {
 			if (dbox->destroy_ent) {
-				delete_ent((Entity*)dbox->destroy_ent_ptr);
+				delete_entity((Entity*)dbox->destroy_ent_ptr);
 			}
 			if (dbox->save_game) {
 				//write();
@@ -75,7 +75,7 @@ GameTrans* Game::update() {
 		//entity updates 
 		for (int i = Entity::list.size() - 1; i >= 0; i--) {
 			if(Entity::list[i]->update(player)) {
-				delete_ent(Entity::list[i]);
+				delete_entity(Entity::list[i]);
 			}
 		}
 
@@ -123,9 +123,9 @@ GameTrans* Game::update() {
 			}
 	
 			//updates
-			player.update(map_current->get_geom(), World::frame_time);
+			player.update(Map::geom, World::frame_time);
 			for (auto it = Enemy::list.begin(); it != Enemy::list.end(); ++it) {
-				(*it)->update(map_current->get_geom(), World::frame_time);
+				(*it)->update(Map::geom, World::frame_time);
 			}
 		}	
 	}
@@ -159,7 +159,11 @@ void Game::clear() {
 }
 
 bool Game::load_map(string name, sf::Vector2f pos) {
-	log_dbg("transitioning to map " << name);
+	if (name == "") {
+		log_dbg("transitioning to same map");
+	} else {
+		log_dbg("transitioning to map " << name);
+	}
 	player.setPosition(pos);
 	player.reset_input();
 
@@ -204,6 +208,8 @@ bool Game::load_map(string name, sf::Vector2f pos) {
 
 	return true;
 }
+
+#ifdef EDITOR_BUILD
 void Game::new_map(string name) {
 	log_dbg("adding new map " << name);
 	sf::Vector2f pos(0, 0);
@@ -231,6 +237,7 @@ void Game::save_maplist() {
 	}
 	maps_file.close();
 }
+#endif
 
 void Game::write() {
 	log_err("saving even though its not implemented");
@@ -243,7 +250,7 @@ void Game::write() {
 }
 
 void Game::read() {
-	log_err("saving even though its not implemented");
+	log_err("loading even though its not implemented");
 	ifstream inp("./ats/save");
 	if (!inp.is_open()) {
 		log_err("no save game found");

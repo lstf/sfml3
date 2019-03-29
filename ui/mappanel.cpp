@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #include "mappanel.h"
 
 void Mappanel::draw(sf::RenderTarget& w, sf::RenderStates states) const {
@@ -376,3 +377,5 @@ void Mappanel::scroll_setup() {
 		480 - MAP_T_HEIGHT - MAP_BASE_H
 	);
 }
+
+#endif

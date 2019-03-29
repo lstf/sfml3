@@ -14,6 +14,7 @@
 
 using namespace std;
 
+class ItemEntSpawner;
 ////////////////////////////////////////////////
 //
 // Entity
@@ -21,21 +22,7 @@ using namespace std;
 ////////////////////////////////////////////////
 
 class ItemEnt : public Entity {
-private:
-	bool got;
-	Sparkle sparkle;
-
-	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
-
 public:
-	sf::Sprite sp;
-
-	string levent;
-	int lval;
-
-	string item_name;
-	string item_cat;
-
 	ItemEnt();
 
 	virtual sf::FloatRect bounds();
@@ -48,9 +35,22 @@ public:
 
 	void set_item(string cat, string name);
 
-	virtual sf::Vector2f size();
-
 	~ItemEnt();
+
+private:
+friend class ItemEntSpawner;
+friend void new_itement(ItemEntSpawner* spawn);
+	sf::Sprite sp;
+
+	string levent;
+	int lval;
+
+	string item_name;
+	string item_cat;
+
+	Sparkle sparkle;
+
+	virtual void draw(sf::RenderTarget& w, sf::RenderStates states) const;
 };
 
 ////////////////////////////////////////////////
@@ -60,7 +60,6 @@ public:
 ////////////////////////////////////////////////
 
 class ItemEntSpawner : public EntitySpawner {
-private:
 public:
 	string levent;
 	int lval;
@@ -70,6 +69,7 @@ public:
 
 	ItemEntSpawner();
 
+	#ifdef EDITOR_BUILD
 	virtual sf::FloatRect bounds();
 
 	virtual void get_sp();
@@ -77,15 +77,18 @@ public:
 	virtual void set_pos(sf::Vector2f pos);
 
 	virtual void write(ofstream &out);
+	#endif
 
 	virtual void read(ifstream &inp);
 
 	~ItemEntSpawner();
+
+private:
 };
 
 EntitySpawner* read_itement_spawner(ifstream &inp);
 
-void new_itement_ent(ItemEntSpawner* spawn);
+void new_itement(ItemEntSpawner* spawn);
 
 ////////////////////////////////////////////////
 //
@@ -93,10 +96,17 @@ void new_itement_ent(ItemEntSpawner* spawn);
 //
 ////////////////////////////////////////////////
 
-#define KEYENT_BG sf::Color(127,127,127)
-#define KEYENT_FG sf::Color(0,0,0)
-
+#ifdef EDITOR_BUILD
 class ItemEntUI : public sf::Drawable {
+public:
+	ItemEntUI(int x, int y, int w, int h);
+
+	bool handle_input(sf::Event &event, sf::Vector2i m_pos);
+
+	void reset(ItemEntSpawner* _spawn);
+
+	~ItemEntUI();
+
 private:
 	ItemEntSpawner* spawn;
 
@@ -112,15 +122,7 @@ private:
 	string item_cat;
 
 	void draw(sf::RenderTarget& w, sf::RenderStates states) const;
-
-public:
-	ItemEntUI(int x, int y, int w, int h);
-
-	bool handle_input(sf::Event &event, sf::Vector2i m_pos);
-
-	void reset(ItemEntSpawner* _spawn);
-
-	~ItemEntUI();
 };
+#endif
 
 #endif

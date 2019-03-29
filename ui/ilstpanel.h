@@ -1,3 +1,4 @@
+#ifdef EDITOR_BUILD
 #ifndef _ILSTPANEL_H
 #define _ILSTPANEL_H
 
@@ -66,4 +67,5 @@ public:
 	~Ilstpanel();
 };
 
+#endif
 #endif
